@@ -1,0 +1,31 @@
+services:
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://tabletopcafe:${POSTGRES_PASSWORD}@db:5432/tabletopcafe
+      NODE_ENV: production
+    volumes:
+      - photos:/app/photos
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tabletopcafe
+      POSTGRES_USER: tabletopcafe
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tabletopcafe"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  photos:

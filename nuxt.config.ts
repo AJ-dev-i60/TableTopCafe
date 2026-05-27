@@ -18,4 +18,10 @@ export default defineNuxtConfig({
     strict: true,
     typeCheck: false,
   },
+
+  nitro: {
+    externals: {
+      inline: ['postgres'],
+    },
+  },
 })

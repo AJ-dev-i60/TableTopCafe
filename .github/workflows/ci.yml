@@ -54,10 +54,11 @@ jobs:
         run: NITRO_HOST=0.0.0.0 NITRO_PORT=3000 node .output/server/index.mjs > /tmp/server.log 2>&1 &
       - name: Wait for server
         run: |
+          sleep 3
           echo "Waiting for server..."
           for i in $(seq 1 30); do
-            STATUS=$(curl -s -o /tmp/health_body.txt -w "%{http_code}" http://localhost:3000/api/health)
-            echo "Attempt $i: HTTP $STATUS — $(cat /tmp/health_body.txt)"
+            STATUS=$(curl -s -o /tmp/health_body.txt -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            echo "Attempt $i: HTTP $STATUS — $(cat /tmp/health_body.txt 2>/dev/null)"
             if [ "$STATUS" = "200" ]; then
               echo "Server ready"
               exit 0

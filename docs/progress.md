@@ -2,14 +2,23 @@
 
 Current state of the build and anything needed to resume on a fresh machine.
 
-## Current milestone: M0 — Walking skeleton
+## Current milestone: M1 — Read-only catalogue with seed data
 
-**Status: CI green. Verify production URL.**
+**Status: Schema done. Next: seed script.**
 
+### M0 — Walking skeleton ✅
 - GitHub Actions CI passes (unit + e2e) on every push to `main`
-- Production deployment was configured and triggered on 2026-05-27 — verify
-  `https://tabletopcafe.edgestudios.co.za` loads and `/api/health` returns
-  `{"ok":true,"db":"connected"}` before starting M1
+- Production confirmed live on 2026-05-28: `https://tabletopcafe.edgestudios.co.za` renders
+  placeholder page, `/api/health` returns `{"ok":true,"db":"connected"}`
+
+### M1 progress
+- [x] DB schema: `games`, `tags`, `game_tags`, `photos` — migration `0001_tough_pride.sql`
+- [ ] Seed script: ~20 real games with tags and placeholder photos
+- [ ] Catalogue route (`/`): card grid + list toggle + search + filters
+- [ ] Game detail page (`/games/[id]`)
+- [ ] Image pipeline: Sharp → thumb/card/detail in WebP + JPEG
+- [ ] PWA manifest + service worker
+- [ ] Playwright smoke test: browse → filter → open detail
 
 ## Coolify deployment (VPS)
 

@@ -1,10 +1,17 @@
 # Claude Code Instructions
 
-Before doing any work in this repo, read in order:
-1. `requirements.md` — what we're building
-2. `ARCHITECTURE.md` — system shape and technology choices
-3. `CONVENTIONS.md` — code organization rules (mandatory, not suggestions)
-4. `docs/roadmap.md` — current milestone and what "done" looks like
+Before doing any work in this repo:
+
+1. **Pull latest changes first**: `git pull origin main` — this project is worked on
+   across multiple machines. Always sync before reading files or writing code to avoid
+   duplicating work that was already done elsewhere.
+
+2. Then read in order:
+   - `requirements.md` — what we're building
+   - `ARCHITECTURE.md` — system shape and technology choices
+   - `CONVENTIONS.md` — code organization rules (mandatory, not suggestions)
+   - `docs/roadmap.md` — current milestone and what "done" looks like
+   - `docs/progress.md` — current state and what's next
 
 When proposing changes, reference which milestone they belong to. If a
 change doesn't fit cleanly in the current milestone, flag it rather than

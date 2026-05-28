@@ -1,5 +1,23 @@
 <template>
-  <div>
-    <slot />
+  <div class="min-h-screen bg-[--color-surface]">
+    <header class="sticky top-0 z-20 bg-white border-b border-[--color-border] shadow-[--shadow-sm]">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <span class="text-base font-bold text-[--color-text-primary] tracking-tight">TableTopCafe</span>
+        <slot name="header-actions" />
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="border-t border-[--color-border] mt-auto">
+      <div class="max-w-7xl mx-auto px-4 py-4">
+        <p class="text-xs text-[--color-text-muted] text-center">
+          This catalogue shows our game library — not real-time availability.
+          Ask a staff member to grab a game for you.
+        </p>
+      </div>
+    </footer>
   </div>
 </template>

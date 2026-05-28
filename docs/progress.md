@@ -4,7 +4,7 @@ Current state of the build and anything needed to resume on a fresh machine.
 
 ## Current milestone: M1 — Read-only catalogue with seed data
 
-**Status: Schema done. Next: seed script.**
+**Status: All M1 code complete. Ready to deploy and run `npm run db:seed` in production.**
 
 ### M0 — Walking skeleton ✅
 - GitHub Actions CI passes (unit + e2e) on every push to `main`
@@ -13,12 +13,18 @@ Current state of the build and anything needed to resume on a fresh machine.
 
 ### M1 progress
 - [x] DB schema: `games`, `tags`, `game_tags`, `photos` — migration `0001_tough_pride.sql`
-- [ ] Seed script: ~20 real games with tags and placeholder photos
-- [ ] Catalogue route (`/`): card grid + list toggle + search + filters
-- [ ] Game detail page (`/games/[id]`)
-- [ ] Image pipeline: Sharp → thumb/card/detail in WebP + JPEG
-- [ ] PWA manifest + service worker
-- [ ] Playwright smoke test: browse → filter → open detail
+- [x] Seed script: ~20 real games with tags and placeholder photos (`scripts/seed.ts`, `npm run db:seed`)
+- [x] Catalogue route (`/`): card grid + list toggle + search + filters (`app/pages/index.vue`)
+  - Server-renders the full game list; filters are client-side
+  - `server/db/queries/games.ts`, `server/db/queries/tags.ts`
+  - `server/api/games/index.get.ts`, `server/api/tags/index.get.ts`
+  - `app/composables/useFilters.ts`, `app/composables/useCatalogueView.ts`
+  - `app/components/catalogue/GameCard.vue`, `GameListItem.vue`, `CatalogueFilters.vue`
+  - Photo service + serving route: `server/services/photos.ts`, `server/api/photos/[hash]/[file].get.ts`
+- [x] Game detail page (`/games/[id]`) — `app/pages/games/[id].vue`, `server/api/games/[id].get.ts`
+- [x] Image pipeline: `sharp` added, `server/services/photos.ts` processes uploads into thumb/card/detail WebP + JPEG; `server/api/photos/[hash]/[file].get.ts` serves files
+- [x] PWA manifest + service worker — `public/manifest.json`, `public/sw.js`, icons at `public/icon-{16,32,180,192,512}.png`
+- [x] Playwright smoke test: browse → filter → open detail (`tests/e2e/catalogue.spec.ts`)
 
 ## Coolify deployment (VPS)
 
@@ -57,12 +63,13 @@ The app is deployed via Coolify 4.1.1 on `vps01.edgestudios.co.za`.
 
 ## Next: M1 checklist
 
-Before writing any M1 code, read `docs/roadmap.md` M1 section. Rough order:
+1. ✅ DB schema: `games`, `tags`, `game_tags`, `photos` tables + Drizzle migration
+2. ✅ Seed script: `scripts/seed.ts` — `npm run db:seed`
+3. ✅ Catalogue route (`/`): card grid + list toggle + search + filters
+4. ✅ Game detail page — `app/pages/games/[id].vue`, `server/api/games/[id].get.ts`
+5. ✅ Image pipeline — `server/services/photos.ts`, `server/api/photos/[hash]/[file].get.ts`
+6. ✅ PWA manifest + service worker — `public/manifest.json`, `public/sw.js`
+7. ✅ Playwright smoke test — `tests/e2e/catalogue.spec.ts` (5 tests)
+8. ✅ CI updated — `db:migrate` + `db:seed` run before server in e2e job
 
-1. DB schema: `games`, `tags`, `game_tags`, `photos` tables + Drizzle migration
-2. Seed script: ~20 real games with tags and placeholder photos
-3. Catalogue route (`/`): card grid + list toggle + search + filters
-4. Game detail page (`/games/[id]`)
-5. Image pipeline: Sharp → thumb/card/detail in WebP + JPEG
-6. PWA manifest + service worker
-7. Playwright smoke test: browse → filter → open detail
+**M1 is code-complete.** Push to `main` → CI runs → deploy to Coolify → `npm run db:seed` on the VPS once to populate data.

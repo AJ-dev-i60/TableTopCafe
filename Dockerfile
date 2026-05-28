@@ -25,6 +25,7 @@ COPY --from=builder /app/server/db/migrations ./server/db/migrations
 COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/server/db/schema ./server/db/schema
 COPY --from=builder /app/server/db/client.ts ./server/db/client.ts
+COPY --from=builder /app/server/db/migrate.ts ./server/db/migrate.ts
 COPY --from=builder /app/server/config.ts ./server/config.ts
 COPY --from=builder /app/server/services/photos.ts ./server/services/photos.ts
 COPY --from=builder /app/tsconfig.json ./tsconfig.json

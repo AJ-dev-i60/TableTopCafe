@@ -1,5 +1,8 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
+# Explicit development mode so npm ci always installs devDependencies
+# regardless of the host build environment's NODE_ENV
+ENV NODE_ENV=development
 COPY package*.json ./
 RUN npm ci
 

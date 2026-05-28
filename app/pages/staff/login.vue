@@ -33,7 +33,7 @@
           />
         </div>
 
-        <p v-if="error" class="text-sm text-[--color-error] mb-4">{{ error }}</p>
+        <p v-show="error" class="text-sm text-[--color-error] mb-4" role="alert">{{ error }}</p>
 
         <button
           type="submit"

@@ -30,11 +30,11 @@ test('staff login → add game → appears in public catalogue', async ({ page }
 
   // Fill in the form
   const gameName = `Test Game ${Date.now()}`
-  await page.getByLabel('Name').fill(gameName)
-  await page.getByLabel('Min players').fill('2')
-  await page.getByLabel('Max players').fill('4')
-  await page.getByLabel('Min time').fill('30')
-  await page.getByLabel('Max time').fill('60')
+  await page.getByLabel('Name *').fill(gameName)
+  await page.getByLabel('Min players *').fill('2')
+  await page.getByLabel('Max players *').fill('4')
+  await page.getByLabel('Min time (min) *').fill('30')
+  await page.getByLabel('Max time (min) *').fill('60')
 
   await page.getByRole('button', { name: 'Add game' }).click()
 

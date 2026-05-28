@@ -2,8 +2,9 @@
   <form @submit.prevent="submit">
     <!-- Name -->
     <div class="mb-4">
-      <label class="block text-sm font-medium text-[--color-text-secondary] mb-1">Name *</label>
+      <label for="game-name" class="block text-sm font-medium text-[--color-text-secondary] mb-1">Name *</label>
       <input
+        id="game-name"
         v-model="form.name"
         type="text"
         required
@@ -14,8 +15,9 @@
 
     <!-- Description -->
     <div class="mb-4">
-      <label class="block text-sm font-medium text-[--color-text-secondary] mb-1">Description</label>
+      <label for="game-description" class="block text-sm font-medium text-[--color-text-secondary] mb-1">Description</label>
       <textarea
+        id="game-description"
         v-model="form.description"
         rows="3"
         maxlength="2000"
@@ -26,8 +28,9 @@
     <!-- Player count -->
     <div class="mb-4 grid grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-[--color-text-secondary] mb-1">Min players *</label>
+        <label for="game-player-min" class="block text-sm font-medium text-[--color-text-secondary] mb-1">Min players *</label>
         <input
+          id="game-player-min"
           v-model.number="form.playerMin"
           type="number"
           min="1"
@@ -36,8 +39,9 @@
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-[--color-text-secondary] mb-1">Max players *</label>
+        <label for="game-player-max" class="block text-sm font-medium text-[--color-text-secondary] mb-1">Max players *</label>
         <input
+          id="game-player-max"
           v-model.number="form.playerMax"
           type="number"
           min="1"
@@ -50,8 +54,9 @@
     <!-- Play time -->
     <div class="mb-4 grid grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-[--color-text-secondary] mb-1">Min time (min) *</label>
+        <label for="game-time-min" class="block text-sm font-medium text-[--color-text-secondary] mb-1">Min time (min) *</label>
         <input
+          id="game-time-min"
           v-model.number="form.timeMin"
           type="number"
           min="1"
@@ -60,8 +65,9 @@
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-[--color-text-secondary] mb-1">Max time (min) *</label>
+        <label for="game-time-max" class="block text-sm font-medium text-[--color-text-secondary] mb-1">Max time (min) *</label>
         <input
+          id="game-time-max"
           v-model.number="form.timeMax"
           type="number"
           min="1"

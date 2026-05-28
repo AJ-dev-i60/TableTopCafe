@@ -13,7 +13,7 @@ test('staff login with wrong password shows error', async ({ page }) => {
   await page.getByLabel('Username').fill(ADMIN_USERNAME)
   await page.getByLabel('Password').fill('wrong-password')
   await page.getByRole('button', { name: 'Sign in' }).click()
-  await expect(page.getByText('Invalid username or password')).toBeVisible()
+  await expect(page.locator('[aria-live="assertive"]')).toContainText('Invalid username or password')
 })
 
 test('staff login → add game → appears in public catalogue', async ({ page }) => {

@@ -33,7 +33,9 @@
           />
         </div>
 
-        <p v-show="error" class="text-sm text-[--color-error] mb-4" role="alert">{{ error }}</p>
+        <div aria-live="assertive" class="mb-4 min-h-5 text-sm" style="color: var(--color-error);">
+          {{ error }}
+        </div>
 
         <button
           type="submit"

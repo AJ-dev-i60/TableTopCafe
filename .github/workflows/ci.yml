@@ -38,6 +38,9 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgres://tabletopcafe:ci_password@localhost:5432/tabletopcafe
+      SESSION_SECRET: ci-session-secret-at-least-32-characters-long
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: ci_admin_password
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -54,8 +57,12 @@ jobs:
         run: npm run db:migrate
       - name: Seed database
         run: npm run db:seed
+      - name: Seed admin user
+        run: npm run db:seed-admin
       - name: Start server
         run: NITRO_HOST=0.0.0.0 NITRO_PORT=3000 node .output/server/index.mjs > /tmp/server.log 2>&1 &
+        env:
+          SESSION_SECRET: ci-session-secret-at-least-32-characters-long
       - name: Wait for server
         run: |
           sleep 3
@@ -81,6 +88,8 @@ jobs:
         run: npm run test:e2e
         env:
           BASE_URL: http://localhost:3000
+          ADMIN_USERNAME: admin
+          ADMIN_PASSWORD: ci_admin_password
       - name: Dump server log on failure
         if: failure()
         run: cat /tmp/server.log || echo "(no server log)"

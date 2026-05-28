@@ -115,3 +115,110 @@ export async function getGameById(id: number): Promise<GameDetail | null> {
 
   return { ...gameRow, tags: tagRows, photos: photoRows }
 }
+
+// ─── Write ────────────────────────────────────────────────────────────────────
+
+type GameInput = {
+  name: string
+  description: string | null
+  playerMin: number
+  playerMax: number
+  timeMin: number
+  timeMax: number
+  featured?: boolean
+  featuredNote?: string | null
+}
+
+export async function createGame(
+  input: GameInput,
+  tagIds: number[],
+  actorId: number,
+): Promise<number> {
+  const [row] = await db
+    .insert(games)
+    .values({
+      name: input.name,
+      description: input.description,
+      playerMin: input.playerMin,
+      playerMax: input.playerMax,
+      timeMin: input.timeMin,
+      timeMax: input.timeMax,
+      featured: input.featured ?? false,
+      featuredNote: input.featuredNote ?? null,
+      createdById: actorId,
+      createdAt: new Date(),
+    })
+    .returning({ id: games.id })
+
+  if (!row) throw new Error('Insert returned no row')
+
+  if (tagIds.length > 0) {
+    await db
+      .insert(gameTags)
+      .values(tagIds.map((tagId) => ({ gameId: row.id, tagId })))
+      .onConflictDoNothing()
+  }
+
+  return row.id
+}
+
+export async function updateGame(
+  id: number,
+  input: GameInput,
+  tagIds: number[],
+  actorId: number,
+): Promise<void> {
+  await db
+    .update(games)
+    .set({
+      name: input.name,
+      description: input.description,
+      playerMin: input.playerMin,
+      playerMax: input.playerMax,
+      timeMin: input.timeMin,
+      timeMax: input.timeMax,
+      featured: input.featured ?? false,
+      featuredNote: input.featuredNote ?? null,
+      lastEditedById: actorId,
+      lastEditedAt: new Date(),
+    })
+    .where(and(eq(games.id, id), isNull(games.deletedAt)))
+
+  // Replace tags: delete existing, insert new
+  await db.delete(gameTags).where(eq(gameTags.gameId, id))
+  if (tagIds.length > 0) {
+    await db
+      .insert(gameTags)
+      .values(tagIds.map((tagId) => ({ gameId: id, tagId })))
+      .onConflictDoNothing()
+  }
+}
+
+export async function softDeleteGame(id: number, actorId: number): Promise<void> {
+  await db
+    .update(games)
+    .set({ deletedAt: new Date(), deletedById: actorId })
+    .where(and(eq(games.id, id), isNull(games.deletedAt)))
+}
+
+// Staff list — includes all columns needed for the dashboard (no deleted filter)
+export type StaffGameListItem = Pick<
+  GameRow,
+  'id' | 'name' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'deletedAt'
+>
+
+export async function listAllGamesForStaff(): Promise<StaffGameListItem[]> {
+  return db
+    .select({
+      id: games.id,
+      name: games.name,
+      playerMin: games.playerMin,
+      playerMax: games.playerMax,
+      timeMin: games.timeMin,
+      timeMax: games.timeMax,
+      featured: games.featured,
+      deletedAt: games.deletedAt,
+    })
+    .from(games)
+    .orderBy(asc(games.name))
+}

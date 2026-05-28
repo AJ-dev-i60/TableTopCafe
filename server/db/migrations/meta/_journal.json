@@ -15,6 +15,13 @@
       "when": 1779907856767,
       "tag": "0001_tough_pride",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779979469531,
+      "tag": "0002_stiff_stick",
+      "breakpoints": true
     }
   ]
 }

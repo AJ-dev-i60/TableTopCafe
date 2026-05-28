@@ -2,16 +2,18 @@
 
 Current state of the build and anything needed to resume on a fresh machine.
 
-## Current milestone: M1 — Read-only catalogue with seed data
+## Current milestone: M2 — Staff auth and game CRUD
 
-**Status: All M1 code complete. Ready to deploy and run `npm run db:seed` in production.**
+**Status: M2 code complete. Awaiting CI run and deployment.**
 
 ### M0 — Walking skeleton ✅
 - GitHub Actions CI passes (unit + e2e) on every push to `main`
 - Production confirmed live on 2026-05-28: `https://tabletopcafe.edgestudios.co.za` renders
   placeholder page, `/api/health` returns `{"ok":true,"db":"connected"}`
 
-### M1 progress
+### M0 ✅ · M1 ✅
+
+### M1 progress (done)
 - [x] DB schema: `games`, `tags`, `game_tags`, `photos` — migration `0001_tough_pride.sql`
 - [x] Seed script: ~20 real games with tags and placeholder photos (`scripts/seed.ts`, `npm run db:seed`)
 - [x] Catalogue route (`/`): card grid + list toggle + search + filters (`app/pages/index.vue`)
@@ -83,15 +85,31 @@ The app is deployed via Coolify 4.1.1 on `vps01.edgestudios.co.za` as **two sepa
 - Server readiness check uses a `curl` poll loop — `wait-on` was removed because it behaved differently from `curl` against the Nitro server
 - `server/plugins/migrations.ts` uses an **isolated** postgres client (`max: 1`) that is closed after migrations complete — do not switch it back to the shared `db` singleton
 
-## Next: M1 checklist
+## M2 checklist
 
-1. ✅ DB schema: `games`, `tags`, `game_tags`, `photos` tables + Drizzle migration
-2. ✅ Seed script: `scripts/seed.ts` — `npm run db:seed`
-3. ✅ Catalogue route (`/`): card grid + list toggle + search + filters
-4. ✅ Game detail page — `app/pages/games/[id].vue`, `server/api/games/[id].get.ts`
-5. ✅ Image pipeline — `server/services/photos.ts`, `server/api/photos/[hash]/[file].get.ts`
-6. ✅ PWA manifest + service worker — `public/manifest.json`, `public/sw.js`
-7. ✅ Playwright smoke test — `tests/e2e/catalogue.spec.ts` (5 tests)
-8. ✅ CI updated — `db:migrate` + `db:seed` run before server in e2e job
+1. ✅ DB schema: `users`, `sessions` tables — migration `0002_stiff_stick.sql`
+2. ✅ Auth service: `server/services/auth.ts` — Argon2id password hashing, cookie sessions, `requireAuth`/`requireAdmin` guards
+3. ✅ Server middleware: `server/middleware/auth.ts` — validates session cookie on every request, populates `event.context.user`
+4. ✅ Auth API: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
+5. ✅ User queries: `server/db/queries/users.ts` — `getUserByUsername`, `getUserById`, `createUser`
+6. ✅ Game write queries: `createGame`, `updateGame`, `softDeleteGame`, `listAllGamesForStaff` added to `server/db/queries/games.ts`
+7. ✅ Tag write query: `createTag` added to `server/db/queries/tags.ts`
+8. ✅ Staff CRUD routes: `POST /api/staff/games`, `PATCH /api/staff/games/[id]`, `DELETE /api/staff/games/[id]`, `POST /api/staff/games/[id]/photos`
+9. ✅ Admin seed script: `scripts/seed-admin.ts` — `npm run db:seed-admin` (requires `ADMIN_USERNAME` + `ADMIN_PASSWORD`)
+10. ✅ Entrypoint updated: runs `seed-admin.ts` automatically when `ADMIN_USERNAME` + `ADMIN_PASSWORD` env vars are set
+11. ✅ Staff layout: `app/layouts/staff.vue` with nav + sign out
+12. ✅ Client auth middleware: `app/middleware/auth.ts` — redirects unauthenticated users to `/staff/login`
+13. ✅ Staff pages: login, dashboard, add game, edit game
+14. ✅ Staff components: `GameForm.vue`, `TagTypeahead.vue`, `PhotoUpload.vue`
+15. ✅ Playwright smoke test: `tests/e2e/staff.spec.ts` — login → add game → verify on catalogue
+16. ✅ CI updated — `ADMIN_USERNAME`/`ADMIN_PASSWORD`/`SESSION_SECRET` added, `db:seed-admin` step added
 
-**M1 is code-complete.** Push to `main` → CI runs → auto-deploys to Coolify prod. Production is never seeded automatically — real catalogue data will be entered by staff in M5. The `dev` branch auto-seeds on every build via `AUTO_SEED=true`.
+**M2 is code-complete.** Before deploying to production, set `SESSION_SECRET` (min 32 chars) and `ADMIN_USERNAME` + `ADMIN_PASSWORD` env vars in Coolify. The entrypoint will create the admin on first boot.
+
+### Required env vars for production (add in Coolify)
+
+| Var | Notes |
+|---|---|
+| `SESSION_SECRET` | Random string ≥ 32 chars — used to sign session cookies |
+| `ADMIN_USERNAME` | Initial admin login name |
+| `ADMIN_PASSWORD` | Initial admin password (can remove after first boot) |

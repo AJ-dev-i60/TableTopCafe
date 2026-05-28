@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test'
 
+test('games API returns seeded data', async ({ request }) => {
+  const response = await request.get('/api/games')
+  expect(response.ok()).toBeTruthy()
+  const games = await response.json() as unknown[]
+  expect(Array.isArray(games)).toBe(true)
+  expect(games.length).toBeGreaterThan(0)
+})
+
 test('health endpoint returns ok', async ({ request }) => {
   const response = await request.get('/api/health')
   expect(response.ok()).toBeTruthy()

@@ -43,7 +43,8 @@ export default defineNuxtConfig({
 
   nitro: {
     externals: {
-      inline: ['postgres'],
+      inline: ['postgres', 'drizzle-orm'],
+      external: ['sharp'],
     },
   },
 })

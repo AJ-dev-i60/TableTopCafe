@@ -72,7 +72,15 @@ jobs:
           echo "=== Server log ==="
           cat /tmp/server.log
           exit 1
+      - name: Check games API
+        run: |
+          echo "=== /api/games ==="
+          curl -s http://localhost:3000/api/games | head -c 500
+          echo ""
       - name: Run E2E tests
         run: npm run test:e2e
         env:
           BASE_URL: http://localhost:3000
+      - name: Dump server log on failure
+        if: failure()
+        run: cat /tmp/server.log || echo "(no server log)"

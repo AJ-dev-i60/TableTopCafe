@@ -28,15 +28,37 @@ Current state of the build and anything needed to resume on a fresh machine.
 
 ## Coolify deployment (VPS)
 
-The app is deployed via Coolify 4.1.1 on `vps01.edgestudios.co.za`.
+The app is deployed via Coolify 4.1.1 on `vps01.edgestudios.co.za` as **two separate apps** — one for production (`main` branch) and one for development (`dev` branch), each with its own database.
+
+### Production app (`main` branch)
 
 | Thing | Value |
 |---|---|
 | App UUID | `m1uovgct8k8ncbp8ec4h9ewp` |
 | PostgreSQL DB UUID / hostname | `osjvno601sn7jz8a5hslm0qd` |
-| Domain | `tabletopcafe.edgestudios.co.za` |
+| Domain | `https://tabletopcafe.edgestudios.co.za` |
 | Build pack | `dockerfile` (repo root `Dockerfile`) |
 | Branch | `main` — auto-deploys on push |
+| `AUTO_SEED` | **not set** — production data is persistent, seeding never runs automatically |
+
+### Dev app (`dev` branch)
+
+| Thing | Value |
+|---|---|
+| App UUID | `vf08pr98087artadb771ek3p` |
+| PostgreSQL DB UUID / hostname | `f13ffkj6xl46qz6q7teofftm` |
+| Domain | `https://tabletopcafedev.edgestudios.co.za` |
+| Branch | `dev` — auto-deploys on push |
+| `AUTO_SEED=true` | set — on every container start, runs migrations then seeds 20 games |
+
+### How auto-seed works
+
+`docker-entrypoint.sh` checks for `AUTO_SEED=true` at container start:
+1. Runs `tsx server/db/migrate.ts` — applies any pending migrations
+2. Runs `tsx scripts/seed.ts` — seeds ~20 games (script is idempotent)
+3. Starts the server: `node .output/server/index.mjs`
+
+**The seed script is test data only.** It exists so the dev environment always has a populated catalogue for testing. Production data is managed by staff via the admin interface and is never touched by the seed script.
 
 **What was configured (all done via API on 2026-05-27):**
 - Changed build pack from Nixpacks → Dockerfile
@@ -72,4 +94,4 @@ The app is deployed via Coolify 4.1.1 on `vps01.edgestudios.co.za`.
 7. ✅ Playwright smoke test — `tests/e2e/catalogue.spec.ts` (5 tests)
 8. ✅ CI updated — `db:migrate` + `db:seed` run before server in e2e job
 
-**M1 is code-complete.** Push to `main` → CI runs → deploy to Coolify → `npm run db:seed` on the VPS once to populate data.
+**M1 is code-complete.** Push to `main` → CI runs → auto-deploys to Coolify prod. Production is never seeded automatically — real catalogue data will be entered by staff in M5. The `dev` branch auto-seeds on every build via `AUTO_SEED=true`.

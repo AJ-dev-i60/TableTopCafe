@@ -61,6 +61,11 @@ This separation means data entry continues to work cleanly even if BGG is down â
 
 The application ships as two containers managed by `docker compose`: `app` (Nuxt + Nitro) and `db` (PostgreSQL 16). A named volume holds the photos directory; another holds the Postgres data directory. A `.env` file holds runtime configuration (database URL, session secret, BGG API base URL); secrets are not committed and are managed by the operator out-of-band. Database migrations run automatically on container start via `drizzle-kit migrate`.
 
+**Two deployment environments run on the same VPS via Coolify:**
+
+- **Production** tracks the `main` branch at `tabletopcafe.edgestudios.co.za`. It has its own dedicated PostgreSQL instance. The `AUTO_SEED` environment variable is never set here â€” production data is managed exclusively by staff through the admin interface.
+- **Dev** tracks the `dev` branch at `tabletopcafedev.edgestudios.co.za`. It has a separate PostgreSQL instance. `AUTO_SEED=true` is set, so `docker-entrypoint.sh` runs migrations and then the seed script on every container start, giving the dev environment a consistently populated catalogue for testing. The seed data is test-only and has no bearing on production.
+
 The container is fronted by the operator's existing reverse proxy on the VPS, which handles TLS termination. The application itself listens on plain HTTP inside the Docker network.
 
 Backups are handled out-of-band by the operator (container imaging plus volume snapshots, pulled to client-side storage). No backup infrastructure is built into the application.

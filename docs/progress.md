@@ -104,7 +104,13 @@ The app is deployed via Coolify 4.1.1 on `vps01.edgestudios.co.za` as **two sepa
 15. ✅ Playwright smoke test: `tests/e2e/staff.spec.ts` — login → add game → verify on catalogue
 16. ✅ CI updated — `ADMIN_USERNAME`/`ADMIN_PASSWORD`/`SESSION_SECRET` added, `db:seed-admin` step added
 
-**M2 is code-complete.** Before deploying to production, set `SESSION_SECRET` (min 32 chars) and `ADMIN_USERNAME` + `ADMIN_PASSWORD` env vars in Coolify. The entrypoint will create the admin on first boot.
+**M2 is code-complete and CI is green.**
+
+**⚠️ Production is currently down.** The prod container is crash-looping because `SESSION_SECRET` is not set. Fix:
+1. Go to Coolify UI → prod app (`m1uovgct8k8ncbp8ec4h9ewp`)
+2. Add env vars: `SESSION_SECRET` (run `openssl rand -hex 32` to generate), `ADMIN_USERNAME`, `ADMIN_PASSWORD`
+3. Redeploy — the entrypoint will create the admin user on first boot
+4. After confirming the admin account works, `ADMIN_PASSWORD` can be removed from Coolify env vars
 
 ### Required env vars for production (add in Coolify)
 

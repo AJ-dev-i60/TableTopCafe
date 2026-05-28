@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: false })
+definePageMeta({ layout: false, ssr: false })
 
 const form = reactive({ username: '', password: '' })
 const error = ref('')

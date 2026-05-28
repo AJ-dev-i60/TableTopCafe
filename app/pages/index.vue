@@ -165,7 +165,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
                   :to="`/games/${game.id}`"
                   class="block focus:outline-none focus-visible:ring-2 focus-visible:ring-[--color-brand] rounded-lg"
                 >
-                  <GameCard :game="game" />
+                  <CatalogueGameCard :game="game" />
                 </NuxtLink>
               </div>
               <div v-else class="rounded-[--radius-lg] border border-[--color-border] overflow-hidden">
@@ -175,7 +175,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
                   :to="`/games/${game.id}`"
                   class="block focus:outline-none"
                 >
-                  <GameListItem :game="game" />
+                  <CatalogueGameListItem :game="game" />
                 </NuxtLink>
               </div>
             </section>
@@ -198,7 +198,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
                   :to="`/games/${game.id}`"
                   class="block focus:outline-none focus-visible:ring-2 focus-visible:ring-[--color-brand] rounded-lg"
                 >
-                  <GameCard :game="game" />
+                  <CatalogueGameCard :game="game" />
                 </NuxtLink>
               </div>
               <div v-else class="rounded-[--radius-lg] border border-[--color-border] overflow-hidden">
@@ -208,7 +208,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
                   :to="`/games/${game.id}`"
                   class="block focus:outline-none"
                 >
-                  <GameListItem :game="game" />
+                  <CatalogueGameListItem :game="game" />
                 </NuxtLink>
               </div>
             </section>

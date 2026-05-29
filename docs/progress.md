@@ -21,6 +21,7 @@ Granular session-level state: what's done, what's next, and anything needed to r
 - [x] `Input.vue` — `border-[--color-border-strong]`, focus ring `rgb(21_128_61/0.15)`, invalid ring
 - [x] `GameForm.vue` — two-column desktop layout (details left, featured+photos right in cards), BGG block with dashed brand-accent border, right-aligned footer actions
 - [x] `StaffGameListItem` query extended to include `photoHash` (first photo per game)
+- [x] CSS variable fix: Tailwind v4.3 generates `utility-[--variable]` without `var()` — all M5 components migrated to scoped CSS with explicit `var()` or inline `style` attributes
 - [ ] Performance pass on representative low-end Android (catalogue scroll, image loading, TTI)
 - [ ] 400-game data entry sprint
 - [ ] QR codes on tables

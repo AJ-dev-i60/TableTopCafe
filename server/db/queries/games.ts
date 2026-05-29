@@ -211,6 +211,13 @@ export async function softDeleteGame(id: number, actorId: number): Promise<void>
     .where(and(eq(games.id, id), isNull(games.deletedAt)))
 }
 
+export async function restoreGame(id: number, actorId: number): Promise<void> {
+  await db
+    .update(games)
+    .set({ deletedAt: null, deletedById: null, lastEditedById: actorId, lastEditedAt: new Date() })
+    .where(and(eq(games.id, id), isNotNull(games.deletedAt)))
+}
+
 // Staff list — includes all columns needed for the dashboard (no deleted filter)
 export type StaffGameListItem = Pick<
   GameRow,

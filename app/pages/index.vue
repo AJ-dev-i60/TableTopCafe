@@ -66,10 +66,10 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
           <span v-if="hasActiveFilters" class="w-1.5 h-1.5 rounded-full" style="background: var(--color-brand)" />
         </button>
 
-        <!-- View toggle: 38×38 buttons, 19px icons -->
-        <div class="view-toggle-group flex overflow-hidden shrink-0">
+        <!-- View toggle: 38×38 buttons, 19px icons — separate buttons with gap -->
+        <div class="flex gap-1 shrink-0">
           <button
-            :class="['w-[38px] h-[38px] flex items-center justify-center motion-safe:transition-colors', view === 'grid' ? 'view-active' : 'glass-toggle']"
+            :class="['w-[38px] h-[38px] flex items-center justify-center motion-safe:transition-colors view-toggle-btn', view === 'grid' ? 'view-active' : 'glass-toggle']"
             title="Grid view"
             @click="setView('grid')"
           >
@@ -78,7 +78,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
             </svg>
           </button>
           <button
-            :class="['w-[38px] h-[38px] flex items-center justify-center motion-safe:transition-colors', view === 'list' ? 'view-active' : 'glass-toggle']"
+            :class="['w-[38px] h-[38px] flex items-center justify-center motion-safe:transition-colors view-toggle-btn', view === 'list' ? 'view-active' : 'glass-toggle']"
             title="List view"
             @click="setView('list')"
           >
@@ -155,7 +155,12 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
           <template v-else>
             <!-- Featured -->
             <section v-if="featured.length > 0" class="mb-xl">
-              <h2 class="text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">Featured</h2>
+              <h2 class="flex items-center gap-1.5 text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">
+                <svg class="w-[13px] h-[13px] shrink-0" style="color: var(--color-brand)" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.8l1.2-6.6L2.5 9l6.6-.9z"/>
+                </svg>
+                Featured
+              </h2>
               <div
                 v-if="view === 'grid'"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
@@ -240,18 +245,19 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
   color: var(--color-brand);
 }
 
-.view-toggle-group {
+.view-toggle-btn {
   border: 1px solid var(--glass-stroke);
   border-radius: var(--radius-md);
 }
 
 .view-active {
   background: var(--color-brand);
+  border-color: var(--color-brand);
   color: var(--color-brand-foreground);
 }
 
 .glass-toggle {
-  background: rgb(255 255 255 / 0.35);
+  background: rgb(255 255 255 / 0.40);
   color: var(--color-text-secondary);
 }
 

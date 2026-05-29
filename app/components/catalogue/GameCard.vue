@@ -18,7 +18,7 @@ function timeLabel(min: number, max: number): string {
 </script>
 
 <template>
-  <article class="card relative overflow-hidden border border-white/40 motion-safe:transition-shadow motion-safe:duration-base aspect-[16/10] sm:aspect-[4/3] lg:aspect-[3/4]">
+  <article :class="['card relative overflow-hidden border border-white/40 motion-safe:transition-shadow motion-safe:duration-base aspect-[16/10] sm:aspect-[4/3] lg:aspect-[3/4]', game.featured ? 'card-featured' : '']">
 
     <!-- Photo fills the card -->
     <picture v-if="game.photoHash" class="block absolute inset-0">
@@ -39,7 +39,7 @@ function timeLabel(min: number, max: number): string {
 
     <!-- No-photo fallback: brand gradient + first initial -->
     <div v-else class="absolute inset-0 photo-fallback flex items-center justify-center">
-      <span class="text-[7rem] font-bold text-white/20 leading-none select-none" aria-hidden="true">
+      <span class="text-[3rem] font-bold leading-none select-none" style="color: rgb(255 255 255 / 0.85)" aria-hidden="true">
         {{ game.name.charAt(0) }}
       </span>
     </div>
@@ -57,7 +57,7 @@ function timeLabel(min: number, max: number): string {
       </h2>
 
       <!-- Meta row — large 19px icons per spec -->
-      <div class="flex items-center gap-2.5 mt-1 text-meta text-white/80">
+      <div class="flex items-center gap-4 mt-1 text-meta text-white/80">
         <span class="flex items-center gap-1">
           <svg class="w-[19px] h-[19px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -90,6 +90,10 @@ function timeLabel(min: number, max: number): string {
 .card {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
+}
+
+.card-featured {
+  box-shadow: 0 14px 34px -10px rgb(21 128 61 / 0.5);
 }
 
 .card:hover {

@@ -2,7 +2,7 @@
 
 Before doing any work in this repo:
 
-1. **Pull latest changes first**: `git pull origin main` — this project is worked on
+1. **Pull latest changes first**: `git pull origin dev` — this project is worked on
    across multiple machines. Always sync before reading files or writing code to avoid
    duplicating work that was already done elsewhere.
 

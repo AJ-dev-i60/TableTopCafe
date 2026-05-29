@@ -22,6 +22,10 @@ Granular session-level state: what's done, what's next, and anything needed to r
 - [x] `GameForm.vue` — two-column desktop layout (details left, featured+photos right in cards), BGG block with dashed brand-accent border, right-aligned footer actions
 - [x] `StaffGameListItem` query extended to include `photoHash` (first photo per game)
 - [x] CSS variable fix: Tailwind v4.3 generates `utility-[--variable]` without `var()` — all M5 components migrated to scoped CSS with explicit `var()` or inline `style` attributes
+- [x] Design alignment pass (diff against `design/glass.html` + `design/detail.html` mockups):
+  - `GameCard.vue`: fallback letter 85% opacity (was 20%), smaller size (3rem vs 7rem), meta row gap 16px (was 10px), brand-tinted shadow on featured cards
+  - `index.vue`: ★ star icon on Featured section label, view toggle changed to two separate bordered buttons with gap (was single grouped container)
+  - `games/[id].vue`: back pill translucent 16% (was opaque 55%), "Staff pick" label added to featured note, tags use glass fill (was solid surface)
 - [ ] Performance pass on representative low-end Android (catalogue scroll, image loading, TTI)
 - [ ] 400-game data entry sprint
 - [ ] QR codes on tables

@@ -59,7 +59,7 @@ useSeoMeta({
 
           <!-- No-photo fallback -->
           <div v-else class="absolute inset-0 photo-fallback flex items-center justify-center">
-            <span class="text-[8rem] font-bold text-white/20 leading-none select-none" aria-hidden="true">
+            <span class="text-[5.5rem] font-bold leading-none select-none" style="color: rgb(255 255 255 / 0.85)" aria-hidden="true">
               {{ game.name.charAt(0) }}
             </span>
           </div>
@@ -111,12 +111,17 @@ useSeoMeta({
         <!-- Staff pick note -->
         <div
           v-if="game.featured && game.featuredNote"
-          class="staff-pick-panel glass-panel p-4 flex items-start gap-3"
+          class="staff-pick-panel p-4"
         >
-          <svg class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--color-brand)" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-          <p class="text-body leading-relaxed" style="color: var(--color-text-primary)">{{ game.featuredNote }}</p>
+          <div class="flex items-start gap-2.5">
+            <svg class="w-[18px] h-[18px] shrink-0 mt-0.5" style="color: var(--color-brand)" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.8l1.2-6.6L2.5 9l6.6-.9z"/>
+            </svg>
+            <div>
+              <div class="text-section-label font-semibold uppercase tracking-wider mb-1" style="color: var(--color-brand)">Staff pick</div>
+              <p class="text-ui leading-relaxed" style="color: var(--color-text-primary)">{{ game.featuredNote }}</p>
+            </div>
+          </div>
         </div>
 
         <!-- About this game -->
@@ -133,7 +138,7 @@ useSeoMeta({
               v-for="tag in game.tags"
               :key="tag.id"
               class="tag-pill px-3 py-1 text-ui border"
-              style="background: var(--color-surface-elevated); color: var(--color-text-secondary); border-color: var(--color-border)"
+              style="background: rgb(255 255 255 / 0.50); color: var(--color-text-secondary); border-color: var(--glass-stroke)"
             >
               {{ tag.name }}
             </span>
@@ -212,9 +217,9 @@ useSeoMeta({
 }
 
 .back-pill {
-  background: var(--glass-fill);
-  border: 1px solid var(--glass-stroke);
-  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  background: rgb(255 255 255 / 0.16);
+  border: 1px solid rgb(255 255 255 / 0.40);
+  backdrop-filter: blur(10px);
   border-radius: var(--radius-full);
 }
 

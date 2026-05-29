@@ -1,4 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
+import { readFileSync } from 'node:fs'
+
+const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
 
 export default defineNuxtConfig({
   future: {
@@ -7,6 +10,12 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
 
   ssr: true,
+
+  runtimeConfig: {
+    public: {
+      version,
+    },
+  },
 
   css: ['~/assets/css/tokens.css'],
 

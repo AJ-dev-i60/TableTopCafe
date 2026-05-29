@@ -1,8 +1,15 @@
+<script setup lang="ts">
+const { public: { version } } = useRuntimeConfig()
+</script>
+
 <template>
   <div class="min-h-screen bg-[--color-surface]">
     <header class="sticky top-0 z-header bg-[--color-surface] border-b border-[--color-border] shadow-[--shadow-sm]">
       <div class="max-w-7xl mx-auto px-md py-3 flex items-center justify-between">
-        <span class="text-base font-bold text-[--color-text-primary] tracking-tight">TableTopCafe</span>
+        <span class="flex items-baseline gap-2">
+          <span class="text-base font-bold text-[--color-text-primary] tracking-tight">TableTopCafe</span>
+          <span class="text-xs text-[--color-text-muted]">v{{ version }}</span>
+        </span>
         <slot name="header-actions" />
       </div>
     </header>

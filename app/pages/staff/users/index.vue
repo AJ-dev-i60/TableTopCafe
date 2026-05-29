@@ -1,0 +1,179 @@
+<template>
+  <div>
+    <div class="flex items-center justify-between mb-lg">
+      <h1 class="text-2xl font-bold text-[--color-text-primary]">Users</h1>
+      <SharedButton @click="showAddForm = !showAddForm">
+        {{ showAddForm ? 'Cancel' : 'Add user' }}
+      </SharedButton>
+    </div>
+
+    <!-- Add user form -->
+    <div v-if="showAddForm" class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] p-6 mb-lg">
+      <h2 class="text-base font-semibold text-[--color-text-primary] mb-md">New account</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-md mb-md">
+        <div>
+          <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Username *</label>
+          <SharedInput v-model="newUser.username" type="text" maxlength="100" />
+        </div>
+        <div>
+          <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Password * <span class="font-normal text-[--color-text-muted]">(min 8 chars)</span></label>
+          <SharedInput v-model="newUser.password" type="password" />
+        </div>
+      </div>
+      <div class="mb-md">
+        <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Role</label>
+        <div class="flex gap-4">
+          <label class="flex items-center gap-2 cursor-pointer text-ui text-[--color-text-primary]">
+            <input v-model="newUser.role" type="radio" value="staff" /> Staff
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer text-ui text-[--color-text-primary]">
+            <input v-model="newUser.role" type="radio" value="admin" /> Admin
+          </label>
+        </div>
+      </div>
+      <p v-if="addError" class="text-ui text-[--color-error] mb-2">{{ addError }}</p>
+      <SharedButton :pending="addPending" pending-label="Creating…" @click="submitAdd">Create account</SharedButton>
+    </div>
+
+    <div v-if="pending" class="text-sm text-[--color-text-muted]">Loading…</div>
+
+    <div v-else-if="!users?.length" class="text-sm text-[--color-text-muted]">No users found.</div>
+
+    <div v-else class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] divide-y divide-[--color-border]">
+      <div
+        v-for="user in users"
+        :key="user.id"
+        class="px-md py-3"
+      >
+        <!-- Normal row -->
+        <div v-if="resettingId !== user.id" class="flex items-center justify-between gap-4">
+          <div class="min-w-0">
+            <span class="text-card-title font-medium text-[--color-text-primary]">{{ user.username }}</span>
+            <span
+              class="ml-2 text-tag font-medium rounded-[--radius-sm] px-2 py-0.5"
+              :class="user.role === 'admin'
+                ? 'bg-[rgb(21_128_61/0.12)] text-[--color-brand]'
+                : 'bg-[--color-surface-elevated] text-[--color-text-muted]'"
+            >
+              {{ user.role }}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button class="text-ui text-[--color-brand] hover:underline" @click="startReset(user.id)">Reset password</button>
+            <SharedButton
+              variant="danger"
+              :disabled="user.id === currentUserId"
+              @click="deleteUser(user.id, user.username)"
+            >
+              Delete
+            </SharedButton>
+          </div>
+        </div>
+
+        <!-- Reset password inline form -->
+        <div v-else class="flex items-center gap-2 flex-wrap">
+          <span class="text-ui text-[--color-text-secondary]">New password for <strong>{{ user.username }}</strong>:</span>
+          <SharedInput
+            v-model="resetPassword"
+            type="password"
+            placeholder="Min 8 characters"
+            class="flex-1 min-w-40"
+            @keydown.enter.prevent="submitReset(user.id)"
+            @keydown.escape="cancelReset"
+          />
+          <SharedButton :pending="resetPending" pending-label="Saving…" @click="submitReset(user.id)">Save</SharedButton>
+          <button class="text-ui text-[--color-text-muted] hover:text-[--color-text-primary]" @click="cancelReset">Cancel</button>
+          <p v-if="resetError" class="text-meta text-[--color-error] w-full">{{ resetError }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+definePageMeta({ layout: 'staff', middleware: ['admin'] })
+
+const { data: me } = await useFetch('/api/auth/me')
+const currentUserId = computed(() => (me.value as { id: number } | null)?.id ?? -1)
+
+const { data: users, pending, refresh } = await useFetch('/api/staff/users')
+
+// ─── Add user ─────────────────────────────────────────────────────────────────
+
+const showAddForm = ref(false)
+const newUser = reactive({ username: '', password: '', role: 'staff' as 'staff' | 'admin' })
+const addPending = ref(false)
+const addError = ref('')
+
+async function submitAdd() {
+  if (!newUser.username.trim() || newUser.password.length < 8) {
+    addError.value = 'Username required and password must be at least 8 characters.'
+    return
+  }
+  addPending.value = true
+  addError.value = ''
+  try {
+    await $fetch('/api/staff/users', { method: 'POST', body: { ...newUser } })
+    newUser.username = ''
+    newUser.password = ''
+    newUser.role = 'staff'
+    showAddForm.value = false
+    await refresh()
+  } catch (err: unknown) {
+    const msg = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
+    addError.value = msg ?? 'Failed to create user.'
+  } finally {
+    addPending.value = false
+  }
+}
+
+// ─── Reset password ───────────────────────────────────────────────────────────
+
+const resettingId = ref<number | null>(null)
+const resetPassword = ref('')
+const resetPending = ref(false)
+const resetError = ref('')
+
+function startReset(id: number) {
+  resettingId.value = id
+  resetPassword.value = ''
+  resetError.value = ''
+}
+
+function cancelReset() {
+  resettingId.value = null
+  resetPassword.value = ''
+  resetError.value = ''
+}
+
+async function submitReset(id: number) {
+  if (resetPassword.value.length < 8) {
+    resetError.value = 'Password must be at least 8 characters.'
+    return
+  }
+  resetPending.value = true
+  resetError.value = ''
+  try {
+    await $fetch(`/api/staff/users/${id}/reset-password`, { method: 'POST', body: { password: resetPassword.value } })
+    cancelReset()
+  } catch (err: unknown) {
+    const msg = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
+    resetError.value = msg ?? 'Failed to reset password.'
+  } finally {
+    resetPending.value = false
+  }
+}
+
+// ─── Delete ───────────────────────────────────────────────────────────────────
+
+async function deleteUser(id: number, username: string) {
+  if (!confirm(`Delete "${username}"? This cannot be undone and will sign them out immediately.`)) return
+  try {
+    await $fetch(`/api/staff/users/${id}`, { method: 'DELETE' })
+    await refresh()
+  } catch (err: unknown) {
+    const msg = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
+    alert(msg ?? 'Failed to delete user.')
+  }
+}
+</script>

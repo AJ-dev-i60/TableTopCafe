@@ -27,11 +27,20 @@
             Tags
           </NuxtLink>
           <NuxtLink
+            v-if="isAdmin"
+            to="/staff/users"
+            class="text-ui text-[--color-text-secondary] hover:text-[--color-text-primary] transition-colors"
+            active-class="text-[--color-brand] font-medium"
+          >
+            Users
+          </NuxtLink>
+          <NuxtLink
             to="/"
             class="text-ui text-[--color-text-secondary] hover:text-[--color-text-primary] transition-colors"
           >
             View catalogue
           </NuxtLink>
+          <span class="text-meta text-[--color-text-muted]">{{ currentUser?.username }} · {{ currentUser?.role }}</span>
           <button
             class="text-ui text-[--color-text-secondary] hover:text-[--color-error] transition-colors"
             @click="logout"
@@ -49,6 +58,9 @@
 </template>
 
 <script setup lang="ts">
+const { data: currentUser } = await useFetch('/api/auth/me')
+const isAdmin = computed(() => (currentUser.value as { role?: string } | null)?.role === 'admin')
+
 async function logout() {
   await $fetch('/api/auth/logout', { method: 'POST' })
   await navigateTo('/staff/login')

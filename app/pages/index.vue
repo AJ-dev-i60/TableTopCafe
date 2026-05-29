@@ -32,7 +32,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
 <template>
   <div>
     <!-- Search bar + view toggle -->
-    <div class="sticky top-[57px] z-10 bg-[--color-surface] border-b border-[--color-border]">
+    <div class="sticky top-[--header-height] z-toolbar bg-[--color-surface] border-b border-[--color-border]">
       <div class="max-w-7xl mx-auto px-md py-2.5 flex items-center gap-2">
         <!-- Search -->
         <div class="flex-1 relative">
@@ -114,7 +114,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
 
         <!-- Desktop filter sidebar -->
         <aside class="hidden lg:block w-52 shrink-0">
-          <div class="sticky top-[115px]">
+          <div class="sticky sidebar-sticky-top">
             <CatalogueFilters
               :tags="tags"
               :selected-tag-ids="selectedTagIds"
@@ -218,3 +218,9 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
     </div>
   </div>
 </template>
+
+<style scoped>
+.sidebar-sticky-top {
+  top: calc(var(--header-height) + var(--toolbar-height));
+}
+</style>

@@ -58,7 +58,7 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
           v-for="opt in PLAYER_OPTIONS"
           :key="opt.label"
           :class="[
-            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-100',
+            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-fast',
             playerCount === opt.value
               ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
               : 'border-[--color-border] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
@@ -78,7 +78,7 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
           v-for="opt in TIME_OPTIONS"
           :key="opt.value"
           :class="[
-            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-100',
+            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-fast',
             timeFilter === opt.value
               ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
               : 'border-[--color-border] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
@@ -98,7 +98,7 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
           v-for="tag in tags"
           :key="tag.id"
           :class="[
-            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-100',
+            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-fast',
             selectedTagIds.includes(tag.id)
               ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
               : 'border-[--color-border] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',

@@ -19,7 +19,7 @@ function timeLabel(min: number, max: number): string {
 
 <template>
   <article
-    class="flex flex-col bg-[--color-surface] rounded-[--radius-md] border border-[--color-border] shadow-[--shadow-sm] overflow-hidden hover:shadow-[--shadow-md] transition-shadow duration-150"
+    class="flex flex-col bg-[--color-surface] rounded-[--radius-md] border border-[--color-border] shadow-[--shadow-sm] overflow-hidden hover:shadow-[--shadow-md] transition-shadow duration-base"
   >
     <!-- Photo -->
     <div class="relative aspect-[3/2] bg-[--color-surface-elevated] overflow-hidden">

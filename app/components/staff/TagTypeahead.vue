@@ -35,7 +35,7 @@
       <!-- Dropdown -->
       <ul
         v-if="open && (filtered.length > 0 || canCreate)"
-        class="absolute z-10 left-0 right-0 mt-1 bg-[--color-surface] border border-[--color-border] rounded-[--radius-md] shadow-[--shadow-md] max-h-48 overflow-y-auto"
+        class="absolute z-toolbar left-0 right-0 mt-1 bg-[--color-surface] border border-[--color-border] rounded-[--radius-md] shadow-[--shadow-md] max-h-48 overflow-y-auto"
       >
         <li
           v-for="tag in filtered"

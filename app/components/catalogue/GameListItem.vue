@@ -15,7 +15,7 @@ function timeLabel(min: number, max: number): string {
 
 <template>
   <article
-    class="flex items-center gap-3 px-md py-3 bg-[--color-surface] border-b border-[--color-border] last:border-b-0 hover:bg-[--color-surface-elevated] transition-colors duration-100"
+    class="flex items-center gap-3 px-md py-3 bg-[--color-surface] border-b border-[--color-border] last:border-b-0 hover:bg-[--color-surface-elevated] transition-colors duration-fast"
   >
     <!-- Thumbnail -->
     <div class="shrink-0 w-12 h-12 rounded bg-[--color-surface-elevated] overflow-hidden">

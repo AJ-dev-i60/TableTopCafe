@@ -1,16 +1,14 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4" style="background: var(--color-surface-page)">
-    <div class="login-card w-full max-w-sm p-8" style="background: var(--color-surface)">
-      <div class="mb-lg">
-        <h1 class="text-base font-bold tracking-tight mb-1" style="color: var(--color-text-primary)">TableTopCafe</h1>
-        <p class="text-body font-semibold" style="color: var(--color-text-primary)">Staff sign in</p>
+  <div class="login-page min-h-screen flex items-center justify-center p-4">
+    <div class="login-card w-full">
+      <div class="login-header">
+        <p class="login-brand">TableTopCafe</p>
+        <p class="login-sub">Staff sign in</p>
       </div>
 
       <form @submit.prevent="submit">
-        <div class="mb-md">
-          <label for="username" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">
-            Username
-          </label>
+        <div class="login-field">
+          <label for="username" class="login-label">Username</label>
           <SharedInput
             id="username"
             v-model="form.username"
@@ -21,10 +19,8 @@
           />
         </div>
 
-        <div class="mb-lg">
-          <label for="password" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">
-            Password
-          </label>
+        <div class="login-field">
+          <label for="password" class="login-label">Password</label>
           <SharedInput
             id="password"
             v-model="form.password"
@@ -35,13 +31,13 @@
           />
         </div>
 
-        <div aria-live="assertive" class="mb-md min-h-5 text-ui" style="color: var(--color-error)">
+        <div aria-live="assertive" class="login-error">
           {{ error }}
         </div>
 
         <SharedButton
           type="submit"
-          class="w-full"
+          class="login-submit"
           :pending="pending"
           pending-label="Signing in…"
         >
@@ -77,8 +73,59 @@ async function submit() {
 </script>
 
 <style scoped>
+.login-page {
+  background: var(--color-surface-page);
+}
+
 .login-card {
+  max-width: 360px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
+  padding: 30px 28px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.login-brand {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+}
+
+.login-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.login-field {
+  margin-bottom: 14px;
+}
+
+.login-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+}
+
+.login-error {
+  min-height: 20px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--color-error);
+}
+
+.login-submit {
+  width: 100%;
+  justify-content: center;
 }
 </style>

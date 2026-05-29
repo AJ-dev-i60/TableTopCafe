@@ -15,7 +15,7 @@ withDefaults(defineProps<{
   <button
     :type="type"
     :disabled="disabled || pending"
-    class="btn inline-flex items-center justify-center text-ui font-medium transition-colors disabled:opacity-60"
+    class="btn"
     :class="`btn-${variant}`"
   >
     {{ pending && pendingLabel ? pendingLabel : null }}
@@ -25,11 +25,31 @@ withDefaults(defineProps<{
 
 <style scoped>
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
   border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 150ms, color 150ms, opacity 150ms;
+  white-space: nowrap;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .btn-primary {
-  padding: 0.5rem 1rem;
+  padding: 9px 16px;
   background: var(--color-brand);
   color: var(--color-brand-foreground);
 }
@@ -38,9 +58,9 @@ withDefaults(defineProps<{
 }
 
 .btn-secondary {
-  padding: 0.5rem 1rem;
+  padding: 9px 16px;
   background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
+  border-color: var(--color-border-strong);
   color: var(--color-text-primary);
 }
 .btn-secondary:hover:not(:disabled) {
@@ -48,9 +68,9 @@ withDefaults(defineProps<{
 }
 
 .btn-danger {
-  padding: 0.375rem 0.75rem;
+  padding: 6px 12px;
   background: var(--color-surface);
-  border: 1px solid var(--color-error);
+  border-color: var(--color-error);
   color: var(--color-error);
 }
 .btn-danger:hover:not(:disabled) {
@@ -58,7 +78,7 @@ withDefaults(defineProps<{
 }
 
 .btn-ghost {
-  padding: 0.375rem;
+  padding: 6px 8px;
   color: var(--color-text-muted);
   border-radius: var(--radius-sm);
 }

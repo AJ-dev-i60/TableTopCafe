@@ -19,7 +19,7 @@ function onInput(e: Event) {
   <input
     :value="modelValue"
     :aria-invalid="invalid || undefined"
-    class="input w-full px-3 py-2 text-ui"
+    class="input"
     :class="invalid ? 'input-invalid' : 'input-normal'"
     @input="onInput"
   />
@@ -27,6 +27,11 @@ function onInput(e: Event) {
 
 <style scoped>
 .input {
+  display: block;
+  width: 100%;
+  padding: 9px 11px;
+  font-size: 14px;
+  font-family: inherit;
   border-radius: var(--radius-md);
   border-width: 1px;
   border-style: solid;

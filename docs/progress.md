@@ -9,8 +9,7 @@ Granular session-level state: what's done, what's next, and anything needed to r
 ### M4 checklist
 - [x] Featured max-3 enforcement — data layer (`countFeaturedGames`) + API guards (POST/PATCH 422) + UI counter/disable in `GameForm.vue`
 - [x] Soft-deleted games view + Restore action — `restoreGame` query, `POST /api/staff/games/[id]/restore`, dashboard Live/Deleted/All filter + Restore button
-- [ ] Tag management view (rename, merge, archive)
-- [ ] Tag API routes (`/api/staff/tags/`)
+- [x] Tag management view + API — rename (inline), merge into (with target picker), archive/unarchive; `GET /api/staff/tags`, `PATCH/DELETE /api/staff/tags/[id]`, `POST /api/staff/tags/[id]/merge`, `POST /api/staff/tags/[id]/restore`; Tags nav link in staff layout
 - [ ] Admin-only user management routes + page
 - [ ] Role enforcement wired to admin routes
 

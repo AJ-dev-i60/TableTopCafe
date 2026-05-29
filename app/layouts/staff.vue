@@ -15,8 +15,16 @@
             to="/staff"
             class="text-ui text-[--color-text-secondary] hover:text-[--color-text-primary] transition-colors"
             active-class="text-[--color-brand] font-medium"
+            exact
           >
             Games
+          </NuxtLink>
+          <NuxtLink
+            to="/staff/tags"
+            class="text-ui text-[--color-text-secondary] hover:text-[--color-text-primary] transition-colors"
+            active-class="text-[--color-brand] font-medium"
+          >
+            Tags
           </NuxtLink>
           <NuxtLink
             to="/"

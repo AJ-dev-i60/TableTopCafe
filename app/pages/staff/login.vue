@@ -26,7 +26,6 @@
             v-model="form.password"
             type="password"
             autocomplete="current-password"
-            required
             :invalid="!!error"
           />
         </div>

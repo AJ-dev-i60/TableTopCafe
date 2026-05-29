@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
-import { readFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 
-const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
+const buildNumber = execSync('git rev-list --count HEAD').toString().trim()
 
 export default defineNuxtConfig({
   future: {
@@ -13,7 +13,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      version,
+      buildNumber,
     },
   },
 

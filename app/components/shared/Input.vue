@@ -20,11 +20,11 @@ function onInput(e: Event) {
     :value="modelValue"
     :aria-invalid="invalid || undefined"
     :class="[
-      'w-full border rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary]',
-      'bg-[--color-surface] focus:outline-none focus:ring-2 focus:border-transparent',
+      'w-full border rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface]',
+      'focus:outline-none focus:border-[--color-brand]',
       invalid
-        ? 'border-[--color-error] focus:ring-[--color-error]'
-        : 'border-[--color-border] focus:ring-[--color-brand]',
+        ? 'border-[--color-error] focus:ring-[3px] focus:ring-[rgb(220_38_38/0.15)]'
+        : 'border-[--color-border-strong] focus:ring-[3px] focus:ring-[rgb(21_128_61/0.15)]',
     ]"
     @input="onInput"
   />

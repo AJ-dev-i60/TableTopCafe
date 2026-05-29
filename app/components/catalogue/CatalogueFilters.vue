@@ -58,10 +58,10 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
           v-for="opt in PLAYER_OPTIONS"
           :key="opt.label"
           :class="[
-            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-fast',
+            'px-2.5 py-1 text-tag rounded-[--radius-full] border motion-safe:transition-colors motion-safe:duration-fast',
             playerCount === opt.value
               ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
-              : 'border-[--color-border] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
+              : 'glass-chip text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
           ]"
           @click="emit('update:playerCount', opt.value)"
         >
@@ -78,10 +78,10 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
           v-for="opt in TIME_OPTIONS"
           :key="opt.value"
           :class="[
-            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-fast',
+            'px-2.5 py-1 text-tag rounded-[--radius-full] border motion-safe:transition-colors motion-safe:duration-fast',
             timeFilter === opt.value
               ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
-              : 'border-[--color-border] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
+              : 'glass-chip text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
           ]"
           @click="emit('update:timeFilter', opt.value)"
         >
@@ -98,10 +98,10 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
           v-for="tag in tags"
           :key="tag.id"
           :class="[
-            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-fast',
+            'px-2.5 py-1 text-tag rounded-[--radius-full] border motion-safe:transition-colors motion-safe:duration-fast',
             selectedTagIds.includes(tag.id)
               ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
-              : 'border-[--color-border] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
+              : 'glass-chip text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
           ]"
           @click="emit('toggleTag', tag.id)"
         >
@@ -111,3 +111,11 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
     </section>
   </aside>
 </template>
+
+<style scoped>
+.glass-chip {
+  background: rgb(255 255 255 / 0.45);
+  border-color: var(--glass-stroke);
+  backdrop-filter: blur(var(--glass-blur-card));
+}
+</style>

@@ -222,7 +222,7 @@ export async function restoreGame(id: number, actorId: number): Promise<void> {
 export type StaffGameListItem = Pick<
   GameRow,
   'id' | 'name' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'deletedAt'
->
+> & { photoHash: string | null }
 
 export async function listBggIdsInCatalogue(): Promise<number[]> {
   const rows = await db
@@ -233,7 +233,7 @@ export async function listBggIdsInCatalogue(): Promise<number[]> {
 }
 
 export async function listAllGamesForStaff(): Promise<StaffGameListItem[]> {
-  return db
+  const gameRows = await db
     .select({
       id: games.id,
       name: games.name,
@@ -246,4 +246,22 @@ export async function listAllGamesForStaff(): Promise<StaffGameListItem[]> {
     })
     .from(games)
     .orderBy(asc(games.name))
+
+  if (gameRows.length === 0) return gameRows.map((g) => ({ ...g, photoHash: null }))
+
+  const ids = gameRows.map((g) => g.id)
+  const photoRows = await db
+    .select({ gameId: photos.gameId, contentHash: photos.contentHash })
+    .from(photos)
+    .where(inArray(photos.gameId, ids))
+    .orderBy(asc(photos.position))
+
+  const firstPhotoByGame = new Map<number, string>()
+  for (const row of photoRows) {
+    if (!firstPhotoByGame.has(row.gameId)) {
+      firstPhotoByGame.set(row.gameId, row.contentHash)
+    }
+  }
+
+  return gameRows.map((g) => ({ ...g, photoHash: firstPhotoByGame.get(g.id) ?? null }))
 }

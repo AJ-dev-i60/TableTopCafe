@@ -2,17 +2,41 @@
 
 Granular session-level state: what's done, what's next, and anything needed to resume on a fresh machine. For the milestone plan and scope definitions see `docs/roadmap.md` — this file tracks *where we are*, not *where we're going*.
 
-## Current milestone: M4 — Remaining features 🚧
+## Current milestone: M5 — Polish 🚧
 
-**Status: In progress. M3 complete on `dev` (build #3). Starting M4 — featured max-3 is the first item.**
+**Status: Visual design pass complete on `dev`. Performance pass + data entry sprint pending.**
 
-### M4 checklist
+### M5 checklist
+- [x] Tokens: Felt & Slate palette, glass tokens, `--mesh-bg`, new radii/shadows/semantic font sizes — `tokens.css`
+- [x] Catalogue glass: mesh + frosted header/footer in `default.vue`, glass toolbar + 1→2→3 responsive grid in `index.vue`
+- [x] `GameCard.vue` restructured — photo-as-background, scrim, frosted info panel, responsive aspect ratio (16/10→4/3→3/4), brand-gradient no-photo fallback
+- [x] `FeaturedBadge.vue` — glass pill variant (translucent green, blur, star icon)
+- [x] `GameListItem.vue` — flat bordered rows, brand-gradient thumbnail fallback, new tokens
+- [x] `CatalogueFilters.vue` — glass filter chips (unselected: semi-translucent; selected: solid brand)
+- [x] Detail page `games/[id].vue` — glass hero (full-bleed photo + scrim + title overlay), glass content panels, responsive sticky two-column on desktop, no-photo fallback
+- [x] Staff layout `staff.vue` — flat white nav bar, brand underline active link, 58px height
+- [x] Staff login `login.vue` — flat page bg, white centered card
+- [x] Staff dashboard `staff/index.vue` — proper table (thumb + name + pill columns), segmented filter, status pills, brand-gradient thumbnail fallback
+- [x] `Button.vue` — added `secondary` and `ghost` variants; all variants use `rounded-[--radius-md]`
+- [x] `Input.vue` — `border-[--color-border-strong]`, focus ring `rgb(21_128_61/0.15)`, invalid ring
+- [x] `GameForm.vue` — two-column desktop layout (details left, featured+photos right in cards), BGG block with dashed brand-accent border, right-aligned footer actions
+- [x] `StaffGameListItem` query extended to include `photoHash` (first photo per game)
+- [ ] Performance pass on representative low-end Android (catalogue scroll, image loading, TTI)
+- [ ] 400-game data entry sprint
+- [ ] QR codes on tables
+- [ ] Owner sign-off → go live
+
+---
+
+## Previous milestone: M4 — Remaining features ✅
+
+**Status: Complete on `dev`.**
+
+### M4 checklist ✅
 - [x] Featured max-3 enforcement — data layer (`countFeaturedGames`) + API guards (POST/PATCH 422) + UI counter/disable in `GameForm.vue`
 - [x] Soft-deleted games view + Restore action — `restoreGame` query, `POST /api/staff/games/[id]/restore`, dashboard Live/Deleted/All filter + Restore button
 - [x] Tag management view + API — rename (inline), merge into (with target picker), archive/unarchive; `GET /api/staff/tags`, `PATCH/DELETE /api/staff/tags/[id]`, `POST /api/staff/tags/[id]/merge`, `POST /api/staff/tags/[id]/restore`; Tags nav link in staff layout
 - [x] Admin user management — `listUsers`, `updateUserPassword`, `deleteUser` queries; `GET/POST /api/staff/users`, `POST /api/staff/users/[id]/reset-password`, `DELETE /api/staff/users/[id]` (all `requireAdmin`); `/staff/users` page (add, inline reset-password, delete with self-delete guard); `app/middleware/admin.ts` client route guard; staff layout shows `username · role` and gates Users nav link to admins
-
-**M4 is complete. Next: M5 — Polish (visual design pass per `design/HANDOFF.md`).**
 
 ---
 
@@ -57,7 +81,7 @@ Granular session-level state: what's done, what's next, and anything needed to r
 - **Build number**: `BUILD_NUMBER` file in repo root. GitHub Actions bumps it after every successful CI run on `main` and commits back with `[skip ci]`. `nuxt.config.ts` reads it via `readFileSync`. Header shows `Table-Top-Cafe  #N`.
 - **GitHub → Coolify webhooks**: Two webhooks on the repo (one per app). URL: `https://coolify.edgestudios.co.za/webhooks/source/github/events/manual`. Each signed with the app's `manual_webhook_secret_github` (HMAC-SHA256 via `X-Hub-Signature-256`). Auto-deploy now works on push.
 - **Dev `SESSION_SECRET`**: Set in Coolify env vars for the dev app. Dev container stable.
-- **⚠️ Prod `SESSION_SECRET` still needed**: Production container will crash-loop until `SESSION_SECRET` (and `ADMIN_USERNAME`/`ADMIN_PASSWORD`) are set in Coolify → prod app env vars. See M2 checklist below for instructions.
+- **Prod `SESSION_SECRET`**: Set in Coolify env vars for the prod app (confirmed 2026-05-29).
 
 ---
 
@@ -165,11 +189,7 @@ The app is deployed via Coolify 4.1.1 on `vps01.edgestudios.co.za` as **two sepa
 
 **M2 is code-complete and CI is green.**
 
-**⚠️ Production is currently down.** The prod container is crash-looping because `SESSION_SECRET` is not set. Fix:
-1. Go to Coolify UI → prod app (`m1uovgct8k8ncbp8ec4h9ewp`)
-2. Add env vars: `SESSION_SECRET` (run `openssl rand -hex 32` to generate), `ADMIN_USERNAME`, `ADMIN_PASSWORD`
-3. Redeploy — the entrypoint will create the admin user on first boot
-4. After confirming the admin account works, `ADMIN_PASSWORD` can be removed from Coolify env vars
+**Production env vars confirmed set** (2026-05-29): `SESSION_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` are all configured in Coolify for the prod app.
 
 ### Required env vars for production (add in Coolify)
 

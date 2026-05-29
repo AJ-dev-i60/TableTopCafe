@@ -15,10 +15,10 @@ function timeLabel(min: number, max: number): string {
 
 <template>
   <article
-    class="flex items-center gap-3 px-md py-3 bg-[--color-surface] border-b border-[--color-border] last:border-b-0 hover:bg-[--color-surface-elevated] transition-colors duration-fast"
+    class="flex items-center gap-3 px-md py-3 bg-[--color-surface] border-b border-[--color-border] last:border-b-0 hover:bg-[--color-surface-elevated] motion-safe:transition-colors motion-safe:duration-fast"
   >
     <!-- Thumbnail -->
-    <div class="shrink-0 w-12 h-12 rounded bg-[--color-surface-elevated] overflow-hidden">
+    <div class="shrink-0 w-12 h-12 rounded-[--radius-sm] overflow-hidden">
       <img
         v-if="game.photoHash"
         :src="`/api/photos/${game.photoHash}/thumb.jpg`"
@@ -26,10 +26,11 @@ function timeLabel(min: number, max: number): string {
         loading="lazy"
         class="w-full h-full object-cover"
       />
-      <div v-else class="w-full h-full flex items-center justify-center text-[--color-text-muted]">
-        <svg class="w-5 h-5 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+      <!-- No-photo fallback: brand gradient + first initial -->
+      <div v-else class="thumb-fallback w-full h-full flex items-center justify-center">
+        <span class="text-lg font-bold text-white/50 leading-none select-none" aria-hidden="true">
+          {{ game.name.charAt(0) }}
+        </span>
       </div>
     </div>
 
@@ -51,15 +52,21 @@ function timeLabel(min: number, max: number): string {
       <span
         v-for="tag in game.tags.slice(0, 2)"
         :key="tag.id"
-        class="px-1.5 py-0.5 text-tag bg-[--color-surface-elevated] text-[--color-text-secondary] rounded border border-[--color-border]"
+        class="px-1.5 py-0.5 text-tag bg-[--color-surface-elevated] text-[--color-text-secondary] rounded-[--radius-sm] border border-[--color-border]"
       >
         {{ tag.name }}
       </span>
     </div>
 
     <!-- Chevron -->
-    <svg class="shrink-0 w-4 h-4 text-[--color-text-muted]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg class="shrink-0 w-4 h-4 text-[--color-text-muted]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
     </svg>
   </article>
 </template>
+
+<style scoped>
+.thumb-fallback {
+  background: linear-gradient(150deg, var(--color-brand), var(--color-brand-hover));
+}
+</style>

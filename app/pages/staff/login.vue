@@ -1,8 +1,10 @@
 <template>
-  <div class="min-h-screen bg-[--color-surface-elevated] flex items-center justify-center p-4">
+  <div class="min-h-screen bg-[--color-surface-page] flex items-center justify-center p-4">
     <div class="w-full max-w-sm bg-[--color-surface] rounded-[--radius-lg] shadow-[--shadow-md] p-8">
-      <h1 class="text-2xl font-bold text-[--color-text-primary] mb-sm">Staff login</h1>
-      <p class="text-ui text-[--color-text-muted] mb-lg">TableTopCafe management</p>
+      <div class="mb-lg">
+        <h1 class="text-base font-bold text-[--color-text-primary] tracking-tight mb-1">TableTopCafe</h1>
+        <p class="text-body font-semibold text-[--color-text-primary]">Staff sign in</p>
+      </div>
 
       <form @submit.prevent="submit">
         <div class="mb-md">
@@ -15,6 +17,7 @@
             type="text"
             autocomplete="username"
             required
+            :invalid="!!error"
           />
         </div>
 
@@ -28,6 +31,7 @@
             type="password"
             autocomplete="current-password"
             required
+            :invalid="!!error"
           />
         </div>
 

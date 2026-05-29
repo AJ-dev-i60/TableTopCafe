@@ -1,152 +1,175 @@
 <template>
   <form @submit.prevent="submit">
+    <div class="lg:grid lg:gap-6 form-grid items-start">
 
-    <!-- BGG lookup -->
-    <div class="mb-lg border border-[--color-border] rounded-[--radius-md] p-md bg-[--color-surface-muted]">
-      <p class="text-ui font-medium text-[--color-text-secondary] mb-2">
-        Look up on BoardGameGeek <span class="font-normal text-[--color-text-muted]">(optional — pre-fills the form)</span>
-      </p>
-      <StaffBggSearch @select="onBggSelect" />
+      <!-- ── Left: Details card ────────────────────────────── -->
+      <div class="form-card mb-6 lg:mb-0 flex flex-col gap-md">
 
-      <div v-if="selectedBgg" class="mt-3 flex items-center gap-3">
-        <div class="flex-1 text-ui text-[--color-text-primary]">
-          <span class="font-medium">{{ selectedBgg.name }}</span>
-          <span v-if="selectedBgg.yearPublished" class="ml-2 text-[--color-text-muted]">({{ selectedBgg.yearPublished }})</span>
+        <!-- BGG lookup: dashed border with brand accent -->
+        <div class="bgg-block border-2 border-dashed rounded-[--radius-md] p-md">
+          <p class="text-ui font-medium text-[--color-brand] mb-2">
+            BGG lookup
+            <span class="font-normal text-[--color-text-muted]"> — select a game to pre-fill the form</span>
+          </p>
+          <StaffBggSearch @select="onBggSelect" />
+
+          <div v-if="selectedBgg" class="mt-3 flex items-center gap-3">
+            <div class="flex-1 text-ui text-[--color-text-primary]">
+              <span class="font-medium">{{ selectedBgg.name }}</span>
+              <span v-if="selectedBgg.yearPublished" class="ml-2 text-[--color-text-muted]">({{ selectedBgg.yearPublished }})</span>
+            </div>
+            <SharedButton
+              type="button"
+              :pending="fetchingBgg"
+              pending-label="Fetching…"
+              @click="fetchBggInfo"
+            >
+              Fetch game info
+            </SharedButton>
+            <button
+              type="button"
+              class="text-ui text-[--color-text-muted] hover:text-[--color-text-primary] p-1"
+              aria-label="Clear BGG selection"
+              @click="clearBgg"
+            >
+              ✕
+            </button>
+          </div>
+          <p v-if="bggError" class="mt-2 text-meta text-[--color-error]">{{ bggError }}</p>
         </div>
-        <SharedButton
-          type="button"
-          :pending="fetchingBgg"
-          pending-label="Fetching…"
-          @click="fetchBggInfo"
-        >
-          Fetch game info
-        </SharedButton>
-        <button
-          type="button"
-          class="text-ui text-[--color-text-muted] hover:text-[--color-text-primary]"
-          @click="clearBgg"
-        >
-          ✕
-        </button>
-      </div>
-      <p v-if="bggError" class="mt-2 text-detail text-[--color-error]">{{ bggError }}</p>
-    </div>
 
-    <!-- Name -->
-    <div class="mb-md">
-      <label for="game-name" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Name *</label>
-      <SharedInput id="game-name" v-model="form.name" type="text" required maxlength="255" />
-    </div>
-
-    <!-- Description -->
-    <div class="mb-md">
-      <label for="game-description" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Description</label>
-      <textarea
-        id="game-description"
-        v-model="form.description"
-        rows="3"
-        maxlength="2000"
-        class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent resize-y"
-      />
-    </div>
-
-    <!-- Player count -->
-    <div class="mb-md grid grid-cols-2 gap-md">
-      <div>
-        <label for="game-player-min" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Min players *</label>
-        <SharedInput id="game-player-min" v-model.number="form.playerMin" type="number" min="1" required />
-      </div>
-      <div>
-        <label for="game-player-max" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Max players *</label>
-        <SharedInput id="game-player-max" v-model.number="form.playerMax" type="number" min="1" required />
-      </div>
-    </div>
-
-    <!-- Play time -->
-    <div class="mb-md grid grid-cols-2 gap-md">
-      <div>
-        <label for="game-time-min" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Min time (min) *</label>
-        <SharedInput id="game-time-min" v-model.number="form.timeMin" type="number" min="1" required />
-      </div>
-      <div>
-        <label for="game-time-max" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Max time (min) *</label>
-        <SharedInput id="game-time-max" v-model.number="form.timeMax" type="number" min="1" required />
-      </div>
-    </div>
-
-    <!-- Featured -->
-    <div class="mb-md">
-      <label class="flex items-center gap-2" :class="atFeaturedLimit ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
-        <input
-          v-model="form.featured"
-          type="checkbox"
-          class="rounded border-[--color-border]"
-          :disabled="atFeaturedLimit"
-        />
-        <span class="text-ui font-medium text-[--color-text-secondary]">Featured game</span>
-        <span class="text-meta text-[--color-text-muted]">({{ props.featuredCount }} of 3)</span>
-      </label>
-      <p v-if="atFeaturedLimit" class="mt-1 text-meta text-[--color-text-muted]">
-        3 games are already featured. Un-feature one before adding another.
-      </p>
-      <div v-if="form.featured" class="mt-2">
-        <SharedInput
-          :model-value="form.featuredNote ?? undefined"
-          type="text"
-          maxlength="500"
-          placeholder="Optional note shown with featured game"
-          @update:model-value="(v) => { form.featuredNote = String(v) }"
-        />
-      </div>
-    </div>
-
-    <!-- Tags -->
-    <div class="mb-lg">
-      <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Tags</label>
-      <StaffTagTypeahead
-        v-model="selectedTags"
-        :available-tags="availableTags"
-      />
-    </div>
-
-    <!-- Photos -->
-    <div class="mb-lg">
-      <label class="block text-ui font-medium text-[--color-text-secondary] mb-2">Photos</label>
-
-      <!-- BGG image candidates -->
-      <div v-if="bggImages.length > 0 && savedGameId" class="mb-3">
-        <p class="text-detail text-[--color-text-muted] mb-2">Click a BGG image to attach it:</p>
-        <div class="flex gap-2 flex-wrap">
-          <button
-            v-for="url in bggImages"
-            :key="url"
-            type="button"
-            :disabled="attachingBggImage === url"
-            class="relative rounded-[--radius-md] overflow-hidden border-2 border-[--color-border] hover:border-[--color-brand] transition-colors disabled:opacity-50"
-            @click="attachBggImage(url)"
-          >
-            <img :src="url" alt="BGG image" class="w-24 h-24 object-cover" loading="lazy" />
-          </button>
+        <!-- Name -->
+        <div>
+          <label for="game-name" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Name *</label>
+          <SharedInput id="game-name" v-model="form.name" type="text" required maxlength="255" />
         </div>
-        <p v-if="bggImageError" class="mt-1 text-detail text-[--color-error]">{{ bggImageError }}</p>
-      </div>
-      <div v-else-if="bggImages.length > 0 && !savedGameId" class="mb-3">
-        <p class="text-detail text-[--color-text-muted]">Save the game first to attach the BGG image.</p>
+
+        <!-- Players min/max: 2-up -->
+        <div class="grid grid-cols-2 gap-md">
+          <div>
+            <label for="game-player-min" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Min players *</label>
+            <SharedInput id="game-player-min" v-model.number="form.playerMin" type="number" min="1" required />
+          </div>
+          <div>
+            <label for="game-player-max" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Max players *</label>
+            <SharedInput id="game-player-max" v-model.number="form.playerMax" type="number" min="1" required />
+          </div>
+        </div>
+
+        <!-- Play time min/max: 2-up -->
+        <div class="grid grid-cols-2 gap-md">
+          <div>
+            <label for="game-time-min" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Min time (min) *</label>
+            <SharedInput id="game-time-min" v-model.number="form.timeMin" type="number" min="1" required />
+          </div>
+          <div>
+            <label for="game-time-max" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Max time (min) *</label>
+            <SharedInput id="game-time-max" v-model.number="form.timeMax" type="number" min="1" required />
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="game-description" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Description</label>
+          <textarea
+            id="game-description"
+            v-model="form.description"
+            rows="4"
+            maxlength="2000"
+            class="w-full border border-[--color-border-strong] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:border-[--color-brand] focus:ring-[3px] focus:ring-[rgb(21_128_61/0.15)] resize-y"
+          />
+        </div>
+
+        <!-- Tags -->
+        <div>
+          <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Tags</label>
+          <StaffTagTypeahead
+            v-model="selectedTags"
+            :available-tags="availableTags"
+          />
+        </div>
       </div>
 
-      <StaffPhotoUpload
-        v-if="savedGameId"
-        ref="photoUpload"
-        :game-id="savedGameId"
-        :existing-photos="existingPhotoHashes"
-        @uploaded="onPhotosUploaded"
-      />
-      <p v-else-if="bggImages.length === 0" class="text-ui text-[--color-text-muted]">Save the game first, then add photos.</p>
+      <!-- ── Right column ───────────────────────────────────── -->
+      <div class="flex flex-col gap-4">
+
+        <!-- Featured card -->
+        <div class="form-card">
+          <h2 class="text-section-label font-semibold text-[--color-text-secondary] uppercase tracking-wider mb-3">Featured</h2>
+
+          <label class="flex items-center gap-2" :class="atFeaturedLimit ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
+            <input
+              v-model="form.featured"
+              type="checkbox"
+              class="rounded border-[--color-border-strong]"
+              :disabled="atFeaturedLimit"
+            />
+            <span class="text-ui font-medium text-[--color-text-primary]">Mark as featured</span>
+          </label>
+          <p class="text-meta text-[--color-text-muted] mt-1">
+            <span v-if="atFeaturedLimit">3 of 3 featured — un-feature one first.</span>
+            <span v-else>{{ props.featuredCount }} of 3 featured slots used.</span>
+          </p>
+
+          <div v-if="form.featured" class="mt-3">
+            <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Staff pick note</label>
+            <SharedInput
+              :model-value="form.featuredNote ?? undefined"
+              type="text"
+              maxlength="500"
+              placeholder="Optional — shown on the game's detail page"
+              @update:model-value="(v) => { form.featuredNote = String(v) }"
+            />
+          </div>
+        </div>
+
+        <!-- Photos card -->
+        <div class="form-card">
+          <h2 class="text-section-label font-semibold text-[--color-text-secondary] uppercase tracking-wider mb-3">Photos</h2>
+
+          <!-- BGG image candidates -->
+          <div v-if="bggImages.length > 0 && savedGameId" class="mb-3">
+            <p class="text-meta text-[--color-text-muted] mb-2">Click a BGG image to attach it:</p>
+            <div class="flex gap-2 flex-wrap">
+              <button
+                v-for="url in bggImages"
+                :key="url"
+                type="button"
+                :disabled="attachingBggImage === url"
+                class="relative rounded-[--radius-md] overflow-hidden border-2 border-[--color-border] hover:border-[--color-brand] transition-colors disabled:opacity-50"
+                @click="attachBggImage(url)"
+              >
+                <img :src="url" alt="BGG image" class="w-24 h-24 object-cover" loading="lazy" />
+              </button>
+            </div>
+            <p v-if="bggImageError" class="mt-1 text-meta text-[--color-error]">{{ bggImageError }}</p>
+          </div>
+          <div v-else-if="bggImages.length > 0 && !savedGameId" class="mb-3">
+            <p class="text-meta text-[--color-text-muted]">Save the game first to attach the BGG image.</p>
+          </div>
+
+          <StaffPhotoUpload
+            v-if="savedGameId"
+            ref="photoUpload"
+            :game-id="savedGameId"
+            :existing-photos="existingPhotoHashes"
+            @uploaded="onPhotosUploaded"
+          />
+          <p v-else-if="bggImages.length === 0" class="text-ui text-[--color-text-muted]">Save the game first, then add photos.</p>
+        </div>
+
+      </div>
     </div>
 
-    <p v-if="error" class="text-ui text-[--color-error] mb-md">{{ error }}</p>
-
-    <div class="flex items-center gap-3">
+    <!-- Footer actions: right-aligned -->
+    <div class="flex justify-end items-center gap-3 mt-6 pt-6 border-t border-[--color-border]">
+      <p v-if="error" class="flex-1 text-ui text-[--color-error]">{{ error }}</p>
+      <NuxtLink
+        to="/staff"
+        class="inline-flex items-center justify-center text-ui font-medium rounded-[--radius-md] transition-colors px-4 py-2 bg-[--color-surface] border border-[--color-border-strong] text-[--color-text-primary] hover:bg-[--color-surface-elevated]"
+      >
+        Cancel
+      </NuxtLink>
       <SharedButton
         type="submit"
         :pending="pending"
@@ -154,9 +177,6 @@
       >
         {{ submitLabel }}
       </SharedButton>
-      <NuxtLink to="/staff" class="text-ui text-[--color-text-secondary] hover:text-[--color-text-primary]">
-        Cancel
-      </NuxtLink>
     </div>
   </form>
 </template>
@@ -207,7 +227,6 @@ const emit = defineEmits<{
 
 const submitLabel = computed(() => props.submitLabel ?? 'Save game')
 
-// Checkbox is disabled only when at the limit and this game is not already featured
 const atFeaturedLimit = computed(() => props.featuredCount >= 3 && !form.featured)
 
 const form = reactive({
@@ -337,3 +356,22 @@ function onPhotosUploaded(hashes: string[]) {
   existingPhotoHashes.value = [...existingPhotoHashes.value, ...hashes]
 }
 </script>
+
+<style scoped>
+@media (min-width: 1024px) {
+  .form-grid {
+    grid-template-columns: 1fr 320px;
+  }
+}
+
+.form-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.bgg-block {
+  border-color: rgb(21 128 61 / 0.3);
+}
+</style>

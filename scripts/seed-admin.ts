@@ -26,6 +26,13 @@ const client = postgres(DATABASE_URL, { max: 1 })
 const db = drizzle(client, { schema })
 
 async function seedAdmin() {
+  const passwordHash = await hash(ADMIN_PASSWORD!, {
+    algorithm: 2,
+    memoryCost: 19456,
+    timeCost: 2,
+    parallelism: 1,
+  })
+
   const existing = await db
     .select({ id: schema.users.id })
     .from(schema.users)
@@ -33,16 +40,13 @@ async function seedAdmin() {
     .limit(1)
 
   if (existing.length > 0) {
-    console.log(`Admin user "${ADMIN_USERNAME}" already exists — skipping.`)
+    await db
+      .update(schema.users)
+      .set({ passwordHash })
+      .where(eq(schema.users.username, ADMIN_USERNAME!))
+    console.log(`Admin user "${ADMIN_USERNAME}" password synced from env.`)
     return
   }
-
-  const passwordHash = await hash(ADMIN_PASSWORD!, {
-    algorithm: 2,
-    memoryCost: 19456,
-    timeCost: 2,
-    parallelism: 1,
-  })
 
   await db.insert(schema.users).values({
     username: ADMIN_USERNAME!,

@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
+import { readFileSync } from 'node:fs'
 
-const buildId = (process.env.SOURCE_COMMIT ?? 'dev').slice(0, 7)
+const buildNumber = readFileSync('./BUILD_NUMBER', 'utf-8').trim()
 
 export default defineNuxtConfig({
   future: {
@@ -12,7 +13,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      buildId,
+      buildNumber,
     },
   },
 

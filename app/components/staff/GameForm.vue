@@ -76,10 +76,19 @@
 
     <!-- Featured -->
     <div class="mb-md">
-      <label class="flex items-center gap-2 cursor-pointer">
-        <input v-model="form.featured" type="checkbox" class="rounded border-[--color-border]" />
+      <label class="flex items-center gap-2" :class="atFeaturedLimit ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
+        <input
+          v-model="form.featured"
+          type="checkbox"
+          class="rounded border-[--color-border]"
+          :disabled="atFeaturedLimit"
+        />
         <span class="text-ui font-medium text-[--color-text-secondary]">Featured game</span>
+        <span class="text-meta text-[--color-text-muted]">({{ props.featuredCount }} of 3)</span>
       </label>
+      <p v-if="atFeaturedLimit" class="mt-1 text-meta text-[--color-text-muted]">
+        3 games are already featured. Un-feature one before adding another.
+      </p>
       <div v-if="form.featured" class="mt-2">
         <SharedInput
           :model-value="form.featuredNote ?? undefined"
@@ -188,6 +197,7 @@ type GameFormData = {
 const props = defineProps<{
   initial?: Partial<GameFormData> & { id?: number; photoHashes?: string[] }
   availableTags: TagOption[]
+  featuredCount: number
   submitLabel?: string
 }>()
 
@@ -196,6 +206,9 @@ const emit = defineEmits<{
 }>()
 
 const submitLabel = computed(() => props.submitLabel ?? 'Save game')
+
+// Checkbox is disabled only when at the limit and this game is not already featured
+const atFeaturedLimit = computed(() => props.featuredCount >= 3 && !form.featured)
 
 const form = reactive({
   name: props.initial?.name ?? '',
@@ -312,7 +325,8 @@ async function submit() {
 
     emit('saved', savedGameId.value!)
   } catch (err: unknown) {
-    error.value = 'Something went wrong. Please try again.'
+    const msg = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
+    error.value = msg ?? 'Something went wrong. Please try again.'
     console.error(err)
   } finally {
     pending.value = false

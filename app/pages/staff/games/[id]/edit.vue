@@ -26,6 +26,7 @@
           photoHashes: game.photos.map(p => p.contentHash),
         }"
         :available-tags="tags ?? []"
+        :featured-count="featuredCount?.count ?? 0"
         submit-label="Save changes"
         @saved="onSaved"
       />
@@ -39,9 +40,10 @@ definePageMeta({ layout: 'staff', middleware: ['auth'] })
 const route = useRoute()
 const id = route.params.id as string
 
-const [{ data: game, pending }, { data: tags }] = await Promise.all([
+const [{ data: game, pending }, { data: tags }, { data: featuredCount }] = await Promise.all([
   useFetch(`/api/games/${id}`),
   useFetch('/api/tags'),
+  useFetch('/api/staff/games/featured-count'),
 ])
 
 async function onSaved(_gameId: number) {

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { requireAuth } from '../../../services/auth'
-import { createGame } from '../../../db/queries/games'
+import { countFeaturedGames, createGame } from '../../../db/queries/games'
 import { createTag } from '../../../db/queries/tags'
 
 const bodySchema = z.object({
@@ -27,6 +27,13 @@ export default defineEventHandler(async (event) => {
   }
 
   const { tagIds, newTagNames, ...gameInput } = parsed.data
+
+  if (gameInput.featured) {
+    const featuredCount = await countFeaturedGames()
+    if (featuredCount >= 3) {
+      throw createError({ statusCode: 422, statusMessage: 'Featured limit reached (max 3)' })
+    }
+  }
 
   const createdTags = await Promise.all(newTagNames.map((name) => createTag(name, actor.id)))
   const allTagIds = [...new Set([...tagIds, ...createdTags.map((t) => t.id)])]

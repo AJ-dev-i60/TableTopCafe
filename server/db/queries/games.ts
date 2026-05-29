@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm'
 import type { InferSelectModel } from 'drizzle-orm'
 import { db } from '../client'
 import { gameTags, games, photos, tags } from '../schema'
@@ -195,6 +195,13 @@ export async function updateGame(
       .values(tagIds.map((tagId) => ({ gameId: id, tagId })))
       .onConflictDoNothing()
   }
+}
+
+export async function countFeaturedGames(excludeId?: number): Promise<number> {
+  const conditions = [isNull(games.deletedAt), eq(games.featured, true)]
+  if (excludeId !== undefined) conditions.push(sql`${games.id} != ${excludeId}`)
+  const [row] = await db.select({ n: count() }).from(games).where(and(...conditions))
+  return row?.n ?? 0
 }
 
 export async function softDeleteGame(id: number, actorId: number): Promise<void> {

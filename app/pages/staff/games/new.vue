@@ -11,6 +11,7 @@
     <div class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] p-6">
       <StaffGameForm
         :available-tags="tags ?? []"
+        :featured-count="featuredCount?.count ?? 0"
         submit-label="Add game"
         @saved="onSaved"
       />
@@ -21,7 +22,10 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'staff', middleware: ['auth'] })
 
-const { data: tags } = await useFetch('/api/tags')
+const [{ data: tags }, { data: featuredCount }] = await Promise.all([
+  useFetch('/api/tags'),
+  useFetch('/api/staff/games/featured-count'),
+])
 
 async function onSaved(gameId: number) {
   await navigateTo('/staff')

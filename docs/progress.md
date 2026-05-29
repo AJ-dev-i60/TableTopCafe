@@ -2,7 +2,38 @@
 
 Granular session-level state: what's done, what's next, and anything needed to resume on a fresh machine. For the milestone plan and scope definitions see `docs/roadmap.md` — this file tracks *where we are*, not *where we're going*.
 
-## Current milestone: M2.5 — Tokenization and convention remediation ✅
+## Current milestone: M4 — Remaining features 🚧
+
+**Status: In progress. M3 complete on `dev` (build #3). Starting M4 — featured max-3 is the first item.**
+
+### M4 checklist
+- [x] Featured max-3 enforcement — data layer (`countFeaturedGames`) + API guards (POST/PATCH 422) + UI counter/disable in `GameForm.vue`
+- [ ] Soft-deleted games view + Restore action
+- [ ] Tag management view (rename, merge, archive)
+- [ ] Tag API routes (`/api/staff/tags/`)
+- [ ] Admin-only user management routes + page
+- [ ] Role enforcement wired to admin routes
+
+---
+
+## Previous milestone: M3 — BGG integration ✅
+
+**Status: Complete on `dev` (build #3).**
+
+### M3 checklist ✅
+- [x] `bgg_games_cache` table (migration 0003) + `bgg_id` column on `games`
+- [x] `server/services/bgg.ts` — BGG XML API v2 client with fast-xml-parser + Zod
+- [x] `GET /api/bgg/search` — live search with local-cache fallback
+- [x] `GET /api/bgg/thing/[id]` — full game detail for pre-fill
+- [x] `POST /api/staff/games/[id]/photos/bgg-fetch` — server-side image fetch through sharp pipeline
+- [x] Weekly Nitro scheduled task — refreshes cache for catalogued games
+- [x] `BggSearch.vue` — debounced type-ahead (350ms, min 2 chars)
+- [x] `GameForm.vue` — BGG panel at top; "Fetch game info" pre-fills all fields + surfaces BGG image
+- [x] Unit tests: 7/7 passing
+
+---
+
+## Previous milestone: M2.5 — Tokenization and convention remediation ✅
 
 **Status: Complete. `main` and `dev` are in sync at build #2.**
 

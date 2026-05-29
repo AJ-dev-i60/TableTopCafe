@@ -5,7 +5,7 @@
       <span
         v-for="tag in modelValue"
         :key="tag.id ?? tag.name"
-        class="inline-flex items-center gap-1 bg-[--color-surface-elevated] border border-[--color-border] text-[--color-text-secondary] text-xs rounded-[--radius-full] px-3 py-1"
+        class="inline-flex items-center gap-1 bg-[--color-surface-elevated] border border-[--color-border] text-[--color-text-secondary] text-tag rounded-[--radius-full] px-3 py-1"
       >
         {{ tag.name }}
         <button
@@ -25,7 +25,7 @@
         v-model="query"
         type="text"
         placeholder="Search or create tags…"
-        class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-sm text-[--color-text-primary] bg-white focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
+        class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
         @focus="open = true"
         @blur="onBlur"
         @keydown.enter.prevent="selectFirst"
@@ -35,19 +35,19 @@
       <!-- Dropdown -->
       <ul
         v-if="open && (filtered.length > 0 || canCreate)"
-        class="absolute z-10 left-0 right-0 mt-1 bg-white border border-[--color-border] rounded-[--radius-md] shadow-[--shadow-md] max-h-48 overflow-y-auto"
+        class="absolute z-10 left-0 right-0 mt-1 bg-[--color-surface] border border-[--color-border] rounded-[--radius-md] shadow-[--shadow-md] max-h-48 overflow-y-auto"
       >
         <li
           v-for="tag in filtered"
           :key="tag.id"
-          class="px-3 py-2 text-sm text-[--color-text-primary] cursor-pointer hover:bg-[--color-surface-elevated]"
+          class="px-3 py-2 text-ui text-[--color-text-primary] cursor-pointer hover:bg-[--color-surface-elevated]"
           @mousedown.prevent="select(tag)"
         >
           {{ tag.name }}
         </li>
         <li
           v-if="canCreate"
-          class="px-3 py-2 text-sm text-[--color-brand] cursor-pointer hover:bg-[--color-surface-elevated] border-t border-[--color-border]"
+          class="px-3 py-2 text-ui text-[--color-brand] cursor-pointer hover:bg-[--color-surface-elevated] border-t border-[--color-border]"
           @mousedown.prevent="createNew"
         >
           Create "{{ query.trim() }}"

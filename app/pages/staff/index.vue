@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-bold text-[--color-text-primary]">Games</h1>
       <NuxtLink
         to="/staff/games/new"
-        class="bg-[--color-brand] hover:bg-[--color-brand-hover] text-white text-ui font-medium rounded-[--radius-md] px-4 py-2 transition-colors"
+        class="bg-[--color-brand] hover:bg-[--color-brand-hover] text-[--color-brand-foreground] text-ui font-medium rounded-[--radius-md] px-4 py-2 transition-colors"
       >
         Add game
       </NuxtLink>
@@ -16,7 +16,7 @@
       No games yet. Add the first one.
     </div>
 
-    <div v-else class="bg-white rounded-[--radius-lg] border border-[--color-border] divide-y divide-[--color-border]">
+    <div v-else class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] divide-y divide-[--color-border]">
       <div
         v-for="game in games"
         :key="game.id"

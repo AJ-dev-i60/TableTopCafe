@@ -19,7 +19,7 @@ function timeLabel(min: number, max: number): string {
 
 <template>
   <article
-    class="flex flex-col bg-white rounded-lg border border-[--color-border] shadow-[--shadow-sm] overflow-hidden hover:shadow-[--shadow-md] transition-shadow duration-150"
+    class="flex flex-col bg-[--color-surface] rounded-[--radius-md] border border-[--color-border] shadow-[--shadow-sm] overflow-hidden hover:shadow-[--shadow-md] transition-shadow duration-150"
   >
     <!-- Photo -->
     <div class="relative aspect-[3/2] bg-[--color-surface-elevated] overflow-hidden">
@@ -50,7 +50,7 @@ function timeLabel(min: number, max: number): string {
       <!-- Featured badge -->
       <span
         v-if="game.featured"
-        class="absolute top-2 left-2 px-2 py-0.5 text-tag font-semibold bg-[--color-brand] text-white rounded-full"
+        class="absolute top-2 left-2 px-2 py-0.5 text-tag font-semibold bg-[--color-brand] text-[--color-brand-foreground] rounded-full"
       >
         Featured
       </span>

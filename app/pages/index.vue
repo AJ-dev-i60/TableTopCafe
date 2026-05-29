@@ -32,7 +32,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
 <template>
   <div>
     <!-- Search bar + view toggle -->
-    <div class="sticky top-[57px] z-10 bg-white border-b border-[--color-border]">
+    <div class="sticky top-[57px] z-10 bg-[--color-surface] border-b border-[--color-border]">
       <div class="max-w-7xl mx-auto px-md py-2.5 flex items-center gap-2">
         <!-- Search -->
         <div class="flex-1 relative">
@@ -69,7 +69,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
         <!-- View toggle -->
         <div class="flex border border-[--color-border] rounded-[--radius-md] overflow-hidden shrink-0">
           <button
-            :class="['px-2.5 py-1.5', view === 'grid' ? 'bg-[--color-brand] text-white' : 'text-[--color-text-secondary] hover:bg-[--color-surface-elevated]']"
+            :class="['px-2.5 py-1.5', view === 'grid' ? 'bg-[--color-brand] text-[--color-brand-foreground]' : 'text-[--color-text-secondary] hover:bg-[--color-surface-elevated]']"
             title="Grid view"
             @click="setView('grid')"
           >
@@ -78,7 +78,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
             </svg>
           </button>
           <button
-            :class="['px-2.5 py-1.5', view === 'list' ? 'bg-[--color-brand] text-white' : 'text-[--color-text-secondary] hover:bg-[--color-surface-elevated]']"
+            :class="['px-2.5 py-1.5', view === 'list' ? 'bg-[--color-brand] text-[--color-brand-foreground]' : 'text-[--color-text-secondary] hover:bg-[--color-surface-elevated]']"
             title="List view"
             @click="setView('list')"
           >
@@ -93,7 +93,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
     <!-- Mobile filter drawer -->
     <div
       v-if="showFilters"
-      class="lg:hidden border-b border-[--color-border] bg-white px-4 py-4"
+      class="lg:hidden border-b border-[--color-border] bg-[--color-surface] px-md py-md"
     >
       <CatalogueFilters
         :tags="tags"

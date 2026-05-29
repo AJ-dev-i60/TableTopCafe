@@ -40,10 +40,10 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
   <aside class="flex flex-col gap-5">
     <!-- Clear filters -->
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-semibold text-[--color-text-primary]">Filters</h2>
+      <h2 class="text-ui font-semibold text-[--color-text-primary]">Filters</h2>
       <button
         v-if="hasActiveFilters"
-        class="text-xs text-[--color-brand] hover:underline"
+        class="text-meta text-[--color-brand] hover:underline"
         @click="emit('clearFilters')"
       >
         Clear all
@@ -52,15 +52,15 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
 
     <!-- Player count -->
     <section>
-      <h3 class="text-xs font-medium text-[--color-text-secondary] uppercase tracking-wide mb-2">Players</h3>
+      <h3 class="text-section-label font-medium text-[--color-text-secondary] uppercase tracking-wide mb-2">Players</h3>
       <div class="flex flex-wrap gap-1.5">
         <button
           v-for="opt in PLAYER_OPTIONS"
           :key="opt.label"
           :class="[
-            'px-2.5 py-1 text-xs rounded-full border transition-colors duration-100',
+            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-100',
             playerCount === opt.value
-              ? 'bg-[--color-brand] border-[--color-brand] text-white'
+              ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
               : 'border-[--color-border] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
           ]"
           @click="emit('update:playerCount', opt.value)"
@@ -72,15 +72,15 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
 
     <!-- Play time -->
     <section>
-      <h3 class="text-xs font-medium text-[--color-text-secondary] uppercase tracking-wide mb-2">Play time</h3>
+      <h3 class="text-section-label font-medium text-[--color-text-secondary] uppercase tracking-wide mb-2">Play time</h3>
       <div class="flex flex-wrap gap-1.5">
         <button
           v-for="opt in TIME_OPTIONS"
           :key="opt.value"
           :class="[
-            'px-2.5 py-1 text-xs rounded-full border transition-colors duration-100',
+            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-100',
             timeFilter === opt.value
-              ? 'bg-[--color-brand] border-[--color-brand] text-white'
+              ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
               : 'border-[--color-border] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
           ]"
           @click="emit('update:timeFilter', opt.value)"
@@ -92,15 +92,15 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
 
     <!-- Tags -->
     <section>
-      <h3 class="text-xs font-medium text-[--color-text-secondary] uppercase tracking-wide mb-2">Tags</h3>
+      <h3 class="text-section-label font-medium text-[--color-text-secondary] uppercase tracking-wide mb-2">Tags</h3>
       <div class="flex flex-wrap gap-1.5">
         <button
           v-for="tag in tags"
           :key="tag.id"
           :class="[
-            'px-2.5 py-1 text-xs rounded-full border transition-colors duration-100',
+            'px-2.5 py-1 text-tag rounded-full border transition-colors duration-100',
             selectedTagIds.includes(tag.id)
-              ? 'bg-[--color-brand] border-[--color-brand] text-white'
+              ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
               : 'border-[--color-border] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
           ]"
           @click="emit('toggleTag', tag.id)"

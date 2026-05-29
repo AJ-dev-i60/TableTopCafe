@@ -1,16 +1,16 @@
 <template>
   <div class="max-w-2xl">
-    <div class="flex items-center gap-2 mb-6">
-      <NuxtLink to="/staff" class="text-sm text-[--color-text-muted] hover:text-[--color-text-primary]">
+    <div class="flex items-center gap-2 mb-lg">
+      <NuxtLink to="/staff" class="text-ui text-[--color-text-muted] hover:text-[--color-text-primary]">
         ← Games
       </NuxtLink>
       <span class="text-[--color-text-muted]">/</span>
       <h1 class="text-xl font-bold text-[--color-text-primary]">Edit game</h1>
     </div>
 
-    <div v-if="pending" class="text-sm text-[--color-text-muted]">Loading…</div>
+    <div v-if="pending" class="text-ui text-[--color-text-muted]">Loading…</div>
     <div v-else-if="!game" class="text-sm text-[--color-error]">Game not found.</div>
-    <div v-else class="bg-white rounded-[--radius-lg] border border-[--color-border] p-6">
+    <div v-else class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] p-6">
       <StaffGameForm
         :initial="{
           id: game.id,

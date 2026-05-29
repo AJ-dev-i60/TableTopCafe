@@ -15,7 +15,7 @@ function timeLabel(min: number, max: number): string {
 
 <template>
   <article
-    class="flex items-center gap-3 px-md py-3 bg-white border-b border-[--color-border] last:border-b-0 hover:bg-[--color-surface-elevated] transition-colors duration-100"
+    class="flex items-center gap-3 px-md py-3 bg-[--color-surface] border-b border-[--color-border] last:border-b-0 hover:bg-[--color-surface-elevated] transition-colors duration-100"
   >
     <!-- Thumbnail -->
     <div class="shrink-0 w-12 h-12 rounded bg-[--color-surface-elevated] overflow-hidden">
@@ -38,7 +38,7 @@ function timeLabel(min: number, max: number): string {
       <div class="flex items-center gap-2">
         <span
           v-if="game.featured"
-          class="shrink-0 px-1.5 py-0.5 text-tag font-semibold bg-[--color-brand] text-white rounded-full leading-tight"
+          class="shrink-0 px-1.5 py-0.5 text-tag font-semibold bg-[--color-brand] text-[--color-brand-foreground] rounded-full leading-tight"
         >
           Featured
         </span>

@@ -17,14 +17,14 @@
 
     <!-- File input -->
     <label
-      class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-[--color-border] rounded-[--radius-lg] cursor-pointer hover:border-[--color-brand] transition-colors bg-white"
+      class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-[--color-border] rounded-[--radius-lg] cursor-pointer hover:border-[--color-brand] transition-colors bg-[--color-surface]"
       @dragover.prevent
       @drop.prevent="onDrop"
     >
-      <span class="text-sm text-[--color-text-muted]">
+      <span class="text-ui text-[--color-text-muted]">
         {{ pending ? 'Uploading…' : 'Click or drag photos here' }}
       </span>
-      <span class="text-xs text-[--color-text-muted] mt-1">JPEG, PNG, WebP</span>
+      <span class="text-meta text-[--color-text-muted] mt-1">JPEG, PNG, WebP</span>
       <input
         type="file"
         accept="image/jpeg,image/png,image/webp"

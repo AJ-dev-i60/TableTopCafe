@@ -9,7 +9,7 @@
         type="text"
         required
         maxlength="255"
-        class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-white focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
+        class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
       />
     </div>
 
@@ -21,7 +21,7 @@
         v-model="form.description"
         rows="3"
         maxlength="2000"
-        class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-white focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent resize-y"
+        class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent resize-y"
       />
     </div>
 
@@ -35,7 +35,7 @@
           type="number"
           min="1"
           required
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-white focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
+          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
         />
       </div>
       <div>
@@ -46,7 +46,7 @@
           type="number"
           min="1"
           required
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-white focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
+          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
         />
       </div>
     </div>
@@ -61,7 +61,7 @@
           type="number"
           min="1"
           required
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-white focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
+          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
         />
       </div>
       <div>
@@ -72,7 +72,7 @@
           type="number"
           min="1"
           required
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-white focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
+          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
         />
       </div>
     </div>
@@ -89,7 +89,7 @@
           type="text"
           maxlength="500"
           placeholder="Optional note shown with featured game"
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-white focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
+          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
         />
       </div>
     </div>
@@ -122,7 +122,7 @@
       <button
         type="submit"
         :disabled="pending"
-        class="bg-[--color-brand] hover:bg-[--color-brand-hover] disabled:opacity-60 text-white text-ui font-medium rounded-[--radius-md] px-5 py-2 transition-colors"
+        class="bg-[--color-brand] hover:bg-[--color-brand-hover] disabled:opacity-60 text-[--color-brand-foreground] text-ui font-medium rounded-[--radius-md] px-5 py-2 transition-colors"
       >
         {{ pending ? 'Saving…' : submitLabel }}
       </button>

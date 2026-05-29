@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-[--color-surface]">
-    <header class="sticky top-0 z-20 bg-white border-b border-[--color-border] shadow-[--shadow-sm]">
+    <header class="sticky top-0 z-20 bg-[--color-surface] border-b border-[--color-border] shadow-[--shadow-sm]">
       <div class="max-w-7xl mx-auto px-md py-3 flex items-center justify-between">
         <span class="text-base font-bold text-[--color-text-primary] tracking-tight">TableTopCafe</span>
         <slot name="header-actions" />

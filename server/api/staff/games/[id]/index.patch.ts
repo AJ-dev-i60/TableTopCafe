@@ -14,6 +14,7 @@ const bodySchema = z.object({
   featuredNote: z.string().max(500).nullable().default(null),
   tagIds: z.array(z.number().int().positive()).default([]),
   newTagNames: z.array(z.string().min(1).max(100)).default([]),
+  bggId: z.number().int().positive().nullable().optional(),
 })
 
 export default defineEventHandler(async (event) => {

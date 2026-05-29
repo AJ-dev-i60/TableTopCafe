@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm'
 import type { InferSelectModel } from 'drizzle-orm'
 import { db } from '../client'
 import { gameTags, games, photos, tags } from '../schema'
@@ -127,6 +127,7 @@ type GameInput = {
   timeMax: number
   featured?: boolean
   featuredNote?: string | null
+  bggId?: number | null
 }
 
 export async function createGame(
@@ -143,6 +144,7 @@ export async function createGame(
       playerMax: input.playerMax,
       timeMin: input.timeMin,
       timeMax: input.timeMax,
+      bggId: input.bggId ?? null,
       featured: input.featured ?? false,
       featuredNote: input.featuredNote ?? null,
       createdById: actorId,
@@ -177,6 +179,7 @@ export async function updateGame(
       playerMax: input.playerMax,
       timeMin: input.timeMin,
       timeMax: input.timeMax,
+      bggId: input.bggId ?? null,
       featured: input.featured ?? false,
       featuredNote: input.featuredNote ?? null,
       lastEditedById: actorId,
@@ -206,6 +209,14 @@ export type StaffGameListItem = Pick<
   GameRow,
   'id' | 'name' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'deletedAt'
 >
+
+export async function listBggIdsInCatalogue(): Promise<number[]> {
+  const rows = await db
+    .select({ bggId: games.bggId })
+    .from(games)
+    .where(and(isNull(games.deletedAt), isNotNull(games.bggId)))
+  return rows.map((r) => r.bggId!)
+}
 
 export async function listAllGamesForStaff(): Promise<StaffGameListItem[]> {
   return db

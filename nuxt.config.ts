@@ -55,5 +55,12 @@ export default defineNuxtConfig({
       inline: ['postgres', 'drizzle-orm'],
       external: ['sharp', '@node-rs/argon2'],
     },
+    experimental: {
+      tasks: true,
+    },
+    scheduledTasks: {
+      // Every Sunday at 03:00 UTC
+      '0 3 * * 0': ['bgg:refresh'],
+    },
   },
 })

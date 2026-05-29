@@ -40,10 +40,11 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
   <aside class="flex flex-col gap-5">
     <!-- Clear filters -->
     <div class="flex items-center justify-between">
-      <h2 class="text-ui font-semibold text-[--color-text-primary]">Filters</h2>
+      <h2 class="text-ui font-semibold" style="color: var(--color-text-primary)">Filters</h2>
       <button
         v-if="hasActiveFilters"
-        class="text-meta text-[--color-brand] hover:underline"
+        class="text-meta hover:underline"
+        style="color: var(--color-brand)"
         @click="emit('clearFilters')"
       >
         Clear all
@@ -52,17 +53,13 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
 
     <!-- Player count -->
     <section>
-      <h3 class="text-section-label font-medium text-[--color-text-secondary] uppercase tracking-wide mb-2">Players</h3>
+      <h3 class="text-section-label font-medium uppercase tracking-wide mb-2" style="color: var(--color-text-secondary)">Players</h3>
       <div class="flex flex-wrap gap-1.5">
         <button
           v-for="opt in PLAYER_OPTIONS"
           :key="opt.label"
-          :class="[
-            'px-2.5 py-1 text-tag rounded-[--radius-full] border motion-safe:transition-colors motion-safe:duration-fast',
-            playerCount === opt.value
-              ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
-              : 'glass-chip text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
-          ]"
+          class="chip px-2.5 py-1 text-tag motion-safe:transition-colors motion-safe:duration-fast"
+          :class="playerCount === opt.value ? 'chip-active' : 'chip-idle'"
           @click="emit('update:playerCount', opt.value)"
         >
           {{ opt.label }}
@@ -72,17 +69,13 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
 
     <!-- Play time -->
     <section>
-      <h3 class="text-section-label font-medium text-[--color-text-secondary] uppercase tracking-wide mb-2">Play time</h3>
+      <h3 class="text-section-label font-medium uppercase tracking-wide mb-2" style="color: var(--color-text-secondary)">Play time</h3>
       <div class="flex flex-wrap gap-1.5">
         <button
           v-for="opt in TIME_OPTIONS"
           :key="opt.value"
-          :class="[
-            'px-2.5 py-1 text-tag rounded-[--radius-full] border motion-safe:transition-colors motion-safe:duration-fast',
-            timeFilter === opt.value
-              ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
-              : 'glass-chip text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
-          ]"
+          class="chip px-2.5 py-1 text-tag motion-safe:transition-colors motion-safe:duration-fast"
+          :class="timeFilter === opt.value ? 'chip-active' : 'chip-idle'"
           @click="emit('update:timeFilter', opt.value)"
         >
           {{ opt.label }}
@@ -92,17 +85,13 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
 
     <!-- Tags -->
     <section>
-      <h3 class="text-section-label font-medium text-[--color-text-secondary] uppercase tracking-wide mb-2">Tags</h3>
+      <h3 class="text-section-label font-medium uppercase tracking-wide mb-2" style="color: var(--color-text-secondary)">Tags</h3>
       <div class="flex flex-wrap gap-1.5">
         <button
           v-for="tag in tags"
           :key="tag.id"
-          :class="[
-            'px-2.5 py-1 text-tag rounded-[--radius-full] border motion-safe:transition-colors motion-safe:duration-fast',
-            selectedTagIds.includes(tag.id)
-              ? 'bg-[--color-brand] border-[--color-brand] text-[--color-brand-foreground]'
-              : 'glass-chip text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand]',
-          ]"
+          class="chip px-2.5 py-1 text-tag motion-safe:transition-colors motion-safe:duration-fast"
+          :class="selectedTagIds.includes(tag.id) ? 'chip-active' : 'chip-idle'"
           @click="emit('toggleTag', tag.id)"
         >
           {{ tag.name }}
@@ -113,9 +102,27 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
 </template>
 
 <style scoped>
-.glass-chip {
+.chip {
+  border-radius: var(--radius-full);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.chip-active {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: var(--color-brand-foreground);
+}
+
+.chip-idle {
   background: rgb(255 255 255 / 0.45);
   border-color: var(--glass-stroke);
+  color: var(--color-text-secondary);
   backdrop-filter: blur(var(--glass-blur-card));
+}
+
+.chip-idle:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
 }
 </style>

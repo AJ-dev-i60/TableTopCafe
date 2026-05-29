@@ -18,7 +18,7 @@ function timeLabel(min: number, max: number): string {
 </script>
 
 <template>
-  <article class="card relative overflow-hidden rounded-[--radius-xl] border border-white/40 shadow-[--shadow-lg] motion-safe:transition-shadow motion-safe:duration-base motion-safe:hover:shadow-2xl aspect-[16/10] sm:aspect-[4/3] lg:aspect-[3/4]">
+  <article class="card relative overflow-hidden border border-white/40 motion-safe:transition-shadow motion-safe:duration-base aspect-[16/10] sm:aspect-[4/3] lg:aspect-[3/4]">
 
     <!-- Photo fills the card -->
     <picture v-if="game.photoHash" class="block absolute inset-0">
@@ -51,7 +51,7 @@ function timeLabel(min: number, max: number): string {
     <SharedFeaturedBadge v-if="game.featured" class="absolute top-2 left-2" />
 
     <!-- Info panel: docked bottom, frosted glass -->
-    <div class="info-panel absolute left-2 right-2 bottom-2 rounded-[--radius-md] border border-white/28 p-2.5 text-white">
+    <div class="info-panel absolute left-2 right-2 bottom-2 border border-white/28 p-2.5 text-white">
       <h2 class="text-card-title font-semibold leading-tight line-clamp-2 title-shadow">
         {{ game.name }}
       </h2>
@@ -77,7 +77,7 @@ function timeLabel(min: number, max: number): string {
         <span
           v-for="tag in game.tags.slice(0, 3)"
           :key="tag.id"
-          class="px-1.5 py-0.5 text-tag bg-white/20 border border-white/25 rounded-[--radius-sm] text-white/90"
+          class="tag-pill px-1.5 py-0.5 text-tag bg-white/20 border border-white/25 text-white/90"
         >
           {{ tag.name }}
         </span>
@@ -87,6 +87,15 @@ function timeLabel(min: number, max: number): string {
 </template>
 
 <style scoped>
+.card {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg), 0 20px 40px -15px rgb(21 48 36 / 0.6);
+}
+
 .photo-fallback {
   background: linear-gradient(150deg, var(--color-brand), var(--color-brand-hover));
 }
@@ -98,6 +107,11 @@ function timeLabel(min: number, max: number): string {
 .info-panel {
   background: var(--glass-fill-overlay);
   backdrop-filter: blur(var(--glass-blur-card)) saturate(140%);
+  border-radius: var(--radius-md);
+}
+
+.tag-pill {
+  border-radius: var(--radius-sm);
 }
 
 .title-shadow {

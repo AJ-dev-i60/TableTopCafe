@@ -15,15 +15,55 @@ withDefaults(defineProps<{
   <button
     :type="type"
     :disabled="disabled || pending"
-    :class="[
-      'inline-flex items-center justify-center text-ui font-medium rounded-[--radius-md] transition-colors disabled:opacity-60',
-      variant === 'primary'  && 'px-4 py-2 bg-[--color-brand] hover:bg-[--color-brand-hover] text-[--color-brand-foreground]',
-      variant === 'secondary' && 'px-4 py-2 bg-[--color-surface] border border-[--color-border-strong] text-[--color-text-primary] hover:bg-[--color-surface-elevated]',
-      variant === 'danger'   && 'px-3 py-1.5 bg-[--color-surface] border border-[--color-error] text-[--color-error] hover:bg-[--color-error-soft]',
-      variant === 'ghost'    && 'p-1.5 text-[--color-text-muted] hover:text-[--color-text-primary] hover:bg-[--color-surface-elevated]',
-    ]"
+    class="btn inline-flex items-center justify-center text-ui font-medium transition-colors disabled:opacity-60"
+    :class="`btn-${variant}`"
   >
     {{ pending && pendingLabel ? pendingLabel : null }}
     <slot v-if="!(pending && pendingLabel)" />
   </button>
 </template>
+
+<style scoped>
+.btn {
+  border-radius: var(--radius-md);
+}
+
+.btn-primary {
+  padding: 0.5rem 1rem;
+  background: var(--color-brand);
+  color: var(--color-brand-foreground);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-brand-hover);
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-primary);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+}
+
+.btn-danger {
+  padding: 0.375rem 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-error-soft);
+}
+
+.btn-ghost {
+  padding: 0.375rem;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+}
+.btn-ghost:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+}
+</style>

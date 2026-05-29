@@ -6,17 +6,17 @@
       <div class="form-card mb-6 lg:mb-0 flex flex-col gap-md">
 
         <!-- BGG lookup: dashed border with brand accent -->
-        <div class="bgg-block border-2 border-dashed rounded-[--radius-md] p-md">
-          <p class="text-ui font-medium text-[--color-brand] mb-2">
+        <div class="bgg-block border-2 border-dashed p-md">
+          <p class="text-ui font-medium mb-2" style="color: var(--color-brand)">
             BGG lookup
-            <span class="font-normal text-[--color-text-muted]"> — select a game to pre-fill the form</span>
+            <span class="font-normal" style="color: var(--color-text-muted)"> — select a game to pre-fill the form</span>
           </p>
           <StaffBggSearch @select="onBggSelect" />
 
           <div v-if="selectedBgg" class="mt-3 flex items-center gap-3">
-            <div class="flex-1 text-ui text-[--color-text-primary]">
+            <div class="flex-1 text-ui" style="color: var(--color-text-primary)">
               <span class="font-medium">{{ selectedBgg.name }}</span>
-              <span v-if="selectedBgg.yearPublished" class="ml-2 text-[--color-text-muted]">({{ selectedBgg.yearPublished }})</span>
+              <span v-if="selectedBgg.yearPublished" class="ml-2" style="color: var(--color-text-muted)">({{ selectedBgg.yearPublished }})</span>
             </div>
             <SharedButton
               type="button"
@@ -28,30 +28,31 @@
             </SharedButton>
             <button
               type="button"
-              class="text-ui text-[--color-text-muted] hover:text-[--color-text-primary] p-1"
+              class="text-ui p-1 hover:opacity-70"
+              style="color: var(--color-text-muted)"
               aria-label="Clear BGG selection"
               @click="clearBgg"
             >
               ✕
             </button>
           </div>
-          <p v-if="bggError" class="mt-2 text-meta text-[--color-error]">{{ bggError }}</p>
+          <p v-if="bggError" class="mt-2 text-meta" style="color: var(--color-error)">{{ bggError }}</p>
         </div>
 
         <!-- Name -->
         <div>
-          <label for="game-name" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Name *</label>
+          <label for="game-name" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Name *</label>
           <SharedInput id="game-name" v-model="form.name" type="text" required maxlength="255" />
         </div>
 
         <!-- Players min/max: 2-up -->
         <div class="grid grid-cols-2 gap-md">
           <div>
-            <label for="game-player-min" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Min players *</label>
+            <label for="game-player-min" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Min players *</label>
             <SharedInput id="game-player-min" v-model.number="form.playerMin" type="number" min="1" required />
           </div>
           <div>
-            <label for="game-player-max" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Max players *</label>
+            <label for="game-player-max" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Max players *</label>
             <SharedInput id="game-player-max" v-model.number="form.playerMax" type="number" min="1" required />
           </div>
         </div>
@@ -59,30 +60,31 @@
         <!-- Play time min/max: 2-up -->
         <div class="grid grid-cols-2 gap-md">
           <div>
-            <label for="game-time-min" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Min time (min) *</label>
+            <label for="game-time-min" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Min time (min) *</label>
             <SharedInput id="game-time-min" v-model.number="form.timeMin" type="number" min="1" required />
           </div>
           <div>
-            <label for="game-time-max" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Max time (min) *</label>
+            <label for="game-time-max" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Max time (min) *</label>
             <SharedInput id="game-time-max" v-model.number="form.timeMax" type="number" min="1" required />
           </div>
         </div>
 
         <!-- Description -->
         <div>
-          <label for="game-description" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Description</label>
+          <label for="game-description" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Description</label>
           <textarea
             id="game-description"
             v-model="form.description"
             rows="4"
             maxlength="2000"
-            class="w-full border border-[--color-border-strong] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:border-[--color-brand] focus:ring-[3px] focus:ring-[rgb(21_128_61/0.15)] resize-y"
+            class="textarea w-full px-3 py-2 text-ui resize-y"
+            style="color: var(--color-text-primary)"
           />
         </div>
 
         <!-- Tags -->
         <div>
-          <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Tags</label>
+          <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Tags</label>
           <StaffTagTypeahead
             v-model="selectedTags"
             :available-tags="availableTags"
@@ -95,24 +97,24 @@
 
         <!-- Featured card -->
         <div class="form-card">
-          <h2 class="text-section-label font-semibold text-[--color-text-secondary] uppercase tracking-wider mb-3">Featured</h2>
+          <h2 class="text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">Featured</h2>
 
           <label class="flex items-center gap-2" :class="atFeaturedLimit ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
             <input
               v-model="form.featured"
               type="checkbox"
-              class="rounded border-[--color-border-strong]"
+              class="checkbox"
               :disabled="atFeaturedLimit"
             />
-            <span class="text-ui font-medium text-[--color-text-primary]">Mark as featured</span>
+            <span class="text-ui font-medium" style="color: var(--color-text-primary)">Mark as featured</span>
           </label>
-          <p class="text-meta text-[--color-text-muted] mt-1">
+          <p class="text-meta mt-1" style="color: var(--color-text-muted)">
             <span v-if="atFeaturedLimit">3 of 3 featured — un-feature one first.</span>
             <span v-else>{{ props.featuredCount }} of 3 featured slots used.</span>
           </p>
 
           <div v-if="form.featured" class="mt-3">
-            <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Staff pick note</label>
+            <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Staff pick note</label>
             <SharedInput
               :model-value="form.featuredNote ?? undefined"
               type="text"
@@ -125,27 +127,26 @@
 
         <!-- Photos card -->
         <div class="form-card">
-          <h2 class="text-section-label font-semibold text-[--color-text-secondary] uppercase tracking-wider mb-3">Photos</h2>
+          <h2 class="text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">Photos</h2>
 
-          <!-- BGG image candidates -->
           <div v-if="bggImages.length > 0 && savedGameId" class="mb-3">
-            <p class="text-meta text-[--color-text-muted] mb-2">Click a BGG image to attach it:</p>
+            <p class="text-meta mb-2" style="color: var(--color-text-muted)">Click a BGG image to attach it:</p>
             <div class="flex gap-2 flex-wrap">
               <button
                 v-for="url in bggImages"
                 :key="url"
                 type="button"
                 :disabled="attachingBggImage === url"
-                class="relative rounded-[--radius-md] overflow-hidden border-2 border-[--color-border] hover:border-[--color-brand] transition-colors disabled:opacity-50"
+                class="bgg-thumb overflow-hidden border-2 transition-colors disabled:opacity-50"
                 @click="attachBggImage(url)"
               >
                 <img :src="url" alt="BGG image" class="w-24 h-24 object-cover" loading="lazy" />
               </button>
             </div>
-            <p v-if="bggImageError" class="mt-1 text-meta text-[--color-error]">{{ bggImageError }}</p>
+            <p v-if="bggImageError" class="mt-1 text-meta" style="color: var(--color-error)">{{ bggImageError }}</p>
           </div>
           <div v-else-if="bggImages.length > 0 && !savedGameId" class="mb-3">
-            <p class="text-meta text-[--color-text-muted]">Save the game first to attach the BGG image.</p>
+            <p class="text-meta" style="color: var(--color-text-muted)">Save the game first to attach the BGG image.</p>
           </div>
 
           <StaffPhotoUpload
@@ -155,21 +156,23 @@
             :existing-photos="existingPhotoHashes"
             @uploaded="onPhotosUploaded"
           />
-          <p v-else-if="bggImages.length === 0" class="text-ui text-[--color-text-muted]">Save the game first, then add photos.</p>
+          <p v-else-if="bggImages.length === 0" class="text-ui" style="color: var(--color-text-muted)">Save the game first, then add photos.</p>
         </div>
 
       </div>
     </div>
 
     <!-- Footer actions: right-aligned -->
-    <div class="flex justify-end items-center gap-3 mt-6 pt-6 border-t border-[--color-border]">
-      <p v-if="error" class="flex-1 text-ui text-[--color-error]">{{ error }}</p>
-      <NuxtLink
-        to="/staff"
-        class="inline-flex items-center justify-center text-ui font-medium rounded-[--radius-md] transition-colors px-4 py-2 bg-[--color-surface] border border-[--color-border-strong] text-[--color-text-primary] hover:bg-[--color-surface-elevated]"
+    <div class="flex justify-end items-center gap-3 mt-6 pt-6 footer-border">
+      <p v-if="error" class="flex-1 text-ui" style="color: var(--color-error)">{{ error }}</p>
+      <button
+        type="button"
+        class="cancel-btn inline-flex items-center justify-center text-ui font-medium px-4 py-2 transition-colors"
+        style="color: var(--color-text-primary)"
+        @click="navigateTo('/staff')"
       >
         Cancel
-      </NuxtLink>
+      </button>
       <SharedButton
         type="submit"
         :pending="pending"
@@ -226,7 +229,6 @@ const emit = defineEmits<{
 }>()
 
 const submitLabel = computed(() => props.submitLabel ?? 'Save game')
-
 const atFeaturedLimit = computed(() => props.featuredCount >= 3 && !form.featured)
 
 const form = reactive({
@@ -373,5 +375,43 @@ function onPhotosUploaded(hashes: string[]) {
 
 .bgg-block {
   border-color: rgb(21 128 61 / 0.3);
+  border-radius: var(--radius-md);
+}
+
+.textarea {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  outline: none;
+}
+.textarea:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgb(21 128 61 / 0.15);
+}
+
+.checkbox {
+  border-radius: var(--radius-sm);
+  border-color: var(--color-border-strong);
+}
+
+.bgg-thumb {
+  border-radius: var(--radius-md);
+  border-color: var(--color-border);
+}
+.bgg-thumb:hover {
+  border-color: var(--color-brand);
+}
+
+.footer-border {
+  border-top: 1px solid var(--color-border);
+}
+
+.cancel-btn {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+.cancel-btn:hover {
+  background: var(--color-surface-elevated);
 }
 </style>

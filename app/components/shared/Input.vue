@@ -19,13 +19,35 @@ function onInput(e: Event) {
   <input
     :value="modelValue"
     :aria-invalid="invalid || undefined"
-    :class="[
-      'w-full border rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface]',
-      'focus:outline-none focus:border-[--color-brand]',
-      invalid
-        ? 'border-[--color-error] focus:ring-[3px] focus:ring-[rgb(220_38_38/0.15)]'
-        : 'border-[--color-border-strong] focus:ring-[3px] focus:ring-[rgb(21_128_61/0.15)]',
-    ]"
+    class="input w-full px-3 py-2 text-ui"
+    :class="invalid ? 'input-invalid' : 'input-normal'"
     @input="onInput"
   />
 </template>
+
+<style scoped>
+.input {
+  border-radius: var(--radius-md);
+  border-width: 1px;
+  border-style: solid;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.input-normal {
+  border-color: var(--color-border-strong);
+}
+.input-normal:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgb(21 128 61 / 0.15);
+}
+
+.input-invalid {
+  border-color: var(--color-error);
+}
+.input-invalid:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgb(220 38 38 / 0.15);
+}
+</style>

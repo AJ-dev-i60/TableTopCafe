@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-[--color-surface-page] flex items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-[--color-surface] rounded-[--radius-lg] shadow-[--shadow-md] p-8">
+  <div class="min-h-screen flex items-center justify-center p-4" style="background: var(--color-surface-page)">
+    <div class="login-card w-full max-w-sm p-8" style="background: var(--color-surface)">
       <div class="mb-lg">
-        <h1 class="text-base font-bold text-[--color-text-primary] tracking-tight mb-1">TableTopCafe</h1>
-        <p class="text-body font-semibold text-[--color-text-primary]">Staff sign in</p>
+        <h1 class="text-base font-bold tracking-tight mb-1" style="color: var(--color-text-primary)">TableTopCafe</h1>
+        <p class="text-body font-semibold" style="color: var(--color-text-primary)">Staff sign in</p>
       </div>
 
       <form @submit.prevent="submit">
         <div class="mb-md">
-          <label for="username" class="block text-ui font-medium text-[--color-text-secondary] mb-1">
+          <label for="username" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">
             Username
           </label>
           <SharedInput
@@ -22,7 +22,7 @@
         </div>
 
         <div class="mb-lg">
-          <label for="password" class="block text-ui font-medium text-[--color-text-secondary] mb-1">
+          <label for="password" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">
             Password
           </label>
           <SharedInput
@@ -35,7 +35,7 @@
           />
         </div>
 
-        <div aria-live="assertive" class="mb-md min-h-5 text-ui" style="color: var(--color-error);">
+        <div aria-live="assertive" class="mb-md min-h-5 text-ui" style="color: var(--color-error)">
           {{ error }}
         </div>
 
@@ -75,3 +75,10 @@ async function submit() {
   }
 }
 </script>
+
+<style scoped>
+.login-card {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+</style>

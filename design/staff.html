@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TableTopCafe — Staff / Admin (Slate)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #14161a; color: #e7e7ea; -webkit-font-smoothing: antialiased; }
+  .page-head { max-width: 1100px; margin: 0 auto; padding: 40px 24px 8px; }
+  .page-head h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .page-head p { color: #9aa0a8; margin: 0; max-width: 820px; line-height: 1.55; font-size: 14px; }
+  .stack { display: flex; flex-direction: column; gap: 40px; align-items: center; padding: 32px 24px 64px; }
+  .cap { width: 1080px; max-width: 100%; }
+  .cap .name { font-size: 18px; font-weight: 600; }
+  .cap .tagline { color: #9aa0a8; font-size: 13px; margin: 2px 0 14px; }
+  .win { width: 1080px; max-width: 100%; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 0 0 1px #2a2d33, 0 24px 60px -12px rgba(0,0,0,.7); }
+
+  /* ===== Slate tokens — flat clean admin (NO glass) ===== */
+  .app {
+    --surface: #ffffff; --elevated: #f3f6f4; --page: #eef2f0;
+    --border: #e1e8e4; --border-strong: #cdd8d2;
+    --text: #15201c; --sec: #586b63; --muted: #9aa8a1;
+    --brand: #15803d; --brand-hover: #166534; --brand-fg: #fff;
+    --danger: #dc2626; --danger-soft: #fef2f2;
+    --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-full: 9999px;
+    --sh-sm: 0 1px 2px rgba(16,32,24,.05); --sh-md: 0 4px 12px -4px rgba(16,32,24,.12);
+    font-family: 'Inter', system-ui, sans-serif; color: var(--text); background: var(--page);
+  }
+  .app * { box-sizing: border-box; }
+
+  /* staff top nav (layouts/staff.vue) */
+  .snav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 22px;
+    display: flex; align-items: center; gap: 26px; height: 58px; }
+  .snav .logo { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+  .snav .logo small { color: var(--brand); font-weight: 600; }
+  .snav a { font-size: 14px; color: var(--sec); text-decoration: none; padding: 6px 0; }
+  .snav a.active { color: var(--text); font-weight: 600; box-shadow: inset 0 -2px 0 var(--brand); }
+  .snav .right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .snav .who { font-size: 13px; color: var(--muted); }
+  .snav .signout { font-size: 13px; color: var(--sec); text-decoration: none; }
+
+  /* buttons (shared/Button.vue) */
+  .btn { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 500; font-family: inherit;
+    padding: 9px 16px; border-radius: var(--r-md); border: 1px solid transparent; cursor: pointer; }
+  .btn svg { width: 16px; height: 16px; }
+  .btn-primary { background: var(--brand); color: var(--brand-fg); }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+  .btn-danger { background: var(--surface); color: var(--danger); border-color: #f3c9c9; }
+  .btn-ghost { background: none; color: var(--sec); padding: 6px 8px; }
+
+  /* inputs (shared/Input.vue) */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .field .hint { font-size: 12px; color: var(--muted); }
+  .input { font-size: 14px; font-family: inherit; padding: 9px 11px; border-radius: var(--r-md);
+    border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); width: 100%; }
+  .input::placeholder { color: var(--muted); }
+  .input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(21,128,61,.15); }
+
+  /* ---------- 1 · LOGIN ---------- */
+  .login-wrap { height: 460px; display: grid; place-items: center; background: var(--page); }
+  .login-card { width: 360px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+    box-shadow: var(--sh-md); padding: 30px 28px; }
+  .login-card .brand { text-align: center; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .login-card .sub { text-align: center; font-size: 13px; color: var(--muted); margin: 4px 0 22px; }
+  .login-card .field { margin-bottom: 14px; }
+  .login-card .btn { width: 100%; justify-content: center; margin-top: 6px; }
+
+  /* ---------- 2 · DASHBOARD ---------- */
+  .page-body { padding: 22px; }
+  .ph { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .ph h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .ph .count { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .toolbar { display: flex; gap: 10px; margin-bottom: 16px; }
+  .search { position: relative; }
+  .toolbar .search { width: 280px; }
+  .search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--muted); }
+  .search input { padding-left: 32px; }
+  .seg { margin-left: auto; display: flex; border: 1px solid var(--border-strong); border-radius: var(--r-md); overflow: hidden; }
+  .seg button { font-size: 13px; padding: 8px 13px; background: var(--surface); border: 0; color: var(--sec); cursor: pointer; }
+  .seg button.on { background: var(--elevated); color: var(--text); font-weight: 500; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); overflow: hidden; }
+  thead th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--sec); padding: 11px 14px; background: var(--elevated); border-bottom: 1px solid var(--border); }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: var(--elevated); }
+  .gname { display: flex; align-items: center; gap: 11px; }
+  .gthumb { width: 38px; height: 38px; border-radius: var(--r-sm); flex-shrink: 0; }
+  .gname b { font-weight: 600; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: var(--r-full); }
+  .pill-feat { background: rgba(21,128,61,.12); color: var(--brand); }
+  .pill-live { background: var(--elevated); color: var(--sec); }
+  .pill-del { background: var(--danger-soft); color: var(--danger); }
+  .rowact { display: flex; gap: 4px; justify-content: flex-end; }
+  .muted { color: var(--muted); }
+
+  /* ---------- 3 · FORM ---------- */
+  .form-grid { display: grid; grid-template-columns: 1fr 320px; gap: 22px; align-items: start; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--sh-sm); }
+  .card .ct { font-size: 13px; font-weight: 600; padding: 13px 18px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .card .cb { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .bgg { background: var(--elevated); border: 1px dashed var(--border-strong); border-radius: var(--r-md); padding: 14px; }
+  .bgg .lab { font-size: 12px; font-weight: 600; color: var(--brand); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; display:flex; align-items:center; gap:6px; }
+  .bgg .lab svg { width: 14px; height: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 4px 6px 4px 10px; border-radius: var(--r-full);
+    background: rgba(21,128,61,.12); color: var(--brand); }
+  .chip x { cursor: pointer; font-weight: 700; opacity: .7; }
+  .photo-drop { border: 1px dashed var(--border-strong); border-radius: var(--r-md); padding: 22px; text-align: center; color: var(--muted); font-size: 13px; }
+  .photo-row { display: flex; gap: 8px; margin-top: 12px; }
+  .photo-row .p { width: 56px; height: 56px; border-radius: var(--r-sm); }
+  .toggle { display: flex; align-items: center; gap: 10px; }
+  .switch { width: 38px; height: 22px; border-radius: 999px; background: var(--brand); position: relative; flex-shrink: 0; }
+  .switch i { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>Staff / admin screens · Slate (clean desktop, no glass)</h1>
+    <p>The staff interface shares the palette and type with the public catalogue, but is a flat, high-legibility
+       desktop admin — counters, not phones. Glass and full-bleed photos are deliberately absent: data entry needs
+       contrast and speed (the ~400-game entry workflow). Brand green is used sparingly for primary actions and the
+       Featured marker. Three core screens below: login, the game dashboard, and the add/edit form.</p>
+  </div>
+  <div class="stack" id="stack"></div>
+
+<script>
+const I_SEARCH = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>';
+const I_PLUS = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/></svg>';
+const I_EDIT = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828z"/></svg>';
+const I_TRASH = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
+const I_BGG = '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L6.2 11.3l4-.6z"/></svg>';
+
+const GRAD = ['#3f7d6e','#2f6fb0','#c2792e','#b0463a','#5b5fb0','#3a8a8a'];
+const grad = (c) => `linear-gradient(150deg, ${c}, ${c}99)`;
+const DASH = [
+  { n: 'Wingspan',       p: '1–5', t: '40–70m', feat: true,  status: 'live' },
+  { n: 'Azul',           p: '2–4', t: '30–45m', feat: true,  status: 'live' },
+  { n: 'Catan',          p: '3–4', t: '60–90m', feat: false, status: 'live' },
+  { n: 'Ticket to Ride', p: '2–5', t: '45–60m', feat: false, status: 'live' },
+  { n: 'Old Edition Risk',p:'3–6', t: '2h+',    feat: false, status: 'del' },
+];
+
+function nav(active) {
+  return `<nav class="snav">
+    <span class="logo">Table-Top-Cafe <small>· Staff</small></span>
+    <a class="${active==='games'?'active':''}">Games</a>
+    <a class="${active==='tags'?'active':''}">Tags</a>
+    <a class="${active==='users'?'active':''}">Users</a>
+    <span class="right"><span class="who">armandt · admin</span><a class="signout">Sign out</a></span>
+  </nav>`;
+}
+
+const LOGIN = `
+<div class="app"><div class="login-wrap"><div class="login-card">
+  <div class="brand">Table-Top-Cafe</div>
+  <div class="sub">Staff sign in</div>
+  <div class="field"><label>Username</label><input class="input" placeholder="your username" /></div>
+  <div class="field"><label>Password</label><input class="input" type="password" placeholder="••••••••" /></div>
+  <button class="btn btn-primary">Sign in</button>
+</div></div></div>`;
+
+const DASHBOARD = `
+<div class="app">
+  ${nav('games')}
+  <div class="page-body">
+    <div class="ph">
+      <div><h1>Games</h1><div class="count">${DASH.filter(g=>g.status==='live').length} live · 1 deleted</div></div>
+      <button class="btn btn-primary">${I_PLUS} Add game</button>
+    </div>
+    <div class="toolbar">
+      <div class="search">${I_SEARCH}<input class="input" placeholder="Search games…" /></div>
+      <div class="seg"><button class="on">Live</button><button>Deleted</button><button>All</button></div>
+    </div>
+    <table>
+      <thead><tr><th>Game</th><th>Players</th><th>Play time</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        ${DASH.map((g,i)=>`<tr>
+          <td><div class="gname"><span class="gthumb" style="background:${grad(GRAD[i%GRAD.length])}"></span><b>${g.n}</b>${g.feat?' <span class="pill pill-feat">★ Featured</span>':''}</div></td>
+          <td class="muted">${g.p}</td>
+          <td class="muted">${g.t}</td>
+          <td>${g.status==='live'?'<span class="pill pill-live">Live</span>':'<span class="pill pill-del">Deleted</span>'}</td>
+          <td><div class="rowact">
+            <button class="btn btn-ghost">${I_EDIT}</button>
+            <button class="btn btn-ghost" style="color:var(--danger)">${I_TRASH}</button>
+          </div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+</div>`;
+
+const FORM = `
+<div class="app">
+  ${nav('games')}
+  <div class="page-body">
+    <div class="ph"><div><h1>Add game</h1><div class="count">Pre-fill from BoardGameGeek, then review before saving</div></div></div>
+    <div class="form-grid">
+      <div class="card">
+        <div class="ct">Details</div>
+        <div class="cb">
+          <div class="bgg">
+            <div class="lab">${I_BGG} BoardGameGeek lookup</div>
+            <div class="search" style="position:relative">${I_SEARCH}<input class="input" style="padding-left:32px" placeholder="Start typing a game name…  (selecting one pre-fills the fields below)" /></div>
+          </div>
+          <div class="field"><label>Name</label><input class="input" value="Wingspan" /></div>
+          <div class="row2">
+            <div class="field"><label>Players — min</label><input class="input" value="1" /></div>
+            <div class="field"><label>Players — max</label><input class="input" value="5" /></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Play time — min (mins)</label><input class="input" value="40" /></div>
+            <div class="field"><label>Play time — max (mins)</label><input class="input" value="70" /></div>
+          </div>
+          <div class="field"><label>Description</label>
+            <textarea class="input" rows="3">A competitive, medium-weight engine-building game about attracting birds to your wildlife preserve.</textarea>
+          </div>
+          <div class="field"><label>Tags</label>
+            <div class="chips">
+              <span class="chip">Strategy <x>×</x></span><span class="chip">Engine-building <x>×</x></span><span class="chip">Birds <x>×</x></span>
+            </div>
+            <input class="input" placeholder="Type to add a tag — Enter creates a new one" style="margin-top:8px" />
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <div class="card">
+          <div class="ct">Featured</div>
+          <div class="cb">
+            <div class="toggle"><span class="switch"><i></i></span><span style="font-size:14px">Featured game</span></div>
+            <div class="hint">Up to 3 games can be featured. This is 2 of 3.</div>
+            <div class="field"><label>Featured note <span class="hint">(optional)</span></label>
+              <input class="input" value="Staff pick — great for new players" /></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">Photos</div>
+          <div class="cb">
+            <div class="photo-drop">Drop an image, click to upload,<br/>or paste a URL</div>
+            <div class="photo-row">
+              <span class="p" style="background:${grad('#3f7d6e')}"></span>
+              <span class="p" style="background:${grad('#4a8478')}"></span>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-primary">Save game</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+document.getElementById('stack').innerHTML = [
+  { name: '1 · Staff login', tag: 'pages/staff/login.vue', html: LOGIN },
+  { name: '2 · Game dashboard', tag: 'pages/staff/index.vue — list, search, Live/Deleted toggle, edit/delete, soft-delete restore', html: DASHBOARD },
+  { name: '3 · Add / edit game', tag: 'components/staff/GameForm.vue — BGG lookup, fields, tag type-ahead, photos, featured', html: FORM },
+].map(s => `<div class="cap"><div class="name">${s.name}</div><div class="tagline">${s.tag}</div><div class="win">${s.html}</div></div>`).join('');
+</script>
+</body>
+</html>

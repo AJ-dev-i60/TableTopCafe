@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TableTopCafe — Game Detail (Glass Slate)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #14161a; color: #e7e7ea; -webkit-font-smoothing: antialiased; }
+  .page-head { max-width: 1100px; margin: 0 auto; padding: 40px 24px 8px; }
+  .page-head h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .page-head p { color: #9aa0a8; margin: 0; max-width: 800px; line-height: 1.55; font-size: 14px; }
+  .gallery { display: flex; gap: 48px; flex-wrap: wrap; justify-content: center; align-items: flex-start; padding: 32px 24px 64px; }
+  .col-head .name { font-size: 18px; font-weight: 600; }
+  .col-head .tagline { color: #9aa0a8; font-size: 13px; margin: 2px 0 14px; }
+  .frame .scroll { height: 100%; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+  .phone { width: 410px; height: 800px; border-radius: 40px; overflow: hidden; position: relative;
+    box-shadow: 0 0 0 11px #0a0b0d, 0 0 0 13px #2a2d33, 0 24px 60px -12px rgba(0,0,0,.7); }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 26px;
+    background: #0a0b0d; border-radius: 0 0 16px 16px; z-index: 90; }
+  .desktop { width: 1024px; max-width: 100%; height: 720px; border-radius: 22px; overflow: hidden; position: relative;
+    box-shadow: 0 0 0 12px #0a0b0d, 0 0 0 14px #2a2d33, 0 24px 60px -12px rgba(0,0,0,.7); }
+
+  /* ===== Glass Slate tokens (same as catalogue) ===== */
+  .app {
+    --c-text: #15201c; --c-sec: #586b63; --c-muted: #9aa8a1;
+    --c-brand: #15803d; --c-brand-fg: #fff;
+    --r-md: 14px; --r-lg: 20px; --r-full: 9999px;
+    --glass: rgba(255,255,255,0.55); --glass2: rgba(255,255,255,0.16); --stroke: rgba(255,255,255,0.45);
+    color: var(--c-text); min-height: 100%; font-family: 'Inter', system-ui, sans-serif;
+    background: radial-gradient(circle at 12% 8%, #d6ece0 0%, transparent 42%),
+                radial-gradient(circle at 88% 16%, #cfe2ef 0%, transparent 40%),
+                radial-gradient(circle at 50% 95%, #e7def2 0%, transparent 46%), #eef3f0;
+  }
+  .gheader { position: sticky; top: 0; z-index: 30; padding: 32px 16px 14px; display: flex; align-items: baseline;
+    justify-content: space-between; background: var(--glass); backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%); border-bottom: 1px solid var(--stroke); }
+  .app.dt .gheader { padding-top: 16px; }
+  .gheader .logo { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+  .gheader .build { font-size: 12px; color: var(--c-sec); }
+
+  /* layout: stacked on phone, two-column on desktop */
+  .detail { display: block; }
+  .app.dt .detail { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; padding: 22px; align-items: start; }
+
+  /* hero */
+  .hero { position: relative; aspect-ratio: 4/3; overflow: hidden; }
+  .app.dt .hero { aspect-ratio: 4/3; border-radius: var(--r-lg); border: 1px solid rgba(255,255,255,.4);
+    box-shadow: 0 14px 34px -12px rgba(21,48,36,.45); position: sticky; top: 78px; }
+  .hero .photo { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.85);
+    font-size: 90px; font-weight: 700; letter-spacing: -0.04em;
+    background: linear-gradient(150deg, #3f7d6e, #234a40); }
+  .hero .scrim { position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(8,18,14,.8) 0%, rgba(8,18,14,.2) 45%, transparent 70%); }
+  .back { position: absolute; top: 14px; left: 14px; z-index: 5; display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px 8px 11px; border-radius: var(--r-full); color: #fff; font-size: 13px; font-weight: 500;
+    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.4);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .back svg { width: 17px; height: 17px; }
+  .badge { position: absolute; top: 14px; right: 14px; z-index: 5; display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 13px; border-radius: var(--r-full); color: #fff; font-size: 12px; font-weight: 600;
+    background: rgba(21,128,61,.6); border: 1px solid rgba(255,255,255,.5);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .badge svg { width: 14px; height: 14px; }
+  .hero .htitle { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 4; color: #fff; }
+  .hero .htitle h1 { margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;
+    text-shadow: 0 2px 12px rgba(0,0,0,.45); }
+  .hero .hmeta { display: flex; gap: 18px; margin-top: 10px; font-size: 14px; }
+  .hero .hmeta span { display: inline-flex; align-items: center; gap: 7px; }
+  .hero .hmeta svg { width: 20px; height: 20px; stroke-width: 1.9; }   /* large icons */
+
+  /* content */
+  .content { padding: 16px; }
+  .app.dt .content { padding: 0; }
+  .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--r-lg); padding: 18px 18px 20px;
+    backdrop-filter: blur(16px) saturate(150%); -webkit-backdrop-filter: blur(16px) saturate(150%); margin-bottom: 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--c-sec); }
+  .panel p.desc { margin: 0; font-size: 15px; line-height: 1.6; color: var(--c-text); }
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; }
+  .tag { padding: 5px 12px; font-size: 12px; border-radius: var(--r-full); background: rgba(255,255,255,.5);
+    border: 1px solid var(--stroke); color: var(--c-sec); }
+  .note { display: flex; gap: 10px; align-items: flex-start; padding: 14px; border-radius: var(--r-md);
+    background: rgba(21,128,61,.1); border: 1px solid rgba(21,128,61,.28); }
+  .note svg { width: 18px; height: 18px; color: var(--c-brand); flex-shrink: 0; margin-top: 1px; }
+  .note .nl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--c-brand); }
+  .note p { margin: 3px 0 0; font-size: 14px; color: var(--c-text); line-height: 1.45; }
+  .thumbs { display: flex; gap: 8px; }
+  .thumbs .t { width: 64px; height: 64px; border-radius: var(--r-md); border: 1px solid var(--stroke); }
+  .availability { text-align: center; font-size: 13px; color: var(--c-sec); padding: 6px 0 4px; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>Game detail page · Glass Slate</h1>
+    <p>The second public screen (<code>app/pages/games/[id].vue</code>). Same glass language as the catalogue: full-bleed
+       hero with the title overlaid and large meta icons, a glass "Back" pill, then frosted content panels for the
+       description, tags, and the optional staff Featured note. Mobile stacks; tablet/desktop puts the hero beside a
+       sticky content column.</p>
+  </div>
+  <div class="gallery" id="gallery"></div>
+
+<script>
+const G = { name: 'Wingspan', initial: 'W', players: '1–5 players', time: '40–70 min', featured: true,
+  note: 'Staff pick this week — gorgeous, relaxing, and a great gateway into engine-building. Perfect for a quiet afternoon.',
+  desc: 'A competitive, medium-weight, card-driven engine-building game. Each player builds a wildlife preserve, attracting birds with food and eggs. The bird cards combine in chains to power ever-larger turns over the game’s four rounds.',
+  tags: ['Strategy', 'Engine-building', 'Birds', 'Relaxing', 'Solo mode'] };
+
+const I_BACK = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>';
+const I_PLAYERS = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>';
+const I_TIME = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+const I_STAR = '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.8l1.2-6.6L2.5 9l6.6-.9z"/></svg>';
+const I_INFO = '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>';
+
+function appHTML(dt) {
+  return `
+  <div class="app${dt ? ' dt' : ''}">
+    <header class="gheader"><span class="logo">Table-Top-Cafe</span><span class="build">#3</span></header>
+    <div class="detail">
+      <div class="hero">
+        <div class="photo">${G.initial}</div>
+        <div class="scrim"></div>
+        <a class="back">${I_BACK} Catalogue</a>
+        ${G.featured ? `<span class="badge">${I_STAR} Featured</span>` : ''}
+        <div class="htitle">
+          <h1>${G.name}</h1>
+          <div class="hmeta">
+            <span>${I_PLAYERS}${G.players}</span>
+            <span>${I_TIME}${G.time}</span>
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        ${G.featured ? `<div class="panel"><div class="note">${I_STAR.replace('viewBox','class="" viewBox')}
+          <div><div class="nl">Staff pick</div><p>${G.note}</p></div></div></div>` : ''}
+        <div class="panel">
+          <h2>About this game</h2>
+          <p class="desc">${G.desc}</p>
+        </div>
+        <div class="panel">
+          <h2>Tags</h2>
+          <div class="tags">${G.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+        </div>
+        <div class="panel">
+          <h2>More photos</h2>
+          <div class="thumbs">
+            <div class="t" style="background:linear-gradient(150deg,#3f7d6e,#234a40)"></div>
+            <div class="t" style="background:linear-gradient(150deg,#4a8478,#2c5249)"></div>
+            <div class="t" style="background:linear-gradient(150deg,#356b5e,#1d3f37)"></div>
+          </div>
+        </div>
+        <p class="availability">Shown in our library — not real-time availability.<br/>Ask a staff member to grab this game for you.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+document.getElementById('gallery').innerHTML = `
+  <div>
+    <div class="col-head"><div class="name">Mobile</div><div class="tagline">Hero → content panels, stacked</div></div>
+    <div class="frame phone"><div class="notch"></div><div class="scroll">${appHTML(false)}</div></div>
+  </div>
+  <div style="width:1024px;max-width:100%">
+    <div class="col-head"><div class="name">Tablet / desktop</div><div class="tagline">Hero beside a sticky content column</div></div>
+    <div class="frame desktop"><div class="scroll">${appHTML(true)}</div></div>
+  </div>`;
+</script>
+</body>
+</html>

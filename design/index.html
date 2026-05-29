@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TableTopCafe — Design Package</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: #14161a; color: #e7e7ea; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 48px 24px 72px; }
+  h1 { font-size: 30px; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .lede { color: #9aa0a8; font-size: 15px; line-height: 1.6; max-width: 720px; margin: 0 0 36px; }
+  .lede b { color: #cfd3d9; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; }
+  a.card { display: block; text-decoration: none; color: inherit; background: #1c1f25; border: 1px solid #2a2d33;
+    border-radius: 14px; overflow: hidden; transition: border-color .15s, transform .15s; }
+  a.card:hover { border-color: #3f7d6e; transform: translateY(-2px); }
+  a.card .shot { aspect-ratio: 16/10; background: #0f1115 center/cover no-repeat; border-bottom: 1px solid #2a2d33; }
+  a.card .meta { padding: 14px 16px 16px; }
+  a.card .t { font-size: 16px; font-weight: 600; }
+  a.card .d { font-size: 13px; color: #9aa0a8; margin-top: 3px; line-height: 1.45; }
+  .docs { margin-top: 36px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .docs a { font-size: 14px; color: #7fd0ad; text-decoration: none; border: 1px solid #2a4a3e; padding: 9px 14px; border-radius: 9px; }
+  .docs a:hover { background: #16241d; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+    padding: 2px 8px; border-radius: 999px; margin-left: 8px; vertical-align: middle; }
+  .pub { background: #16302420; color: #7fd0ad; border: 1px solid #2a4a3e; }
+  .stf { background: #2a2d3320; color: #b6bcc6; border: 1px solid #3a3f48; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>TableTopCafe — Design Package</h1>
+  <p class="lede">Final visual design (M5). Palette: <b>Felt &amp; Slate</b> (slate ink + tabletop green).
+     Public catalogue uses the <b>Glass Slate</b> treatment; staff/admin is a <b>flat clean admin</b> in the same
+     palette. Click a screen to open its mockup. The implementation spec is in <b>HANDOFF.md</b>.</p>
+
+  <div class="grid">
+    <a class="card" href="glass.html">
+      <div class="shot" style="background-image:url('glass-overview.png')"></div>
+      <div class="meta"><div class="t">Catalogue grid <span class="tag pub">Public</span></div>
+        <div class="d">Glass cards, title overlay, large icons. Responsive 1→2→3-up.</div></div>
+    </a>
+    <a class="card" href="detail.html">
+      <div class="shot" style="background-image:url('detail-overview.png')"></div>
+      <div class="meta"><div class="t">Game detail <span class="tag pub">Public</span></div>
+        <div class="d">Glass hero with overlaid title + frosted content panels.</div></div>
+    </a>
+    <a class="card" href="staff.html">
+      <div class="shot" style="background-image:url('staff-overview.png')"></div>
+      <div class="meta"><div class="t">Staff &amp; admin <span class="tag stf">Staff</span></div>
+        <div class="d">Login, game dashboard, add/edit form. Flat desktop admin.</div></div>
+    </a>
+    <a class="card" href="mockups.html">
+      <div class="shot" style="background-image:url('mockups-overview.png')"></div>
+      <div class="meta"><div class="t">Palette exploration</div>
+        <div class="d">The 3 directions explored before Felt &amp; Slate was chosen. Reference only.</div></div>
+    </a>
+  </div>
+
+  <div class="docs">
+    <a href="HANDOFF.md">📄 HANDOFF.md — implementation spec</a>
+    <a href="DIRECTIONS.md">📄 DIRECTIONS.md — direction rationale</a>
+  </div>
+</div>
+</body>
+</html>

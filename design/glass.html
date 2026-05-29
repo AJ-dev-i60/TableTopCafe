@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TableTopCafe — Direction D · Glass Slate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #14161a; color: #e7e7ea; -webkit-font-smoothing: antialiased;
+  }
+  .page-head { max-width: 1100px; margin: 0 auto; padding: 40px 24px 8px; }
+  .page-head h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .page-head p { color: #9aa0a8; margin: 0; max-width: 780px; line-height: 1.55; font-size: 14px; }
+  .gallery { display: flex; gap: 48px; flex-wrap: wrap; justify-content: center; align-items: flex-start; padding: 32px 24px 64px; }
+  .col { width: 410px; }
+  .col-wide { width: 1024px; max-width: 100%; }
+  .col-head .name { font-size: 18px; font-weight: 600; }
+  .col-head .tagline { color: #9aa0a8; font-size: 13px; margin: 2px 0 14px; max-width: 60ch; }
+
+  .frame .scroll { height: 100%; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+
+  /* phone bezel */
+  .phone { height: 800px; border-radius: 40px; overflow: hidden;
+    box-shadow: 0 0 0 11px #0a0b0d, 0 0 0 13px #2a2d33, 0 24px 60px -12px rgba(0,0,0,.7); position: relative; }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 26px; background: #0a0b0d; border-radius: 0 0 16px 16px; z-index: 90; }
+
+  /* tablet bezel (landscape) */
+  .tablet-frame { width: 100%; height: 720px; border-radius: 22px; overflow: hidden; position: relative;
+    box-shadow: 0 0 0 12px #0a0b0d, 0 0 0 14px #2a2d33, 0 24px 60px -12px rgba(0,0,0,.7); }
+
+  /* on a non-notched frame the header doesn't need the extra top inset */
+  .app.tablet .gheader { padding-top: 16px; }
+
+  /* ===================== DIRECTION D · GLASS SLATE =====================
+     Palette = Felt & Slate (slate ink + tabletop green), adapted for glass.
+     Tokens: */
+  .app {
+    --color-text-primary: #15201c;
+    --color-text-secondary: #586b63;
+    --color-text-muted: #9aa8a1;
+    --color-brand: #15803d;
+    --color-brand-hover: #166534;
+    --color-brand-foreground: #ffffff;
+
+    --font-size-meta: 13px;
+    --font-size-tag: 11px;
+    --font-size-card-title: 16px;
+    --font-size-section-label: 11px;
+    --font-size-ui: 14px;
+    --font-size-body: 15px;
+
+    --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px; --radius-full: 9999px;
+
+    /* glass surfaces */
+    --glass-fill:   rgba(255,255,255,0.55);
+    --glass-fill-2: rgba(255,255,255,0.16);     /* over photos */
+    --glass-stroke: rgba(255,255,255,0.45);
+    --glass-blur:   blur(18px) saturate(160%);
+
+    min-height: 100%;
+    color: var(--color-text-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+    /* pastel slate/green mesh so the glass has something to refract */
+    background:
+      radial-gradient(circle at 12% 8%,  #d6ece0 0%, transparent 42%),
+      radial-gradient(circle at 88% 16%, #cfe2ef 0%, transparent 40%),
+      radial-gradient(circle at 50% 95%, #e7def2 0%, transparent 46%),
+      #eef3f0;
+  }
+
+  /* Glass header */
+  .gheader {
+    position: sticky; top: 0; z-index: 30;
+    padding: 32px 16px 14px;
+    display: flex; align-items: baseline; justify-content: space-between;
+    background: var(--glass-fill); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-stroke);
+  }
+  .gheader .logo { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--color-text-primary); }
+  .gheader .build { font-size: 12px; color: var(--color-text-secondary); }
+
+  /* Glass toolbar */
+  .gtoolbar {
+    position: sticky; top: 0; z-index: 20; padding: 10px 16px; display: flex; gap: 8px; align-items: center;
+    background: var(--glass-fill); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-stroke);
+  }
+  .gsearch { flex: 1; position: relative; }
+  .gsearch input {
+    width: 100%; padding: 9px 12px 9px 36px; font-size: var(--font-size-ui); font-family: inherit;
+    background: rgba(255,255,255,0.5); border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius-full); color: var(--color-text-primary);
+  }
+  .gsearch input::placeholder { color: var(--color-text-secondary); }
+  .gsearch svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; color: var(--color-text-secondary); }       /* large icon */
+  .gtoggle { display: flex; gap: 4px; }
+  .gtoggle button {
+    width: 38px; height: 38px; display: grid; place-items: center; cursor: pointer;
+    border-radius: var(--radius-md); border: 1px solid var(--glass-stroke);
+    background: rgba(255,255,255,0.4); color: var(--color-text-secondary);
+  }
+  .gtoggle button.active { background: var(--color-brand); border-color: var(--color-brand); color: #fff; }
+  .gtoggle svg { width: 19px; height: 19px; }                              /* large icon */
+
+  /* Filter chips */
+  .gchips { padding: 14px 16px 2px; display: flex; gap: 7px; flex-wrap: wrap; }
+  .gchips .label { width: 100%; font-size: var(--font-size-section-label); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-secondary); margin-bottom: 8px; }
+  .chip {
+    padding: 6px 13px; font-size: var(--font-size-tag); border-radius: var(--radius-full);
+    border: 1px solid var(--glass-stroke); background: rgba(255,255,255,0.45);
+    color: var(--color-text-secondary); cursor: pointer; white-space: nowrap;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .chip.on { background: var(--color-brand); border-color: var(--color-brand); color: #fff; }
+
+  .gbody { padding: 16px; container-type: inline-size; }   /* responsive grid keys off frame width, not window */
+  .section-label { font-size: var(--font-size-section-label); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--color-text-secondary); margin: 0 0 12px; display: flex; align-items: center; gap: 7px; }
+  .section-label .star { color: var(--color-brand); font-size: 13px; }
+  .count { font-size: var(--font-size-ui); color: var(--color-text-secondary); margin: 2px 0 16px; }
+  .count b { color: var(--color-text-primary); font-weight: 600; }
+
+  /* ---- Glass card: full-bleed photo + text overlay ---- */
+  /* Responsive grid (container queries on .gbody):
+     mobile = 1 big banner card, tablet portrait = 2-up, tablet landscape/desktop = 3-up. */
+  .grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 30px; }
+  .gcard {
+    position: relative; aspect-ratio: 16/10; border-radius: var(--radius-lg); overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 10px 28px -10px rgba(21,48,36,0.45);
+  }
+  @container (min-width: 460px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .gcard { aspect-ratio: 4/3; }
+  }
+  @container (min-width: 760px) {
+    .grid { grid-template-columns: 1fr 1fr 1fr; }
+    .gcard { aspect-ratio: 3/4; }
+  }
+  .gcard.feat { box-shadow: 0 14px 34px -10px rgba(21,128,61,0.5); }
+  .gcard .photo { position: absolute; inset: 0; display: grid; place-items: center;
+    font-size: 46px; font-weight: 700; color: rgba(255,255,255,0.85); letter-spacing: -0.03em; }
+  .gcard .scrim { position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(8,18,14,0.82) 0%, rgba(8,18,14,0.25) 46%, rgba(8,18,14,0) 68%); }
+
+  /* frosted info panel docked at bottom, title overlaid on image */
+  .gpanel {
+    position: absolute; left: 8px; right: 8px; bottom: 8px; padding: 11px 12px; color: #fff;
+    background: var(--glass-fill-2); backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.28); border-radius: var(--radius-md);
+  }
+  .gpanel .gtitle { font-size: var(--font-size-card-title); font-weight: 600; line-height: 1.2;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4); }
+  .gpanel .gmeta { display: flex; gap: 16px; margin-top: 8px; font-size: var(--font-size-meta); }
+  .gpanel .gmeta span { display: inline-flex; align-items: center; gap: 6px; opacity: 0.95; }
+  .gpanel .gmeta svg { width: 19px; height: 19px; stroke-width: 1.9; }     /* LARGE meta icons */
+  .gpanel .gtags { display: flex; gap: 5px; margin-top: 9px; flex-wrap: wrap; }
+  .gpanel .gtag { padding: 3px 9px; font-size: var(--font-size-tag); border-radius: var(--radius-full);
+    background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.28); color: #fff; }
+
+  /* glass featured badge */
+  .gbadge { position: absolute; top: 10px; left: 10px; padding: 5px 12px 5px 10px; z-index: 5;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: var(--font-size-tag); font-weight: 600; color: #fff; border-radius: var(--radius-full);
+    background: rgba(21,128,61,0.55); border: 1px solid rgba(255,255,255,0.5);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .gbadge svg { width: 14px; height: 14px; }
+
+  /* footer note as glass */
+  .gfooter { margin: 8px 16px 28px; padding: 16px; border-radius: var(--radius-lg);
+    background: var(--glass-fill); border: 1px solid var(--glass-stroke);
+    backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); }
+  .gfooter p { margin: 0; text-align: center; font-size: var(--font-size-meta); color: var(--color-text-secondary); line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>Direction D · Glass Slate</h1>
+    <p>Built on the <strong>Felt &amp; Slate</strong> palette (slate ink + tabletop green). Full-bleed game photos with the
+       title <em>overlaid</em> on the image, large meta icons, and frosted-glass chrome over a soft slate/green mesh.
+       <strong>Responsive grid:</strong> one big banner card per game on mobile → 2-up on tablet portrait → 3-up on tablet
+       landscape / desktop. The two frames below are the <em>same</em> screen at two widths.</p>
+  </div>
+  <div class="gallery" id="gallery"></div>
+
+<script>
+const GAMES = [
+  { name: 'Wingspan',       color: '#3f7d6e', initials: 'W', p: '1–5 players', t: '40–70m', tags: ['Strategy','Engine'], featured: true },
+  { name: 'Azul',           color: '#2f6fb0', initials: 'A', p: '2–4 players', t: '30–45m', tags: ['Abstract','Tiles'],  featured: true },
+  { name: 'Catan',          color: '#c2792e', initials: 'C', p: '3–4 players', t: '60–90m', tags: ['Classic','Trading'] },
+  { name: 'Ticket to Ride', color: '#b0463a', initials: 'T', p: '2–5 players', t: '45–60m', tags: ['Family','Routes'] },
+  { name: 'Codenames',      color: '#5b5fb0', initials: 'C', p: '4–8 players', t: '15m',     tags: ['Party','Word'] },
+  { name: 'Pandemic',       color: '#3a8a8a', initials: 'P', p: '2–4 players', t: '45m',     tags: ['Co-op'] },
+];
+
+const I_PLAYERS = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>';
+const I_TIME = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+const I_SEARCH = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>';
+const I_GRID = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>';
+const I_LIST = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>';
+const I_STAR = '<svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.8l1.2-6.6L2.5 9l6.6-.9z"/></svg>';
+
+function gcard(g) {
+  const tags = g.tags.map(t => `<span class="gtag">${t}</span>`).join('');
+  return `
+    <div class="gcard ${g.featured ? 'feat' : ''}">
+      <div class="photo" style="background:linear-gradient(150deg, ${g.color}, ${shade(g.color)})">${g.initials}</div>
+      <div class="scrim"></div>
+      ${g.featured ? `<span class="gbadge">${I_STAR} Featured</span>` : ''}
+      <div class="gpanel">
+        <div class="gtitle">${g.name}</div>
+        <div class="gmeta">
+          <span>${I_PLAYERS}${g.p}</span>
+          <span>${I_TIME}${g.t}</span>
+        </div>
+        <div class="gtags">${tags}</div>
+      </div>
+    </div>`;
+}
+function shade(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.max(0,(n>>16)-45), gg = Math.max(0,((n>>8)&255)-45), b = Math.max(0,(n&255)-45);
+  return `rgb(${r},${gg},${b})`;
+}
+
+const featured = GAMES.filter(g => g.featured);
+const rest = GAMES.filter(g => !g.featured);
+
+function appHTML(tablet) {
+  return `
+    <div class="app${tablet ? ' tablet' : ''}">
+      <header class="gheader"><span class="logo">Table-Top-Cafe</span><span class="build">#3</span></header>
+      <div class="gtoolbar">
+        <div class="gsearch">${I_SEARCH}<input placeholder="Search games…" /></div>
+        <div class="gtoggle"><button class="active">${I_GRID}</button><button>${I_LIST}</button></div>
+      </div>
+      <div class="gchips">
+        <span class="label">Players</span>
+        <span class="chip">Any</span><span class="chip on">2</span><span class="chip">3</span>
+        <span class="chip">4</span><span class="chip">5</span><span class="chip">6+</span>
+      </div>
+      <div class="gbody">
+        <p class="count"><b>${GAMES.length}</b> games</p>
+        <h2 class="section-label"><span class="star">${I_STAR}</span> Featured</h2>
+        <div class="grid">${featured.map(gcard).join('')}</div>
+        <h2 class="section-label">All games</h2>
+        <div class="grid">${rest.map(gcard).join('')}</div>
+      </div>
+      <div class="gfooter"><p>This catalogue shows our game library — not real-time availability.<br/>Ask a staff member to grab a game for you.</p></div>
+    </div>`;
+}
+
+document.getElementById('gallery').innerHTML = `
+  <div class="col">
+    <div class="col-head">
+      <div class="name">Mobile · 1 big card per game</div>
+      <div class="tagline">Portrait phone — banner cards, one per row</div>
+    </div>
+    <div class="frame phone">
+      <div class="notch"></div>
+      <div class="scroll">${appHTML(false)}</div>
+    </div>
+  </div>
+  <div class="col col-wide">
+    <div class="col-head">
+      <div class="name">Tablet landscape / desktop · 3-up</div>
+      <div class="tagline">Same screen, wider container — grid reflows to 2-up (tablet portrait) then 3-up. Resize the window to see it move.</div>
+    </div>
+    <div class="frame tablet-frame">
+      <div class="scroll">${appHTML(true)}</div>
+    </div>
+  </div>`;
+</script>
+</body>
+</html>

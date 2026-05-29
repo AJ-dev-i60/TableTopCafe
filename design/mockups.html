@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TableTopCafe — Design Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     SHARED PAGE CHROME (not part of the product — just the gallery)
+     ============================================================ */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #14161a;
+    color: #e7e7ea;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-head {
+    max-width: 1200px; margin: 0 auto; padding: 40px 24px 8px;
+  }
+  .page-head h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .page-head p { color: #9aa0a8; margin: 0; max-width: 760px; line-height: 1.55; font-size: 14px; }
+  .gallery {
+    display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;
+    padding: 32px 24px 64px; max-width: 1320px; margin: 0 auto;
+  }
+  .col { width: 390px; }
+  .col-head { margin: 0 0 14px; }
+  .col-head .name { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+  .col-head .tagline { color: #9aa0a8; font-size: 13px; margin-top: 2px; }
+  .swatches { display: flex; gap: 6px; margin-top: 10px; }
+  .swatches span { width: 26px; height: 26px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+
+  /* Phone frame */
+  .phone {
+    height: 760px; border-radius: 38px; overflow: hidden;
+    box-shadow: 0 0 0 11px #0a0b0d, 0 0 0 13px #2a2d33, 0 24px 60px -12px rgba(0,0,0,.7);
+    position: relative;
+  }
+  .phone .scroll { height: 100%; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 26px; background: #0a0b0d; border-radius: 0 0 16px 16px; z-index: 50; }
+
+  /* ============================================================
+     PRODUCT STYLES — driven entirely by tokens (CSS vars).
+     Each direction sets a different token block on .app.
+     The markup below mirrors the real Nuxt components.
+     ============================================================ */
+  .app {
+    min-height: 100%;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-body);
+    font-family: var(--font-family-sans);
+  }
+  .app * { box-sizing: border-box; }
+
+  /* Header (default.vue) */
+  .ttc-header {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--header-bg, var(--color-surface));
+    color: var(--header-fg, var(--color-text-primary));
+    border-bottom: 1px solid var(--header-border, var(--color-border));
+    box-shadow: var(--shadow-sm);
+    padding: 32px 16px 14px; /* extra top for notch */
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .ttc-logo { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; font-family: var(--font-family-display, var(--font-family-sans)); }
+  .ttc-build { font-size: 12px; color: var(--header-muted, var(--color-text-muted)); }
+
+  /* Toolbar (index.vue search + toggle) */
+  .ttc-toolbar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 10px 16px; display: flex; gap: 8px; align-items: center;
+  }
+  .ttc-search { flex: 1; position: relative; }
+  .ttc-search input {
+    width: 100%; padding: 8px 12px 8px 32px; font-size: var(--font-size-ui);
+    background: var(--color-surface-elevated); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); color: var(--color-text-primary);
+    font-family: inherit;
+  }
+  .ttc-search input::placeholder { color: var(--color-text-muted); }
+  .ttc-search svg { position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px; color: var(--color-text-muted); }
+  .ttc-toggle { display: flex; border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; }
+  .ttc-toggle button { padding: 7px 9px; background: none; border: 0; cursor: pointer; color: var(--color-text-secondary); display: grid; place-items: center; }
+  .ttc-toggle button.active { background: var(--color-brand); color: var(--color-brand-foreground); }
+  .ttc-toggle svg { width: 15px; height: 15px; }
+
+  /* Filter chip row */
+  .ttc-chips { padding: 12px 16px 4px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .ttc-chips .label { width: 100%; font-size: var(--font-size-section-label); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-secondary); margin-bottom: 6px; }
+  .chip {
+    padding: 5px 11px; font-size: var(--font-size-tag); border-radius: var(--radius-full);
+    border: 1px solid var(--color-border); color: var(--color-text-secondary);
+    background: var(--color-surface); cursor: pointer; white-space: nowrap;
+  }
+  .chip.on { background: var(--color-brand); border-color: var(--color-brand); color: var(--color-brand-foreground); }
+
+  /* Section labels */
+  .ttc-body { padding: 16px; }
+  .section-label {
+    font-size: var(--font-size-section-label); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--color-text-secondary); margin: 0 0 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label.featured { color: var(--featured-label-color, var(--color-text-secondary)); }
+  .count { font-size: var(--font-size-ui); color: var(--color-text-secondary); margin: 0 0 14px; }
+  .count b { color: var(--color-text-primary); font-weight: 600; }
+
+  /* Grid + Card (GameCard.vue) */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+  .card {
+    display: flex; flex-direction: column; background: var(--color-surface);
+    border-radius: var(--radius-md); border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm); overflow: hidden;
+  }
+  .card.feat { box-shadow: var(--featured-card-shadow, var(--shadow-md)); border-color: var(--featured-card-border, var(--color-border)); }
+  .card .photo { aspect-ratio: 3/2; position: relative; display: grid; place-items: center;
+    font-family: var(--font-family-display, var(--font-family-sans)); font-weight: 600; font-size: 26px; color: #fff;
+    letter-spacing: -0.02em; }
+  .card .body { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .card .title { font-size: var(--font-size-card-title); font-weight: 600; line-height: 1.2;
+    color: var(--color-text-primary); }
+  .meta { display: flex; gap: 12px; font-size: var(--font-size-meta); color: var(--color-text-secondary); }
+  .meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .meta svg { width: 13px; height: 13px; }
+  .tagrow { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; padding-top: 4px; }
+  .tag { padding: 2px 7px; font-size: var(--font-size-tag); border-radius: var(--radius-sm);
+    background: var(--color-surface-elevated); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+  .tag.more { border: 0; background: none; color: var(--color-text-muted); }
+
+  /* Featured badge (FeaturedBadge.vue) */
+  .badge {
+    position: absolute; top: 8px; left: 8px;
+    padding: 3px 9px; font-size: var(--font-size-tag); font-weight: 600;
+    background: var(--featured-badge-bg, var(--color-brand));
+    color: var(--featured-badge-fg, var(--color-brand-foreground));
+    border-radius: var(--radius-full); line-height: 1.2;
+    box-shadow: 0 1px 4px rgba(0,0,0,.2);
+  }
+
+  /* List row (GameListItem.vue) */
+  .listwrap { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 11px 16px;
+    background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+  .row:last-child { border-bottom: 0; }
+  .row .thumb { width: 46px; height: 46px; border-radius: var(--radius-sm); flex-shrink: 0;
+    display: grid; place-items: center; color: #fff; font-weight: 600; font-size: 16px; }
+  .row .rtitle { font-size: var(--font-size-card-title); font-weight: 500; color: var(--color-text-primary); }
+  .row .rmeta { font-size: var(--font-size-meta); color: var(--color-text-secondary); margin-top: 2px; }
+  .row .chev { margin-left: auto; color: var(--color-text-muted); }
+  .row .chev svg { width: 15px; height: 15px; }
+
+  /* Footer note (default.vue) */
+  .ttc-footer { border-top: 1px solid var(--color-border); padding: 18px 16px 28px; }
+  .ttc-footer p { font-size: var(--font-size-meta); color: var(--color-text-muted); text-align: center; margin: 0; line-height: 1.5; }
+
+  /* ============================================================
+     DIRECTION A — "Café Warm"  (editorial / warm paper)
+     ============================================================ */
+  .dir-warm {
+    --color-surface: #fffdf9;
+    --color-surface-elevated: #f5efe3;
+    --color-border: #e8ddc9;
+    --color-text-primary: #2b2018;
+    --color-text-secondary: #6f6151;
+    --color-text-muted: #a8977f;
+    --color-brand: #c2410c;
+    --color-brand-hover: #9a3412;
+    --color-brand-foreground: #fffdf9;
+
+    --font-family-sans: 'Inter', system-ui, sans-serif;
+    --font-family-display: 'Fraunces', Georgia, serif;
+    --font-size-meta: 12px;
+    --font-size-tag: 11px;
+    --font-size-card-title: 15px;
+    --font-size-section-label: 11px;
+    --font-size-ui: 14px;
+    --font-size-body: 15px;
+
+    --radius-sm: 5px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
+    --shadow-sm: 0 1px 2px rgba(60,40,20,.06);
+    --shadow-md: 0 6px 16px -6px rgba(120,60,20,.22);
+
+    --header-bg: #2b2018; --header-fg: #fffdf9; --header-border: #2b2018; --header-muted: #b8a890;
+    --featured-label-color: #c2410c;
+    --featured-card-shadow: 0 8px 22px -8px rgba(194,65,12,.3);
+    --featured-card-border: #f0c9a8;
+  }
+
+  /* ============================================================
+     DIRECTION B — "Felt & Slate"  (clean / premium / calm)
+     ============================================================ */
+  .dir-slate {
+    --color-surface: #ffffff;
+    --color-surface-elevated: #f3f6f4;
+    --color-border: #e1e8e4;
+    --color-text-primary: #15201c;
+    --color-text-secondary: #586b63;
+    --color-text-muted: #9aa8a1;
+    --color-brand: #15803d;
+    --color-brand-hover: #166534;
+    --color-brand-foreground: #ffffff;
+
+    --font-family-sans: 'Inter', system-ui, sans-serif;
+    --font-family-display: 'Inter', system-ui, sans-serif;
+    --font-size-meta: 12px;
+    --font-size-tag: 11px;
+    --font-size-card-title: 14px;
+    --font-size-section-label: 11px;
+    --font-size-ui: 14px;
+    --font-size-body: 15px;
+
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-full: 9999px;
+    --shadow-sm: 0 1px 2px rgba(16,32,24,.05);
+    --shadow-md: 0 4px 12px -4px rgba(16,32,24,.12);
+
+    --header-bg: #ffffff; --header-fg: #15201c; --header-border: #e1e8e4; --header-muted: #9aa8a1;
+    --featured-label-color: #15803d;
+    --featured-card-shadow: 0 6px 18px -6px rgba(21,128,61,.18);
+    --featured-card-border: #bfe3cc;
+  }
+
+  /* ============================================================
+     DIRECTION C — "Game Night"  (bold / playful / energetic)
+     ============================================================ */
+  .dir-play {
+    --color-surface: #ffffff;
+    --color-surface-elevated: #f4f3fb;
+    --color-border: #e6e4f2;
+    --color-text-primary: #1e1b2e;
+    --color-text-secondary: #565273;
+    --color-text-muted: #9591ab;
+    --color-brand: #4f46e5;
+    --color-brand-hover: #4338ca;
+    --color-brand-foreground: #ffffff;
+
+    --font-family-sans: 'Inter', system-ui, sans-serif;
+    --font-family-display: 'Inter', system-ui, sans-serif;
+    --font-size-meta: 12px;
+    --font-size-tag: 11px;
+    --font-size-card-title: 15px;
+    --font-size-section-label: 11px;
+    --font-size-ui: 14px;
+    --font-size-body: 15px;
+
+    --radius-sm: 8px; --radius-md: 16px; --radius-lg: 20px; --radius-full: 9999px;
+    --shadow-sm: 0 1px 3px rgba(30,27,46,.07);
+    --shadow-md: 0 8px 20px -6px rgba(79,70,229,.22);
+
+    /* page tinted, cards pop white */
+    --color-surface-page: #f3f3fb;
+    --header-bg: #4f46e5; --header-fg: #ffffff; --header-border: #4f46e5; --header-muted: #c4c0f0;
+    --featured-label-color: #f97316;
+    --featured-badge-bg: #f97316; --featured-badge-fg: #ffffff;
+    --featured-card-shadow: 0 10px 26px -8px rgba(249,115,22,.3);
+    --featured-card-border: #fdd6b3;
+  }
+  .dir-play .app { background: var(--color-surface-page); }
+  .dir-play .ttc-toolbar, .dir-play .ttc-chips, .dir-play .ttc-body, .dir-play .ttc-footer { background: var(--color-surface-page); }
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>TableTopCafe — three visual directions</h1>
+    <p>Each phone is the real catalogue screen (header → search → filters → Featured → grid → list → library note),
+       rendered from a different design-token set. Picking a direction means dropping its token block into
+       <code>app/assets/css/tokens.css</code> — no component changes. Scroll each phone independently.</p>
+  </div>
+  <div class="gallery" id="gallery"></div>
+
+<script>
+const GAMES = [
+  { name: 'Wingspan',          color: '#3f7d6e', initials: 'W', p: '1–5 players', t: '40–70m', tags: ['Strategy','Engine','Birds'], more: 1, featured: true,  note: 'Staff pick — gorgeous & calm' },
+  { name: 'Azul',              color: '#2f6fb0', initials: 'A', p: '2–4 players', t: '30–45m', tags: ['Abstract','Tiles'], more: 0, featured: true,  note: 'Great for new players' },
+  { name: 'Catan',            color: '#c2792e', initials: 'C', p: '3–4 players', t: '60–90m', tags: ['Classic','Trading','Negotiation'], more: 0 },
+  { name: 'Ticket to Ride',    color: '#b0463a', initials: 'T', p: '2–5 players', t: '45–60m', tags: ['Family','Routes'], more: 0 },
+  { name: 'Codenames',         color: '#5b5fb0', initials: 'C', p: '4–8 players', t: '15m',     tags: ['Party','Word','Team'], more: 1 },
+  { name: 'Pandemic',          color: '#3a8a8a', initials: 'P', p: '2–4 players', t: '45m',     tags: ['Co-op','Strategy'], more: 0 },
+];
+const LIST = [
+  { name: '7 Wonders',  color: '#9a6a3a', initials: '7', p: '3–7p', t: '30m' },
+  { name: 'Splendor',   color: '#3a7a5a', initials: 'S', p: '2–4p', t: '30m' },
+  { name: 'Sushi Go!',  color: '#d06a8a', initials: 'S', p: '2–5p', t: '15m' },
+];
+
+const ICON_PLAYERS = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>';
+const ICON_TIME = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+const ICON_SEARCH = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>';
+const ICON_GRID = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>';
+const ICON_LIST = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>';
+const ICON_CHEV = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+
+function card(g) {
+  const tags = g.tags.map(t => `<span class="tag">${t}</span>`).join('')
+    + (g.more ? `<span class="tag more">+${g.more}</span>` : '');
+  return `
+    <div class="card ${g.featured ? 'feat' : ''}">
+      <div class="photo" style="background:linear-gradient(135deg, ${g.color}, ${shade(g.color)})">
+        ${g.featured ? '<span class="badge">Featured</span>' : ''}
+        <span style="opacity:.9">${g.initials}</span>
+      </div>
+      <div class="body">
+        <div class="title">${g.name}</div>
+        <div class="meta">
+          <span>${ICON_PLAYERS}${g.p}</span>
+          <span>${ICON_TIME}${g.t}</span>
+        </div>
+        <div class="tagrow">${tags}</div>
+      </div>
+    </div>`;
+}
+function row(g) {
+  return `
+    <div class="row">
+      <div class="thumb" style="background:linear-gradient(135deg, ${g.color}, ${shade(g.color)})">${g.initials}</div>
+      <div>
+        <div class="rtitle">${g.name}</div>
+        <div class="rmeta">${g.p} · ${g.t}</div>
+      </div>
+      <span class="chev">${ICON_CHEV}</span>
+    </div>`;
+}
+function shade(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, (n >> 16) - 30), gg = Math.max(0, ((n >> 8) & 255) - 30), b = Math.max(0, (n & 255) - 30);
+  return `rgb(${r},${gg},${b})`;
+}
+
+const featured = GAMES.filter(g => g.featured);
+const rest = GAMES.filter(g => !g.featured);
+
+function appHTML() {
+  return `
+  <div class="app">
+    <header class="ttc-header">
+      <span class="ttc-logo">Table-Top-Cafe</span>
+      <span class="ttc-build">#3</span>
+    </header>
+
+    <div class="ttc-toolbar">
+      <div class="ttc-search">${ICON_SEARCH}<input placeholder="Search games…" /></div>
+      <div class="ttc-toggle">
+        <button class="active">${ICON_GRID}</button>
+        <button>${ICON_LIST}</button>
+      </div>
+    </div>
+
+    <div class="ttc-chips">
+      <span class="label">Players</span>
+      <span class="chip">Any</span><span class="chip on">2</span><span class="chip">3</span>
+      <span class="chip">4</span><span class="chip">5</span><span class="chip">6+</span>
+    </div>
+
+    <div class="ttc-body">
+      <p class="count"><b>${GAMES.length}</b> games</p>
+
+      <h2 class="section-label featured">★ Featured</h2>
+      <div class="grid">${featured.map(card).join('')}</div>
+
+      <h2 class="section-label">All games</h2>
+      <div class="grid">${rest.map(card).join('')}</div>
+
+      <h2 class="section-label">List view</h2>
+      <div class="listwrap">${LIST.map(row).join('')}</div>
+    </div>
+
+    <footer class="ttc-footer">
+      <p>This catalogue shows our game library — not real-time availability.<br/>Ask a staff member to grab a game for you.</p>
+    </footer>
+  </div>`;
+}
+
+const DIRECTIONS = [
+  { cls: 'dir-warm',  name: 'A · Café Warm',   tagline: 'Editorial · warm paper · serif headings · terracotta', swatch: ['#fffdf9','#f5efe3','#2b2018','#c2410c'] },
+  { cls: 'dir-slate', name: 'B · Felt & Slate', tagline: 'Clean · premium · calm · tabletop green',              swatch: ['#ffffff','#f3f6f4','#15201c','#15803d'] },
+  { cls: 'dir-play',  name: 'C · Game Night',   tagline: 'Bold · playful · indigo + coral · rounded',            swatch: ['#f3f3fb','#ffffff','#1e1b2e','#4f46e5'] },
+];
+
+document.getElementById('gallery').innerHTML = DIRECTIONS.map(d => `
+  <div class="col">
+    <div class="col-head">
+      <div class="name">${d.name}</div>
+      <div class="tagline">${d.tagline}</div>
+      <div class="swatches">${d.swatch.map(c => `<span style="background:${c}"></span>`).join('')}</div>
+    </div>
+    <div class="phone ${d.cls}">
+      <div class="notch"></div>
+      <div class="scroll">${appHTML()}</div>
+    </div>
+  </div>
+`).join('');
+</script>
+</body>
+</html>

@@ -102,7 +102,15 @@ A query function does one logical thing: `getGameById`, `listVisibleGames`, `sof
 
 **Styling uses Tailwind utilities that resolve to design tokens.** Avoid arbitrary values (`text-[#3a3a3a]`, `p-[17px]`) — if a value isn't expressible in tokens, that's a signal the token scale needs to grow, not that this component is special. Component-scoped CSS is acceptable when utilities become unreadable; it still references tokens via `var(--...)`.
 
-**Token utilities for semantic spacing; numeric utilities for sub-grid fine-tuning.** When a spacing value is a design decision — a section gap, card body padding, a major container margin — reference the token explicitly using the generated utility name (`px-md`, `py-lg`, `mb-xl`) or an arbitrary token reference (`p-[--spacing-md]`). When a value is layout fine-tuning — micro-adjustments of ≤12px, sub-pixel rhythm, icon nudges — Tailwind's numeric scale (`py-1.5`, `gap-1`, `p-2.5`) is fine. The test: if a designer reskinned the app, would they expect this value to change? If yes, use the token.
+**Token utilities for semantic spacing; numeric utilities for sub-grid fine-tuning.** When a spacing value is a design decision — a section gap, card body padding, a major container margin — reference the token using the generated utility name (`px-md`, `py-lg`, `mb-xl`). When a value is layout fine-tuning — micro-adjustments of ≤12px, sub-pixel rhythm, icon nudges — Tailwind's numeric scale (`py-1.5`, `gap-1`, `p-2.5`) is fine. The test: if a designer reskinned the app, would they expect this value to change? If yes, use the token.
+
+**Tailwind v4 CSS variable syntax — never use `utility-[--variable]`.** Tailwind v4.3 generates `utility-[--variable]` as `property: --variable` (no `var()`), which browsers treat as invalid and silently ignore. The three correct patterns:
+- Named generated utilities from `@theme` tokens: `px-md`, `rounded-full`, `text-card-title` ✅
+- Scoped CSS with explicit `var()`: `.card { border-radius: var(--radius-xl); }` ✅
+- Inline `style` for single-property overrides: `style="color: var(--color-brand)"` ✅
+- Arbitrary CSS property with explicit `var()`: `[background:var(--mesh-bg)]` ✅ (for values with no Tailwind utility equivalent)
+
+Colors that are white or near-black appear to work with the broken syntax because the browser default (transparent/black) is visually close — do not rely on this. Glass tokens, radius, and shadow tokens have no safe defaults and will visibly fail.
 
 **Shared presentational components own their appearance, not their placement.** A component in `components/shared/` renders its visual identity only — colors, typography, borders, shadow, shape. The parent decides where it is positioned. `FeaturedBadge` is the canonical example: it is a styled pill with no `absolute`, `relative`, or `z-index` inside it; `GameCard` passes `class="absolute top-2 left-2"` to position it over the photo while `GameListItem` passes `class="shrink-0"` to place it inline. The same component renders correctly in both contexts because it does not assume either one.
 

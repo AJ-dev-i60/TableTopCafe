@@ -89,7 +89,7 @@ Data-entry workflow becomes fast enough for the 400-game session.
 
 **Done when:** a staff member can start typing "Catan", pick the right entry from the type-ahead, click "fetch game info", see the form pre-fill, click a BGG image to attach it, edit anything they want, and save — without leaving the keyboard for the common path.
 
-## Milestone 4 — Remaining features
+## Milestone 4 — Remaining features ✅
 
 Everything else the requirements doc calls for.
 

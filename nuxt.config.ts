@@ -1,7 +1,12 @@
 import tailwindcss from '@tailwindcss/vite'
 import { execSync } from 'node:child_process'
 
-const buildNumber = execSync('git rev-list --count HEAD').toString().trim()
+let buildNumber = 'dev'
+try {
+  buildNumber = execSync('git rev-list --count HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+} catch {
+  // git unavailable in this build environment
+}
 
 export default defineNuxtConfig({
   future: {

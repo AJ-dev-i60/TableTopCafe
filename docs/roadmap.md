@@ -56,6 +56,24 @@ Staff can log in and manage the catalogue manually. BGG is not involved yet.
 
 **Done when:** an admin can log in, add a game manually with photos and tags, see it appear in the public catalogue, edit it, soft-delete it (it disappears from the catalogue), and log out. A Playwright smoke test exercises log-in → add game → see it on the public catalogue.
 
+## Milestone 2.5 — Tokenization and convention remediation ✅
+
+Internal cleanup milestone inserted between M2 and M3. No new features, no visual redesign, no behavioural changes. The purpose is to make the architectural claim in ARCHITECTURE.md — that the app is skinnable via tokens — actually true. Before this milestone, spacing and font-size tokens were defined but had no consumers, `bg-white` and `text-white` were hardcoded in 20+ places, sticky offsets were measured-pixel literals, and Inter was named in the token file but never loaded.
+
+**In scope:**
+
+- Token set expanded: `--color-brand-foreground`, a 10-step warm neutral scale (placeholder values, calibrated to the existing palette's warm cast, to be refined in M5), semantic typography tokens (`--font-size-card-title`, `--font-size-meta`, `--font-size-ui`, etc.) layered on the primitive size scale, layout chrome heights (`--header-height`, `--toolbar-height`), motion tokens (`--duration-fast`, `--duration-base`), and z-index layers (`--z-toolbar`, `--z-header`).
+- All hardcoded colors replaced: `bg-white` → `bg-[--color-surface]` everywhere; `text-white` on brand surfaces → `text-[--color-brand-foreground]`; `rounded-lg` (Tailwind built-in) → `rounded-[--radius-md]` on GameCard.
+- Semantic font-size token wiring: components use generated utilities (`text-card-title`, `text-meta`, `text-tag`, `text-ui`, `text-body`, `text-detail-title`, `text-section-label`) rather than raw Tailwind size utilities. Selective spacing wiring: major layout boundaries use named token utilities (`px-md`, `py-lg`, `mb-md`, etc.); micro-layout fine-tuning stays as numeric Tailwind utilities (the selective-explicit convention).
+- Hardcoded z-indices, transition durations, and sticky offsets replaced: `z-20`/`z-10` → `z-header`/`z-toolbar`; `duration-150`/`duration-100` → `duration-base`/`duration-fast`; `top-[57px]` → `top-[--header-height]`; `top-[115px]` → a scoped CSS calc from `--header-height` and `--toolbar-height`.
+- Inter loaded self-hosted via `@fontsource/inter` (weights 400/500/600/700), removing the Google Fonts runtime dependency.
+- Shared components extracted to `app/components/shared/`: `FeaturedBadge` (pure presentational pill, placement is the parent's responsibility), `Button` (primary and danger variants), `Input` (v-model, `invalid` prop for error state, full attr inheritance).
+- Login page SSR re-enabled after the root cause (a `v-show` + Tailwind v4 CSS-variable-in-text ambiguity) was confirmed already fixed in commit 294fee4.
+
+**Out of scope:** visual redesign, any new feature, touching `server/api/` or `server/db/`.
+
+**Done when:** changing a token value in `tokens.css` propagates to every consumer without additional code changes. ✅
+
 ## Milestone 3 — BGG integration
 
 Data-entry workflow becomes fast enough for the 400-game session.

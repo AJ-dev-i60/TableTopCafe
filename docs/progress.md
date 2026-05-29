@@ -1,8 +1,26 @@
 # Progress — TableTopCafe
 
-Current state of the build and anything needed to resume on a fresh machine.
+Granular session-level state: what's done, what's next, and anything needed to resume on a fresh machine. For the milestone plan and scope definitions see `docs/roadmap.md` — this file tracks *where we are*, not *where we're going*.
 
-## Current milestone: M2 — Staff auth and game CRUD
+## Current milestone: M2.5 — Tokenization and convention remediation
+
+**Status: M2.5 code complete on `main`. Needs to be pushed to `dev` for verification before merging.**
+
+### M2.5 checklist ✅
+- [x] Expanded token set: brand-foreground, 10-step warm neutral scale, semantic typography layer, layout chrome heights, motion tokens, z-index layers
+- [x] All hardcoded colors replaced: `bg-white` → `bg-[--color-surface]`, `text-white` → `text-[--color-brand-foreground]`, `rounded-lg` → `rounded-[--radius-md]` on GameCard
+- [x] Semantic font-size token wiring across all components (text-card-title, text-meta, text-tag, text-ui, text-body, text-detail-title, text-section-label)
+- [x] Selective spacing wiring: major layout boundaries use named token utilities; micro-layout stays numeric
+- [x] Hardcoded z-indices, durations, and sticky offsets replaced with token references
+- [x] Inter loaded self-hosted via `@fontsource/inter` (weights 400/500/600/700)
+- [x] Shared components: `FeaturedBadge`, `SharedButton` (primary + danger), `SharedInput` (v-model + invalid + attr inheritance)
+- [x] Login page SSR re-enabled (root cause was already fixed in 294fee4; `ssr: false` was a leftover)
+
+**Next step:** push `main` to `dev` branch, verify the dev environment at `https://tabletopcafedev.edgestudios.co.za`. Specifically check: Inter renders (not system-ui), sticky toolbar and sidebar offsets are correct, featured badges appear in all three locations, form inputs and buttons look right.
+
+---
+
+## Previous milestone: M2 — Staff auth and game CRUD ✅
 
 **Status: M2 code complete. Awaiting CI run and deployment.**
 

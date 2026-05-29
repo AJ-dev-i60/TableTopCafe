@@ -47,13 +47,8 @@ function timeLabel(min: number, max: number): string {
         </svg>
       </div>
 
-      <!-- Featured badge -->
-      <span
-        v-if="game.featured"
-        class="absolute top-2 left-2 px-2 py-0.5 text-tag font-semibold bg-[--color-brand] text-[--color-brand-foreground] rounded-full"
-      >
-        Featured
-      </span>
+      <!-- Featured badge — absolute placement is GameCard's call, not the badge's -->
+      <SharedFeaturedBadge v-if="game.featured" class="absolute top-2 left-2" />
     </div>
 
     <!-- Body -->

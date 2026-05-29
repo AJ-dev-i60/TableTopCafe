@@ -36,12 +36,7 @@ function timeLabel(min: number, max: number): string {
     <!-- Main content -->
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2">
-        <span
-          v-if="game.featured"
-          class="shrink-0 px-1.5 py-0.5 text-tag font-semibold bg-[--color-brand] text-[--color-brand-foreground] rounded-full leading-tight"
-        >
-          Featured
-        </span>
+        <SharedFeaturedBadge v-if="game.featured" class="shrink-0" />
         <h2 class="text-card-title font-medium text-[--color-text-primary] truncate">{{ game.name }}</h2>
       </div>
       <div class="flex items-center gap-2 mt-0.5">

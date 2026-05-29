@@ -74,9 +74,7 @@ useSeoMeta({
     <div class="flex items-start gap-3 mb-md">
       <div class="flex-1">
         <div v-if="game.featured" class="mb-2">
-          <span class="px-2.5 py-1 text-tag font-semibold bg-[--color-brand] text-[--color-brand-foreground] rounded-full">
-            Featured
-          </span>
+          <SharedFeaturedBadge />
           <p v-if="game.featuredNote" class="mt-1.5 text-ui text-[--color-text-secondary] italic">
             {{ game.featuredNote }}
           </p>

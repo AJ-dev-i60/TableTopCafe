@@ -9,13 +9,12 @@
           <label for="username" class="block text-ui font-medium text-[--color-text-secondary] mb-1">
             Username
           </label>
-          <input
+          <SharedInput
             id="username"
             v-model="form.username"
             type="text"
             autocomplete="username"
             required
-            class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
           />
         </div>
 
@@ -23,13 +22,12 @@
           <label for="password" class="block text-ui font-medium text-[--color-text-secondary] mb-1">
             Password
           </label>
-          <input
+          <SharedInput
             id="password"
             v-model="form.password"
             type="password"
             autocomplete="current-password"
             required
-            class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
           />
         </div>
 
@@ -37,13 +35,14 @@
           {{ error }}
         </div>
 
-        <button
+        <SharedButton
           type="submit"
-          :disabled="pending"
-          class="w-full bg-[--color-brand] hover:bg-[--color-brand-hover] disabled:opacity-60 text-[--color-brand-foreground] text-ui font-medium rounded-[--radius-md] px-4 py-2 transition-colors"
+          class="w-full"
+          :pending="pending"
+          pending-label="Signing in…"
         >
-          {{ pending ? 'Signing in…' : 'Sign in' }}
-        </button>
+          Sign in
+        </SharedButton>
       </form>
     </div>
   </div>

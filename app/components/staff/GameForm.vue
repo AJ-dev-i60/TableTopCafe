@@ -3,14 +3,7 @@
     <!-- Name -->
     <div class="mb-md">
       <label for="game-name" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Name *</label>
-      <input
-        id="game-name"
-        v-model="form.name"
-        type="text"
-        required
-        maxlength="255"
-        class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
-      />
+      <SharedInput id="game-name" v-model="form.name" type="text" required maxlength="255" />
     </div>
 
     <!-- Description -->
@@ -29,25 +22,11 @@
     <div class="mb-md grid grid-cols-2 gap-md">
       <div>
         <label for="game-player-min" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Min players *</label>
-        <input
-          id="game-player-min"
-          v-model.number="form.playerMin"
-          type="number"
-          min="1"
-          required
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
-        />
+        <SharedInput id="game-player-min" v-model.number="form.playerMin" type="number" min="1" required />
       </div>
       <div>
         <label for="game-player-max" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Max players *</label>
-        <input
-          id="game-player-max"
-          v-model.number="form.playerMax"
-          type="number"
-          min="1"
-          required
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
-        />
+        <SharedInput id="game-player-max" v-model.number="form.playerMax" type="number" min="1" required />
       </div>
     </div>
 
@@ -55,25 +34,11 @@
     <div class="mb-md grid grid-cols-2 gap-md">
       <div>
         <label for="game-time-min" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Min time (min) *</label>
-        <input
-          id="game-time-min"
-          v-model.number="form.timeMin"
-          type="number"
-          min="1"
-          required
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
-        />
+        <SharedInput id="game-time-min" v-model.number="form.timeMin" type="number" min="1" required />
       </div>
       <div>
         <label for="game-time-max" class="block text-ui font-medium text-[--color-text-secondary] mb-1">Max time (min) *</label>
-        <input
-          id="game-time-max"
-          v-model.number="form.timeMax"
-          type="number"
-          min="1"
-          required
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
-        />
+        <SharedInput id="game-time-max" v-model.number="form.timeMax" type="number" min="1" required />
       </div>
     </div>
 
@@ -84,12 +49,11 @@
         <span class="text-ui font-medium text-[--color-text-secondary]">Featured game</span>
       </label>
       <div v-if="form.featured" class="mt-2">
-        <input
+        <SharedInput
           v-model="form.featuredNote"
           type="text"
           maxlength="500"
           placeholder="Optional note shown with featured game"
-          class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
         />
       </div>
     </div>
@@ -105,7 +69,7 @@
 
     <!-- Photos -->
     <div class="mb-lg">
-      <label class="block text-sm font-medium text-[--color-text-secondary] mb-2">Photos</label>
+      <label class="block text-ui font-medium text-[--color-text-secondary] mb-2">Photos</label>
       <StaffPhotoUpload
         v-if="savedGameId"
         ref="photoUpload"
@@ -119,13 +83,13 @@
     <p v-if="error" class="text-ui text-[--color-error] mb-md">{{ error }}</p>
 
     <div class="flex items-center gap-3">
-      <button
+      <SharedButton
         type="submit"
-        :disabled="pending"
-        class="bg-[--color-brand] hover:bg-[--color-brand-hover] disabled:opacity-60 text-[--color-brand-foreground] text-ui font-medium rounded-[--radius-md] px-5 py-2 transition-colors"
+        :pending="pending"
+        pending-label="Saving…"
       >
-        {{ pending ? 'Saving…' : submitLabel }}
-      </button>
+        {{ submitLabel }}
+      </SharedButton>
       <NuxtLink to="/staff" class="text-ui text-[--color-text-secondary] hover:text-[--color-text-primary]">
         Cancel
       </NuxtLink>

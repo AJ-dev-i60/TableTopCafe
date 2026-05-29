@@ -20,12 +20,10 @@
 
     <!-- Input -->
     <div class="relative">
-      <input
-        ref="inputEl"
+      <SharedInput
         v-model="query"
         type="text"
         placeholder="Search or create tags…"
-        class="w-full border border-[--color-border] rounded-[--radius-md] px-3 py-2 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand] focus:border-transparent"
         @focus="open = true"
         @blur="onBlur"
         @keydown.enter.prevent="selectFirst"
@@ -71,7 +69,6 @@ const emit = defineEmits<{
 
 const query = ref('')
 const open = ref(false)
-const inputEl = ref<HTMLInputElement | null>(null)
 
 const selectedNames = computed(() => new Set(props.modelValue.map((t) => t.name.toLowerCase())))
 

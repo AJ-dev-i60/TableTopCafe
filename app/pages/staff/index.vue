@@ -41,13 +41,13 @@
           >
             Edit
           </NuxtLink>
-          <button
+          <SharedButton
             v-if="!game.deletedAt"
-            class="text-ui text-[--color-error] hover:underline"
+            variant="danger"
             @click="deleteGame(game.id, game.name)"
           >
             Delete
-          </button>
+          </SharedButton>
         </div>
       </div>
     </div>

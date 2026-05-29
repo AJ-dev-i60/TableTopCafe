@@ -2,9 +2,9 @@
 
 Granular session-level state: what's done, what's next, and anything needed to resume on a fresh machine. For the milestone plan and scope definitions see `docs/roadmap.md` — this file tracks *where we are*, not *where we're going*.
 
-## Current milestone: M2.5 — Tokenization and convention remediation
+## Current milestone: M2.5 — Tokenization and convention remediation ✅
 
-**Status: M2.5 code complete on `main`. Needs to be pushed to `dev` for verification before merging.**
+**Status: Complete. `main` and `dev` are in sync at build #2.**
 
 ### M2.5 checklist ✅
 - [x] Expanded token set: brand-foreground, 10-step warm neutral scale, semantic typography layer, layout chrome heights, motion tokens, z-index layers
@@ -15,8 +15,18 @@ Granular session-level state: what's done, what's next, and anything needed to r
 - [x] Inter loaded self-hosted via `@fontsource/inter` (weights 400/500/600/700)
 - [x] Shared components: `FeaturedBadge`, `SharedButton` (primary + danger), `SharedInput` (v-model + invalid + attr inheritance)
 - [x] Login page SSR re-enabled (root cause was already fixed in 294fee4; `ssr: false` was a leftover)
+- [x] Verified on dev: Inter renders, sticky offsets correct, badges, forms all correct
 
-**Next step:** push `main` to `dev` branch, verify the dev environment at `https://tabletopcafedev.edgestudios.co.za`. Specifically check: Inter renders (not system-ui), sticky toolbar and sidebar offsets are correct, featured badges appear in all three locations, form inputs and buttons look right.
+**Next milestone:** M3 (see `docs/roadmap.md`).
+
+---
+
+## Deployment infrastructure (completed 2026-05-29)
+
+- **Build number**: `BUILD_NUMBER` file in repo root. GitHub Actions bumps it after every successful CI run on `main` and commits back with `[skip ci]`. `nuxt.config.ts` reads it via `readFileSync`. Header shows `Table-Top-Cafe  #N`.
+- **GitHub → Coolify webhooks**: Two webhooks on the repo (one per app). URL: `https://coolify.edgestudios.co.za/webhooks/source/github/events/manual`. Each signed with the app's `manual_webhook_secret_github` (HMAC-SHA256 via `X-Hub-Signature-256`). Auto-deploy now works on push.
+- **Dev `SESSION_SECRET`**: Set in Coolify env vars for the dev app. Dev container stable.
+- **⚠️ Prod `SESSION_SECRET` still needed**: Production container will crash-loop until `SESSION_SECRET` (and `ADMIN_USERNAME`/`ADMIN_PASSWORD`) are set in Coolify → prod app env vars. See M2 checklist below for instructions.
 
 ---
 

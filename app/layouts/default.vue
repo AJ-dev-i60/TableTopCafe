@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { public: { buildNumber } } = useRuntimeConfig()
+const { public: { buildId } } = useRuntimeConfig()
 </script>
 
 <template>
@@ -8,7 +8,7 @@ const { public: { buildNumber } } = useRuntimeConfig()
       <div class="max-w-7xl mx-auto px-md py-3 flex items-center justify-between">
         <span class="flex items-baseline gap-2">
           <span class="text-base font-bold text-[--color-text-primary] tracking-tight">Table-Top-Cafe</span>
-          <span class="text-xs text-[--color-text-muted]">build {{ buildNumber }}</span>
+          <span class="text-xs text-[--color-text-muted]">{{ buildId }}</span>
         </span>
         <slot name="header-actions" />
       </div>

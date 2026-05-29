@@ -33,7 +33,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
   <div>
     <!-- Search bar + view toggle -->
     <div class="sticky top-[57px] z-10 bg-white border-b border-[--color-border]">
-      <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-2">
+      <div class="max-w-7xl mx-auto px-md py-2.5 flex items-center gap-2">
         <!-- Search -->
         <div class="flex-1 relative">
           <svg
@@ -52,7 +52,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
 
         <!-- Filter toggle (mobile) -->
         <button
-          class="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[--color-border] rounded-[--radius-md] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand] transition-colors"
+          class="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-ui border border-[--color-border] rounded-[--radius-md] text-[--color-text-secondary] hover:border-[--color-brand] hover:text-[--color-brand] transition-colors"
           :class="{ 'border-[--color-brand] text-[--color-brand]': showFilters }"
           @click="showFilters = !showFilters"
         >
@@ -109,8 +109,8 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
     </div>
 
     <!-- Main content -->
-    <div class="max-w-7xl mx-auto px-4 py-6">
-      <div class="flex gap-8">
+    <div class="max-w-7xl mx-auto px-md py-lg">
+      <div class="flex gap-xl">
 
         <!-- Desktop filter sidebar -->
         <aside class="hidden lg:block w-52 shrink-0">
@@ -133,8 +133,8 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
         <div class="flex-1 min-w-0">
 
           <!-- Count + status -->
-          <div class="flex items-center justify-between mb-4">
-            <p class="text-sm text-[--color-text-secondary]">
+          <div class="flex items-center justify-between mb-md">
+            <p class="text-ui text-[--color-text-secondary]">
               <span class="font-medium text-[--color-text-primary]">{{ totalVisible }}</span>
               {{ totalVisible === 1 ? 'game' : 'games' }}
             </p>
@@ -142,9 +142,9 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
 
           <!-- Empty state -->
           <div v-if="totalVisible === 0" class="py-16 text-center">
-            <p class="text-[--color-text-secondary] text-sm">No games match your filters.</p>
+            <p class="text-ui text-[--color-text-secondary]">No games match your filters.</p>
             <button
-              class="mt-3 text-sm text-[--color-brand] hover:underline"
+              class="mt-3 text-ui text-[--color-brand] hover:underline"
               @click="clearFilters"
             >
               Clear filters
@@ -153,8 +153,8 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
 
           <template v-else>
             <!-- Featured -->
-            <section v-if="featured.length > 0" class="mb-8">
-              <h2 class="text-xs font-semibold text-[--color-text-secondary] uppercase tracking-wider mb-3">Featured</h2>
+            <section v-if="featured.length > 0" class="mb-xl">
+              <h2 class="text-section-label font-semibold text-[--color-text-secondary] uppercase tracking-wider mb-3">Featured</h2>
               <div
                 v-if="view === 'grid'"
                 class="grid grid-cols-2 sm:grid-cols-3 gap-3"

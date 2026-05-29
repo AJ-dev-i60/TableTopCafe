@@ -50,7 +50,7 @@ function timeLabel(min: number, max: number): string {
       <!-- Featured badge -->
       <span
         v-if="game.featured"
-        class="absolute top-2 left-2 px-2 py-0.5 text-xs font-semibold bg-[--color-brand] text-white rounded-full"
+        class="absolute top-2 left-2 px-2 py-0.5 text-tag font-semibold bg-[--color-brand] text-white rounded-full"
       >
         Featured
       </span>
@@ -58,12 +58,12 @@ function timeLabel(min: number, max: number): string {
 
     <!-- Body -->
     <div class="flex flex-col flex-1 p-3 gap-1.5">
-      <h2 class="text-sm font-semibold text-[--color-text-primary] leading-tight line-clamp-2">
+      <h2 class="text-card-title font-semibold text-[--color-text-primary] leading-tight line-clamp-2">
         {{ game.name }}
       </h2>
 
       <!-- Meta row -->
-      <div class="flex items-center gap-3 text-xs text-[--color-text-secondary]">
+      <div class="flex items-center gap-3 text-meta text-[--color-text-secondary]">
         <span class="flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -83,13 +83,13 @@ function timeLabel(min: number, max: number): string {
         <span
           v-for="tag in game.tags.slice(0, 3)"
           :key="tag.id"
-          class="px-1.5 py-0.5 text-xs bg-[--color-surface-elevated] text-[--color-text-secondary] rounded border border-[--color-border]"
+          class="px-1.5 py-0.5 text-tag bg-[--color-surface-elevated] text-[--color-text-secondary] rounded border border-[--color-border]"
         >
           {{ tag.name }}
         </span>
         <span
           v-if="game.tags.length > 3"
-          class="px-1.5 py-0.5 text-xs text-[--color-text-muted]"
+          class="px-1.5 py-0.5 text-meta text-[--color-text-muted]"
         >
           +{{ game.tags.length - 3 }}
         </span>

@@ -62,7 +62,7 @@
   --font-size-section-label: var(--font-size-xs);   /* "Featured", "All games" headings */
   --font-size-ui:            var(--font-size-sm);   /* buttons, nav links, form labels */
   --font-size-body:          var(--font-size-base); /* descriptions, body copy */
-  --font-size-detail-title:  var(--font-size-3xl);  /* game name on the detail page */
+  --font-size-detail-title:  var(--font-size-2xl);  /* game name on the detail page */
 
   /* ─── Border radius ──────────────────────────────────────────────────── */
   --radius-sm:   4px;

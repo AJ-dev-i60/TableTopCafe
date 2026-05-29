@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-lg">
       <h1 class="text-2xl font-bold text-[--color-text-primary]">Games</h1>
       <NuxtLink
         to="/staff/games/new"
-        class="bg-[--color-brand] hover:bg-[--color-brand-hover] text-white text-sm font-medium rounded-[--radius-md] px-4 py-2 transition-colors"
+        class="bg-[--color-brand] hover:bg-[--color-brand-hover] text-white text-ui font-medium rounded-[--radius-md] px-4 py-2 transition-colors"
       >
         Add game
       </NuxtLink>
@@ -20,16 +20,16 @@
       <div
         v-for="game in games"
         :key="game.id"
-        class="flex items-center justify-between px-4 py-3"
+        class="flex items-center justify-between px-md py-3"
         :class="{ 'opacity-50': game.deletedAt }"
       >
         <div class="min-w-0">
-          <p class="text-sm font-medium text-[--color-text-primary] truncate">
+          <p class="text-card-title font-medium text-[--color-text-primary] truncate">
             {{ game.name }}
             <span v-if="game.deletedAt" class="ml-2 text-xs text-[--color-text-muted] font-normal">(deleted)</span>
             <span v-if="game.featured" class="ml-2 text-xs text-[--color-brand] font-normal">★ Featured</span>
           </p>
-          <p class="text-xs text-[--color-text-muted]">
+          <p class="text-meta text-[--color-text-muted]">
             {{ game.playerMin }}–{{ game.playerMax }} players · {{ game.timeMin }}–{{ game.timeMax }} min
           </p>
         </div>
@@ -37,13 +37,13 @@
           <NuxtLink
             v-if="!game.deletedAt"
             :to="`/staff/games/${game.id}/edit`"
-            class="text-sm text-[--color-brand] hover:underline"
+            class="text-ui text-[--color-brand] hover:underline"
           >
             Edit
           </NuxtLink>
           <button
             v-if="!game.deletedAt"
-            class="text-sm text-[--color-error] hover:underline"
+            class="text-ui text-[--color-error] hover:underline"
             @click="deleteGame(game.id, game.name)"
           >
             Delete

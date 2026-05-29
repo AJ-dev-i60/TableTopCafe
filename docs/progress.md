@@ -4,7 +4,7 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Current milestone: M5 — Polish 🚧
 
-**Status: Visual design pass complete on `dev`. Performance pass + data entry sprint pending.**
+**Status: Visual design pass owner-verified on dev. Pre-launch cleanup + data entry sprint pending.**
 
 ### M5 checklist
 - [x] Tokens: Felt & Slate palette, glass tokens, `--mesh-bg`, new radii/shadows/semantic font sizes — `tokens.css`
@@ -15,10 +15,10 @@ Granular session-level state: what's done, what's next, and anything needed to r
 - [x] `CatalogueFilters.vue` — glass filter chips (unselected: semi-translucent; selected: solid brand)
 - [x] Detail page `games/[id].vue` — glass hero (full-bleed photo + scrim + title overlay), glass content panels, responsive sticky two-column on desktop, no-photo fallback
 - [x] Staff layout `staff.vue` — flat white nav bar, brand underline active link, 58px height
-- [x] Staff login `login.vue` — flat page bg, white centered card
+- [x] Staff login `login.vue` — rebuilt to match `design/staff.html` spec: 360px card, border, centered wordmark + muted subtitle, scoped CSS (no Tailwind utility layout)
 - [x] Staff dashboard `staff/index.vue` — proper table (thumb + name + pill columns), segmented filter, status pills, brand-gradient thumbnail fallback
-- [x] `Button.vue` — added `secondary` and `ghost` variants; all variants use `rounded-[--radius-md]`
-- [x] `Input.vue` — `border-[--color-border-strong]`, focus ring `rgb(21_128_61/0.15)`, invalid ring
+- [x] `Button.vue` — all layout/sizing moved to scoped CSS (`display`, `padding`, `font-size`, `font-family`, `transition`, `cursor`, `white-space: nowrap`); Tailwind utilities removed from template
+- [x] `Input.vue` — all layout/sizing moved to scoped CSS (`display: block`, `width: 100%`, `padding: 9px 11px`, `font-size: 14px`, `font-family: inherit`); Tailwind utilities removed from template
 - [x] `GameForm.vue` — two-column desktop layout (details left, featured+photos right in cards), BGG block with dashed brand-accent border, right-aligned footer actions
 - [x] `StaffGameListItem` query extended to include `photoHash` (first photo per game)
 - [x] CSS variable fix: Tailwind v4.3 generates `utility-[--variable]` without `var()` — all M5 components migrated to scoped CSS with explicit `var()` or inline `style` attributes
@@ -26,6 +26,12 @@ Granular session-level state: what's done, what's next, and anything needed to r
   - `GameCard.vue`: fallback letter 85% opacity (was 20%), smaller size (3rem vs 7rem), meta row gap 16px (was 10px), brand-tinted shadow on featured cards
   - `index.vue`: ★ star icon on Featured section label, view toggle changed to two separate bordered buttons with gap (was single grouped container)
   - `games/[id].vue`: back pill translucent 16% (was opaque 55%), "Staff pick" label added to featured note, tags use glass fill (was solid surface)
+- [x] `seed-admin.ts` — now syncs password on every deploy (not just first boot); ADMIN_PASSWORD in Coolify is always the source of truth
+- [x] `CLAUDE.md` — updated to pull from `origin dev` (was `origin main`)
+- [ ] **Pre-launch cleanup (do before data entry):**
+  - Remove auth bypass in `server/api/auth/login.post.ts` (TODO comment marks it)
+  - Replace hardcoded `px`/`font-size` literals in `SharedInput`, `SharedButton`, and `login.vue` with `var(--*)` token references — currently breaks skinnable-via-tokens guarantee
+  - Resolve actual admin credentials issue (unknown why Coolify ADMIN_PASSWORD wasn't matching)
 - [ ] Performance pass on representative low-end Android (catalogue scroll, image loading, TTI)
 - [ ] 400-game data entry sprint
 - [ ] QR codes on tables

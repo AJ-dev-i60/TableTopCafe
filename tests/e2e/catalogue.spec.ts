@@ -65,8 +65,8 @@ test('can open a game detail page', async ({ page }) => {
   await expect(page).toHaveURL(/\/games\/\d+/)
   // Should show game name in a heading
   await expect(page.locator('h1')).toContainText(gameName?.trim() ?? '')
-  // Back link should be present (glass pill says "Catalogue" since M5 redesign)
-  await expect(page.getByText('Catalogue')).toBeVisible()
+  // Back link should be present (glass pill back-link since M5 redesign)
+  await expect(page.getByRole('link', { name: 'Catalogue' })).toBeVisible()
 })
 
 test('list view toggle switches layout', async ({ page }) => {

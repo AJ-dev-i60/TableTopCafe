@@ -3,6 +3,8 @@ import type { GameListItem } from '../../../server/db/queries/games'
 
 defineProps<{ game: GameListItem }>()
 
+const imageFailed = ref(false)
+
 function playerLabel(min: number, max: number): string {
   return min === max ? `${min}p` : `${min}–${max}p`
 }
@@ -23,11 +25,12 @@ function timeLabel(min: number, max: number): string {
     <!-- Thumbnail -->
     <div class="shrink-0 w-12 h-12 overflow-hidden" style="border-radius: var(--radius-sm)">
       <img
-        v-if="game.photoHash"
+        v-if="game.photoHash && !imageFailed"
         :src="`/api/photos/${game.photoHash}/thumb.jpg`"
         :alt="game.name"
         loading="lazy"
         class="w-full h-full object-cover"
+        @error="imageFailed = true"
       />
       <!-- No-photo fallback: brand gradient + first initial -->
       <div v-else class="thumb-fallback w-full h-full flex items-center justify-center">

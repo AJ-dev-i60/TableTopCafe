@@ -27,6 +27,7 @@ function timeLabel(min: number, max: number): string {
 }
 
 const primaryPhotoHash = computed(() => game.value?.photos[0]?.contentHash ?? null)
+const heroImageFailed = ref(false)
 
 useSeoMeta({
   title: () => game.value ? `${game.value.name} — TableTopCafe` : 'TableTopCafe',
@@ -44,7 +45,7 @@ useSeoMeta({
         <div class="hero-card relative overflow-hidden">
 
           <!-- Photo -->
-          <picture v-if="primaryPhotoHash" class="block absolute inset-0">
+          <picture v-if="primaryPhotoHash && !heroImageFailed" class="block absolute inset-0">
             <source
               type="image/webp"
               :srcset="`${photoUrl(primaryPhotoHash, 'card', 'webp')} 600w, ${photoUrl(primaryPhotoHash, 'detail', 'webp')} 1200w`"
@@ -54,6 +55,7 @@ useSeoMeta({
               :src="photoUrl(primaryPhotoHash, 'detail', 'jpg')"
               :alt="game.name"
               class="w-full h-full object-cover"
+              @error="heroImageFailed = true"
             />
           </picture>
 

@@ -62,11 +62,12 @@
               <div class="flex items-center gap-3">
                 <div class="shrink-0 w-10 h-10 overflow-hidden" style="border-radius: var(--radius-sm)">
                   <img
-                    v-if="game.photoHash"
+                    v-if="game.photoHash && !failedThumbs[game.id]"
                     :src="`/api/photos/${game.photoHash}/thumb.jpg`"
                     :alt="game.name"
                     loading="lazy"
                     class="w-full h-full object-cover"
+                    @error="failedThumbs[game.id] = true"
                   />
                   <div v-else class="thumb-fallback w-full h-full flex items-center justify-center">
                     <span class="text-sm font-bold text-white/60 leading-none select-none" aria-hidden="true">
@@ -148,6 +149,8 @@ const filteredGames = computed(() => {
   if (filter.value === 'deleted') return games.value.filter((g) => !!g.deletedAt)
   return games.value
 })
+
+const failedThumbs = reactive<Record<number, boolean>>({})
 
 async function deleteGame(id: number, name: string) {
   if (!confirm(`Delete "${name}"? It will be hidden from the catalogue.`)) return

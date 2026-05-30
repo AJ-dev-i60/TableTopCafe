@@ -3,6 +3,8 @@ import type { GameListItem } from '../../../server/db/queries/games'
 
 defineProps<{ game: GameListItem }>()
 
+const imageFailed = ref(false)
+
 function photoUrl(hash: string, size: 'thumb' | 'card' | 'detail', ext: 'webp' | 'jpg') {
   return `/api/photos/${hash}/${size}.${ext}`
 }
@@ -21,7 +23,7 @@ function timeLabel(min: number, max: number): string {
   <article :class="['card relative overflow-hidden border border-white/40 motion-safe:transition-shadow motion-safe:duration-base aspect-[16/10] sm:aspect-[4/3] lg:aspect-[3/4]', game.featured ? 'card-featured' : '']">
 
     <!-- Photo fills the card -->
-    <picture v-if="game.photoHash" class="block absolute inset-0">
+    <picture v-if="game.photoHash && !imageFailed" class="block absolute inset-0">
       <source
         type="image/webp"
         :srcset="`${photoUrl(game.photoHash, 'thumb', 'webp')} 200w, ${photoUrl(game.photoHash, 'card', 'webp')} 600w`"
@@ -34,6 +36,7 @@ function timeLabel(min: number, max: number): string {
         :alt="game.name"
         loading="lazy"
         class="w-full h-full object-cover"
+        @error="imageFailed = true"
       />
     </picture>
 

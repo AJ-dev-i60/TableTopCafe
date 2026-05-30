@@ -308,6 +308,15 @@ async function seed() {
   let newGames = 0
 
   for (const [i, g] of GAMES.entries()) {
+    // Always (re-)write the placeholder photo. /app/photos is ephemeral on
+    // Coolify (no volume mount), so files vanish on every redeploy while DB
+    // rows persist. The hash is deterministic — same (r,g,b) → same sha256 →
+    // same files on disk — so this is a no-op when files already exist and a
+    // recovery step when they don't.
+    const paletteEntry = PALETTE[i % PALETTE.length] ?? ([99, 140, 185] as [number, number, number])
+    const [r, g2, b] = paletteEntry
+    const hash = await writePlaceholderPhoto(r, g2, b)
+
     const existing = await db
       .select({ id: games.id })
       .from(games)
@@ -315,7 +324,7 @@ async function seed() {
       .limit(1)
 
     if (existing.length > 0) {
-      console.log(`    [skip] ${g.name}`)
+      console.log(`    [skip-row, photo ensured] ${g.name}`)
       continue
     }
 
@@ -344,12 +353,6 @@ async function seed() {
     if (tagRows.length > 0) {
       await db.insert(gameTags).values(tagRows).onConflictDoNothing()
     }
-
-    // Placeholder photo — cycle through palette
-    const paletteEntry = PALETTE[i % PALETTE.length] ?? ([99, 140, 185] as [number, number, number])
-    const [r, g2, b] = paletteEntry
-    console.log(`    Generating placeholder photo for "${g.name}"…`)
-    const hash = await writePlaceholderPhoto(r, g2, b)
 
     await db.insert(photos).values({
       gameId: game.id,

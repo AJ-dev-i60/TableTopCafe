@@ -11,6 +11,7 @@ Granular session-level state: what's done, what's next, and anything needed to r
 **Pushed to `origin/dev`:**
 - `df5de96` fix(catalogue): no-photo fallback now triggers on image load failure (added `@error` handler + flag in `GameCard`, `GameListItem`, `games/[id].vue` hero, `staff/index.vue` thumbnail). Root cause was `v-if="game.photoHash"` only checking the DB column.
 - `9721da3` fix(staff): migrated 64 broken `*-[--var]` Tailwind v4.3 utilities to scoped CSS / inline styles across `staff/{BggSearch,PhotoUpload,TagTypeahead}.vue`, `staff/games/{new,[id]/edit}.vue`, `staff/tags/index.vue`, `staff/users/index.vue`. No visual changes intended — colors/radii preserved 1:1.
+- `74e446b` feat(version): replaced brittle `BUILD_NUMBER` file + GH Actions bump-and-commit loop with a build-time version derived from HEAD's commit timestamp. Format `v{YY}.{MM}.{DD}.{HHMM}` in Africa/Johannesburg time (e.g. `v26.05.30.1629`). Computed in `nuxt.config.ts` via `git log -1 --format=%cI HEAD` + `Intl.DateTimeFormat`. Stable per commit — a Coolify rebuild of the same commit produces the same version. Requires `git` in the Docker builder stage (added: `apk add --no-cache git`). Owner-verified on dev 2026-05-30.
 
 **Next action when resuming (in priority order):**
 1. **Visual-verify the dev deploy** — confirm staff tags / users / add-game / edit-game / BGG dropdown / tag type-ahead / photo dropzone all render correctly. Verify the catalogue no-photo fallback (gradient + first initial) appears on cards whose photo files are missing.
@@ -115,7 +116,7 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Deployment infrastructure (completed 2026-05-29)
 
-- **Build number**: `BUILD_NUMBER` file in repo root. GitHub Actions bumps it after every successful CI run on `main` and commits back with `[skip ci]`. `nuxt.config.ts` reads it via `readFileSync`. Header shows `Table-Top-Cafe  #N`.
+- **Version (replaces old `BUILD_NUMBER` scheme as of 2026-05-30, commit `74e446b`)**: computed at build time from `git log -1 --format=%cI HEAD` in `nuxt.config.ts`, formatted as `v{YY}.{MM}.{DD}.{HHMM}` in Africa/Johannesburg time (e.g. `v26.05.30.1629`). No file in repo, no GH Actions bump job. Requires `git` in the Docker builder stage (`apk add --no-cache git` in the builder layer). Falls back to build-time `new Date()` with a console warning if git is unavailable. Header shows `Table-Top-Cafe  v…`.
 - **GitHub → Coolify webhooks**: Two webhooks on the repo (one per app). URL: `https://coolify.edgestudios.co.za/webhooks/source/github/events/manual`. Each signed with the app's `manual_webhook_secret_github` (HMAC-SHA256 via `X-Hub-Signature-256`). Auto-deploy now works on push.
 - **Dev `SESSION_SECRET`**: Set in Coolify env vars for the dev app. Dev container stable.
 - **Prod `SESSION_SECRET`**: Set in Coolify env vars for the prod app (confirmed 2026-05-29).

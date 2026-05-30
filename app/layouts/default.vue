@@ -8,7 +8,7 @@ const { public: { buildNumber } } = useRuntimeConfig()
       <div class="max-w-7xl mx-auto px-md py-3 flex items-center justify-between">
         <span class="flex items-baseline gap-2">
           <span class="text-base font-bold tracking-tight" style="color: var(--color-text-primary)">Table-Top-Cafe</span>
-          <span class="text-xs" style="color: var(--color-text-muted)">#{{ buildNumber }}</span>
+          <span class="text-xs" style="color: var(--color-text-muted)">{{ buildNumber }}</span>
         </span>
         <slot name="header-actions" />
       </div>

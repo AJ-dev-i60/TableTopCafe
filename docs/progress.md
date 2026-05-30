@@ -4,7 +4,31 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Current milestone: M5 — Polish 🚧
 
-**Status: Visual design pass owner-verified on dev. Pre-launch cleanup + data entry sprint pending.**
+**Status: Visual design pass owner-verified on dev. Staff-admin Tailwind regression + catalogue fallback bug fixed and pushed (2026-05-30). Shared-component token migration awaits design sign-off. Auth bypass + data entry sprint still pending.**
+
+### Session end — 2026-05-30 (pivot point)
+
+**Pushed to `origin/dev`:**
+- `df5de96` fix(catalogue): no-photo fallback now triggers on image load failure (added `@error` handler + flag in `GameCard`, `GameListItem`, `games/[id].vue` hero, `staff/index.vue` thumbnail). Root cause was `v-if="game.photoHash"` only checking the DB column.
+- `9721da3` fix(staff): migrated 64 broken `*-[--var]` Tailwind v4.3 utilities to scoped CSS / inline styles across `staff/{BggSearch,PhotoUpload,TagTypeahead}.vue`, `staff/games/{new,[id]/edit}.vue`, `staff/tags/index.vue`, `staff/users/index.vue`. No visual changes intended — colors/radii preserved 1:1.
+
+**Next action when resuming (in priority order):**
+1. **Visual-verify the dev deploy** — confirm staff tags / users / add-game / edit-game / BGG dropdown / tag type-ahead / photo dropzone all render correctly. Verify the catalogue no-photo fallback (gradient + first initial) appears on cards whose photo files are missing.
+2. **Investigate why photos are missing in local dev** — fallback fix is correct defensive behaviour, but the underlying "no images served" issue is separate. Likely the named `photos` Docker volume isn't mounted into this run, or seed-time files aren't in the local FS. Worth a `curl /api/photos/<hash>/card.jpg` check.
+3. **Shared-component token migration** — awaiting design sign-off on mapping (see queue below). Files: [app/components/shared/Button.vue](app/components/shared/Button.vue), [app/components/shared/Input.vue](app/components/shared/Input.vue), [app/pages/staff/login.vue](app/pages/staff/login.vue).
+4. **Auth bypass removal** — explicitly deferred until last per owner instruction. Pre-req: resolve Coolify `ADMIN_PASSWORD` mismatch root cause first, otherwise prod admin is locked out.
+
+**Design-team asks queued (blocking the items below):**
+- `Button.vue` paddings (`9px 16px`, `6px 12px`, `6px 8px`, `gap: 7px`) and `Input.vue` padding (`9px 11px`) — none map cleanly to existing spacing tokens (`--spacing-sm: 8px`, `--spacing-md: 16px`). Decide: add button/input-specific tokens, or accept ±1-2px nudges to fit existing scale?
+- `login.vue` literals (`max-width: 360px`, `padding: 30px 28px`, `margin-bottom: 22px`, `font-size: 20px/13px`, `letter-spacing: -0.02em`) — need new login-specific tokens or sign-off on a mapping using existing tokens.
+- **QR codes for tables** — physical artwork: laminated card design, brand/wordmark, "Scan to browse our games" copy, target dimensions, print-ready PDF. Code side is trivial once design exists.
+- **Audit fields display** — requirements capture `created-by/at`, `last-edited-by/at`, `deleted-by/at` in the DB but they're not surfaced anywhere. Decide: surface on edit page? Which of the 6 fields? Placement/typography?
+
+**Open audit findings still in scope (no design needed):**
+- Performance pass on representative low-end Android — catalogue scroll, image loading, TTI.
+- 400-game data entry sprint — operational, will surface real bugs.
+
+
 
 ### M5 checklist
 - [x] Tokens: Felt & Slate palette, glass tokens, `--mesh-bg`, new radii/shadows/semantic font sizes — `tokens.css`
@@ -21,7 +45,9 @@ Granular session-level state: what's done, what's next, and anything needed to r
 - [x] `Input.vue` — all layout/sizing moved to scoped CSS (`display: block`, `width: 100%`, `padding: 9px 11px`, `font-size: 14px`, `font-family: inherit`); Tailwind utilities removed from template
 - [x] `GameForm.vue` — two-column desktop layout (details left, featured+photos right in cards), BGG block with dashed brand-accent border, right-aligned footer actions
 - [x] `StaffGameListItem` query extended to include `photoHash` (first photo per game)
-- [x] CSS variable fix: Tailwind v4.3 generates `utility-[--variable]` without `var()` — all M5 components migrated to scoped CSS with explicit `var()` or inline `style` attributes
+- [x] CSS variable fix: Tailwind v4.3 generates `utility-[--variable]` without `var()` — public M5 components migrated to scoped CSS with explicit `var()` or inline `style` attributes
+- [x] Staff-admin Tailwind v4.3 regression fix (2026-05-30, commit `9721da3`): the original M5 migration missed the staff admin surface (64 broken occurrences across 7 files). Now migrated to the same pattern as the public catalogue. Affected: `staff/{BggSearch,PhotoUpload,TagTypeahead}.vue`, `staff/games/{new,[id]/edit}.vue`, `staff/tags/index.vue`, `staff/users/index.vue`
+- [x] Catalogue no-photo fallback bug fix (2026-05-30, commit `df5de96`): `v-if="game.photoHash"` only checked the DB column — when the served file 404s the browser rendered the broken `<img>` with its alt text. Added `@error` handler + flag in `GameCard`, `GameListItem`, `games/[id].vue` hero, `staff/index.vue` thumbnail
 - [x] Design alignment pass (diff against `design/glass.html` + `design/detail.html` mockups):
   - `GameCard.vue`: fallback letter 85% opacity (was 20%), smaller size (3rem vs 7rem), meta row gap 16px (was 10px), brand-tinted shadow on featured cards
   - `index.vue`: ★ star icon on Featured section label, view toggle changed to two separate bordered buttons with gap (was single grouped container)
@@ -29,8 +55,8 @@ Granular session-level state: what's done, what's next, and anything needed to r
 - [x] `seed-admin.ts` — now syncs password on every deploy (not just first boot); ADMIN_PASSWORD in Coolify is always the source of truth
 - [x] `CLAUDE.md` — updated to pull from `origin dev` (was `origin main`)
 - [ ] **Pre-launch cleanup (do before data entry):**
-  - Remove auth bypass in `server/api/auth/login.post.ts` (TODO comment marks it)
-  - Replace hardcoded `px`/`font-size` literals in `SharedInput`, `SharedButton`, and `login.vue` with `var(--*)` token references — currently breaks skinnable-via-tokens guarantee
+  - Remove auth bypass in `server/api/auth/login.post.ts` (TODO comment marks it) — explicitly deferred until last; resolve Coolify credentials mismatch first or prod admin is locked out
+  - Replace hardcoded `px`/`font-size` literals in `SharedInput`, `SharedButton`, and `login.vue` with `var(--*)` token references — currently breaks skinnable-via-tokens guarantee. **Blocked on design sign-off** for token mapping (see Session end note above)
   - Resolve actual admin credentials issue (unknown why Coolify ADMIN_PASSWORD wasn't matching)
 - [ ] Performance pass on representative low-end Android (catalogue scroll, image loading, TTI)
 - [ ] 400-game data entry sprint

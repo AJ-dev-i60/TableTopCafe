@@ -9,10 +9,22 @@
         style="border-color: var(--color-border)"
       >
         <img
+          v-if="!failedPhotos[hash]"
+          :data-photo-hash="hash"
           :src="`/api/photos/${hash}/thumb.webp`"
           :alt="hash"
           class="w-full h-full object-cover"
+          @error="failedPhotos[hash] = true"
         />
+        <div
+          v-else
+          class="photo-missing w-full h-full flex items-center justify-center"
+          :title="`Photo file missing: ${hash}`"
+        >
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3l18 18M4 4h16v16H4z M4 16l5-5 3 3 M14 14l1-1 5 5" />
+          </svg>
+        </div>
       </div>
     </div>
 
@@ -63,6 +75,23 @@ const previews = ref<string[]>([])
 const pending = ref(false)
 let pendingFiles: File[] = []
 
+// Same SSR/hydration race as GameCard.vue: errors fired before Vue hydrates
+// the @error listener are lost. Sweep existing-photo <img>s after mount and
+// re-sweep when the existingPhotos prop changes (after upload).
+const failedPhotos = reactive<Record<string, boolean>>({})
+
+function syncFailedPhotos() {
+  for (const img of document.querySelectorAll<HTMLImageElement>('img[data-photo-hash]')) {
+    if (img.complete && img.naturalWidth === 0 && img.currentSrc) {
+      const hash = img.dataset.photoHash
+      if (hash) failedPhotos[hash] = true
+    }
+  }
+}
+
+onMounted(syncFailedPhotos)
+watch(() => props.existingPhotos, () => nextTick(syncFailedPhotos))
+
 function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement
   if (!input.files) return
@@ -109,6 +138,11 @@ defineExpose({ upload })
 <style scoped>
 .photo-thumb {
   border-radius: var(--radius-md);
+}
+
+.photo-missing {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-muted);
 }
 
 .dropzone {

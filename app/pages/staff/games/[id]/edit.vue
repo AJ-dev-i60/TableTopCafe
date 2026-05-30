@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-2xl">
+  <div class="max-w-5xl">
     <div class="flex items-center gap-2 mb-lg">
       <NuxtLink to="/staff" class="crumb-link text-ui">
         ← Games

@@ -4,6 +4,15 @@ import type { GameListItem } from '../../../server/db/queries/games'
 defineProps<{ game: GameListItem }>()
 
 const imageFailed = ref(false)
+const imgEl = ref<HTMLImageElement | null>(null)
+
+// See GameCard.vue: catches errors that fired before hydration.
+onMounted(() => {
+  const el = imgEl.value
+  if (el && el.complete && el.naturalWidth === 0 && el.currentSrc) {
+    imageFailed.value = true
+  }
+})
 
 function playerLabel(min: number, max: number): string {
   return min === max ? `${min}p` : `${min}–${max}p`
@@ -26,6 +35,7 @@ function timeLabel(min: number, max: number): string {
     <div class="shrink-0 w-12 h-12 overflow-hidden" style="border-radius: var(--radius-sm)">
       <img
         v-if="game.photoHash && !imageFailed"
+        ref="imgEl"
         :src="`/api/photos/${game.photoHash}/thumb.jpg`"
         :alt="game.name"
         loading="lazy"

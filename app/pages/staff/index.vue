@@ -63,6 +63,7 @@
                 <div class="shrink-0 w-10 h-10 overflow-hidden" style="border-radius: var(--radius-sm)">
                   <img
                     v-if="game.photoHash && !failedThumbs[game.id]"
+                    :data-game-id="game.id"
                     :src="`/api/photos/${game.photoHash}/thumb.jpg`"
                     :alt="game.name"
                     loading="lazy"
@@ -151,6 +152,22 @@ const filteredGames = computed(() => {
 })
 
 const failedThumbs = reactive<Record<number, boolean>>({})
+
+// Errors that fire before Vue hydrates the @error listener are lost. After
+// each render, sweep all thumb <img>s and flag any that already failed —
+// catches the SSR-hydration race. Lazy images that haven't started loading
+// have empty currentSrc, so this won't false-positive them.
+function syncFailedThumbs() {
+  for (const img of document.querySelectorAll<HTMLImageElement>('img[data-game-id]')) {
+    if (img.complete && img.naturalWidth === 0 && img.currentSrc) {
+      failedThumbs[Number(img.dataset.gameId)] = true
+    }
+  }
+}
+
+onMounted(syncFailedThumbs)
+// After refresh() or filter change re-renders the table
+watch(filteredGames, () => nextTick(syncFailedThumbs))
 
 async function deleteGame(id: number, name: string) {
   if (!confirm(`Delete "${name}"? It will be hidden from the catalogue.`)) return

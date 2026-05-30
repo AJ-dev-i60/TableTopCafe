@@ -28,6 +28,15 @@ function timeLabel(min: number, max: number): string {
 
 const primaryPhotoHash = computed(() => game.value?.photos[0]?.contentHash ?? null)
 const heroImageFailed = ref(false)
+const heroImgEl = ref<HTMLImageElement | null>(null)
+
+// See GameCard.vue: catches errors that fired before hydration.
+onMounted(() => {
+  const el = heroImgEl.value
+  if (el && el.complete && el.naturalWidth === 0 && el.currentSrc) {
+    heroImageFailed.value = true
+  }
+})
 
 useSeoMeta({
   title: () => game.value ? `${game.value.name} — TableTopCafe` : 'TableTopCafe',
@@ -52,6 +61,7 @@ useSeoMeta({
               sizes="(max-width: 1024px) 100vw, 55vw"
             />
             <img
+              ref="heroImgEl"
               :src="photoUrl(primaryPhotoHash, 'detail', 'jpg')"
               :alt="game.name"
               class="w-full h-full object-cover"

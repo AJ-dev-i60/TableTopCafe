@@ -4,6 +4,17 @@ import type { GameListItem } from '../../../server/db/queries/games'
 defineProps<{ game: GameListItem }>()
 
 const imageFailed = ref(false)
+const imgEl = ref<HTMLImageElement | null>(null)
+
+// Errors that fire before Vue hydrates the @error listener are lost. After
+// mount, catch images that already failed: complete + naturalWidth=0 + a
+// committed currentSrc (so we don't mis-flag lazy images that haven't started).
+onMounted(() => {
+  const el = imgEl.value
+  if (el && el.complete && el.naturalWidth === 0 && el.currentSrc) {
+    imageFailed.value = true
+  }
+})
 
 function photoUrl(hash: string, size: 'thumb' | 'card' | 'detail', ext: 'webp' | 'jpg') {
   return `/api/photos/${hash}/${size}.${ext}`
@@ -30,6 +41,7 @@ function timeLabel(min: number, max: number): string {
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
       />
       <img
+        ref="imgEl"
         :src="photoUrl(game.photoHash, 'card', 'jpg')"
         :srcset="`${photoUrl(game.photoHash, 'thumb', 'jpg')} 200w, ${photoUrl(game.photoHash, 'card', 'jpg')} 600w`"
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

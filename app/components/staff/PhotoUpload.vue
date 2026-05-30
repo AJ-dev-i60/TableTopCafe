@@ -1,11 +1,12 @@
 <template>
   <div>
     <!-- Existing photos -->
-    <div v-if="existingPhotos.length > 0" class="flex flex-wrap gap-3 mb-4">
+    <div v-if="existingPhotos && existingPhotos.length > 0" class="flex flex-wrap gap-3 mb-4">
       <div
         v-for="hash in existingPhotos"
         :key="hash"
-        class="relative w-20 h-20 rounded-[--radius-md] overflow-hidden border border-[--color-border]"
+        class="photo-thumb relative w-20 h-20 overflow-hidden border"
+        style="border-color: var(--color-border)"
       >
         <img
           :src="`/api/photos/${hash}/thumb.webp`"
@@ -17,14 +18,14 @@
 
     <!-- File input -->
     <label
-      class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-[--color-border] rounded-[--radius-lg] cursor-pointer hover:border-[--color-brand] transition-colors bg-[--color-surface]"
+      class="dropzone flex flex-col items-center justify-center w-full h-28 border-2 border-dashed transition-colors"
       @dragover.prevent
       @drop.prevent="onDrop"
     >
-      <span class="text-ui text-[--color-text-muted]">
+      <span class="text-ui" style="color: var(--color-text-muted)">
         {{ pending ? 'Uploading…' : 'Click or drag photos here' }}
       </span>
-      <span class="text-meta text-[--color-text-muted] mt-1">JPEG, PNG, WebP</span>
+      <span class="text-meta mt-1" style="color: var(--color-text-muted)">JPEG, PNG, WebP</span>
       <input
         type="file"
         accept="image/jpeg,image/png,image/webp"
@@ -39,7 +40,8 @@
       <div
         v-for="(src, i) in previews"
         :key="i"
-        class="relative w-20 h-20 rounded-[--radius-md] overflow-hidden border border-[--color-border]"
+        class="photo-thumb relative w-20 h-20 overflow-hidden border"
+        style="border-color: var(--color-border)"
       >
         <img :src="src" class="w-full h-full object-cover" />
       </div>
@@ -83,7 +85,6 @@ function addFiles(files: File[]) {
   }
 }
 
-// Called by parent after game is saved
 async function upload(): Promise<void> {
   if (pendingFiles.length === 0) return
   pending.value = true
@@ -104,3 +105,19 @@ async function upload(): Promise<void> {
 
 defineExpose({ upload })
 </script>
+
+<style scoped>
+.photo-thumb {
+  border-radius: var(--radius-md);
+}
+
+.dropzone {
+  border-color: var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+.dropzone:hover {
+  border-color: var(--color-brand);
+}
+</style>

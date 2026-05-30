@@ -1,16 +1,16 @@
 <template>
   <div class="max-w-2xl">
     <div class="flex items-center gap-2 mb-lg">
-      <NuxtLink to="/staff" class="text-ui text-[--color-text-muted] hover:text-[--color-text-primary]">
+      <NuxtLink to="/staff" class="crumb-link text-ui">
         ← Games
       </NuxtLink>
-      <span class="text-[--color-text-muted]">/</span>
-      <h1 class="text-xl font-bold text-[--color-text-primary]">Edit game</h1>
+      <span style="color: var(--color-text-muted)">/</span>
+      <h1 class="text-xl font-bold" style="color: var(--color-text-primary)">Edit game</h1>
     </div>
 
-    <div v-if="pending" class="text-ui text-[--color-text-muted]">Loading…</div>
-    <div v-else-if="!game" class="text-sm text-[--color-error]">Game not found.</div>
-    <div v-else class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] p-6">
+    <div v-if="pending" class="text-ui" style="color: var(--color-text-muted)">Loading…</div>
+    <div v-else-if="!game" class="text-sm" style="color: var(--color-error)">Game not found.</div>
+    <div v-else class="form-shell border p-6">
       <StaffGameForm
         :initial="{
           id: game.id,
@@ -50,3 +50,18 @@ async function onSaved(_gameId: number) {
   await navigateTo('/staff')
 }
 </script>
+
+<style scoped>
+.crumb-link {
+  color: var(--color-text-muted);
+}
+.crumb-link:hover {
+  color: var(--color-text-primary);
+}
+
+.form-shell {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  border-radius: var(--radius-lg);
+}
+</style>

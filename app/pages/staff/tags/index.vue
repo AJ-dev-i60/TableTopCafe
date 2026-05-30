@@ -1,27 +1,27 @@
 <template>
   <div>
-    <h1 class="text-2xl font-bold text-[--color-text-primary] mb-1">Tags</h1>
-    <p class="text-meta text-[--color-text-muted] mb-lg">{{ activeCount }} active · {{ archivedCount }} archived</p>
+    <h1 class="text-2xl font-bold mb-1" style="color: var(--color-text-primary)">Tags</h1>
+    <p class="text-meta mb-lg" style="color: var(--color-text-muted)">{{ activeCount }} active · {{ archivedCount }} archived</p>
 
-    <div v-if="pending" class="text-sm text-[--color-text-muted]">Loading…</div>
+    <div v-if="pending" class="text-sm" style="color: var(--color-text-muted)">Loading…</div>
 
     <template v-else>
       <!-- Active tags -->
-      <div v-if="activeTags.length" class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] divide-y divide-[--color-border] mb-lg">
+      <div v-if="activeTags.length" class="card border tag-list mb-lg">
         <div
           v-for="tag in activeTags"
           :key="tag.id"
-          class="px-md py-3"
+          class="tag-row px-md py-3"
         >
           <!-- Normal row -->
           <div v-if="editingId !== tag.id && mergingId !== tag.id" class="flex items-center justify-between gap-4">
             <div class="min-w-0">
-              <span class="text-card-title font-medium text-[--color-text-primary]">{{ tag.name }}</span>
-              <span class="ml-2 text-meta text-[--color-text-muted]">{{ tag.gameCount }} {{ tag.gameCount === 1 ? 'game' : 'games' }}</span>
+              <span class="text-card-title font-medium" style="color: var(--color-text-primary)">{{ tag.name }}</span>
+              <span class="ml-2 text-meta" style="color: var(--color-text-muted)">{{ tag.gameCount }} {{ tag.gameCount === 1 ? 'game' : 'games' }}</span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <button class="text-ui text-[--color-brand] hover:underline" @click="startEdit(tag)">Rename</button>
-              <button class="text-ui text-[--color-text-secondary] hover:underline" @click="startMerge(tag)">Merge into…</button>
+              <button class="text-ui hover:underline" style="color: var(--color-brand)" @click="startEdit(tag)">Rename</button>
+              <button class="text-ui hover:underline" style="color: var(--color-text-secondary)" @click="startMerge(tag)">Merge into…</button>
               <SharedButton variant="danger" @click="archiveTag(tag.id, tag.name)">Archive</SharedButton>
             </div>
           </div>
@@ -37,40 +37,40 @@
               @keydown.escape="cancelEdit"
             />
             <SharedButton :pending="renamePending" pending-label="Saving…" @click="submitRename(tag.id)">Save</SharedButton>
-            <button class="text-ui text-[--color-text-muted] hover:text-[--color-text-primary]" @click="cancelEdit">Cancel</button>
-            <p v-if="renameError" class="text-meta text-[--color-error] ml-1">{{ renameError }}</p>
+            <button class="cancel-link text-ui" @click="cancelEdit">Cancel</button>
+            <p v-if="renameError" class="text-meta ml-1" style="color: var(--color-error)">{{ renameError }}</p>
           </div>
 
           <!-- Merge picker -->
           <div v-else-if="mergingId === tag.id" class="flex items-center gap-2 flex-wrap">
-            <span class="text-ui text-[--color-text-secondary]">Merge <strong>{{ tag.name }}</strong> into:</span>
+            <span class="text-ui" style="color: var(--color-text-secondary)">Merge <strong>{{ tag.name }}</strong> into:</span>
             <select
               v-model="mergeTargetId"
-              class="border border-[--color-border] rounded-[--radius-md] px-3 py-1.5 text-ui text-[--color-text-primary] bg-[--color-surface] focus:outline-none focus:ring-2 focus:ring-[--color-brand]"
+              class="merge-select px-3 py-1.5 text-ui border"
             >
               <option :value="null" disabled>Select target tag…</option>
               <option v-for="t in otherActiveTags(tag.id)" :key="t.id" :value="t.id">{{ t.name }}</option>
             </select>
             <SharedButton :disabled="!mergeTargetId" :pending="mergePending" pending-label="Merging…" @click="submitMerge(tag.id, tag.name)">Merge</SharedButton>
-            <button class="text-ui text-[--color-text-muted] hover:text-[--color-text-primary]" @click="cancelMerge">Cancel</button>
-            <p v-if="mergeError" class="text-meta text-[--color-error] ml-1">{{ mergeError }}</p>
+            <button class="cancel-link text-ui" @click="cancelMerge">Cancel</button>
+            <p v-if="mergeError" class="text-meta ml-1" style="color: var(--color-error)">{{ mergeError }}</p>
           </div>
         </div>
       </div>
-      <p v-else class="text-sm text-[--color-text-muted] mb-lg">No active tags yet.</p>
+      <p v-else class="text-sm mb-lg" style="color: var(--color-text-muted)">No active tags yet.</p>
 
       <!-- Archived tags -->
       <template v-if="archivedTags.length">
-        <h2 class="text-base font-semibold text-[--color-text-secondary] mb-2">Archived</h2>
-        <div class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] divide-y divide-[--color-border] opacity-60">
+        <h2 class="text-base font-semibold mb-2" style="color: var(--color-text-secondary)">Archived</h2>
+        <div class="card border tag-list archived-list">
           <div
             v-for="tag in archivedTags"
             :key="tag.id"
-            class="flex items-center justify-between px-md py-3 gap-4"
+            class="tag-row flex items-center justify-between px-md py-3 gap-4"
           >
             <div class="min-w-0">
-              <span class="text-card-title font-medium text-[--color-text-primary] line-through">{{ tag.name }}</span>
-              <span class="ml-2 text-meta text-[--color-text-muted]">{{ tag.gameCount }} {{ tag.gameCount === 1 ? 'game' : 'games' }}</span>
+              <span class="text-card-title font-medium line-through" style="color: var(--color-text-primary)">{{ tag.name }}</span>
+              <span class="ml-2 text-meta" style="color: var(--color-text-muted)">{{ tag.gameCount }} {{ tag.gameCount === 1 ? 'game' : 'games' }}</span>
             </div>
             <SharedButton @click="unarchiveTag(tag.id)">Restore</SharedButton>
           </div>
@@ -184,3 +184,38 @@ async function unarchiveTag(id: number) {
   await refresh()
 }
 </script>
+
+<style scoped>
+.card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.tag-list > .tag-row + .tag-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.archived-list {
+  opacity: 0.6;
+}
+
+.cancel-link {
+  color: var(--color-text-muted);
+}
+.cancel-link:hover {
+  color: var(--color-text-primary);
+}
+
+.merge-select {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  outline: none;
+}
+.merge-select:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 2px rgb(21 128 61 / 0.15);
+}
+</style>

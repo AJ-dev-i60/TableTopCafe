@@ -10,27 +10,27 @@
     />
 
     <div v-if="loading" class="absolute right-3 top-1/2 -translate-y-1/2">
-      <span class="text-[--color-text-muted] text-ui">⏳</span>
+      <span class="text-ui" style="color: var(--color-text-muted)">⏳</span>
     </div>
 
     <ul
       v-if="showDropdown && results.length > 0"
-      class="absolute z-[--z-toolbar] mt-1 w-full bg-[--color-surface] border border-[--color-border] rounded-[--radius-md] shadow-md max-h-64 overflow-y-auto"
+      class="bgg-dropdown absolute z-toolbar mt-1 w-full border shadow-md max-h-64 overflow-y-auto"
     >
       <li
         v-for="result in results"
         :key="result.bggId"
-        class="px-3 py-2 text-ui text-[--color-text-primary] hover:bg-[--color-surface-muted] cursor-pointer flex items-center justify-between gap-2"
+        class="bgg-option px-3 py-2 text-ui cursor-pointer flex items-center justify-between gap-2"
         @mousedown.prevent="select(result)"
       >
         <span>{{ result.name }}</span>
-        <span v-if="result.yearPublished" class="text-detail text-[--color-text-muted] shrink-0">
+        <span v-if="result.yearPublished" class="text-meta shrink-0" style="color: var(--color-text-muted)">
           {{ result.yearPublished }}
         </span>
       </li>
     </ul>
 
-    <p v-if="error" class="mt-1 text-detail text-[--color-error]">{{ error }}</p>
+    <p v-if="error" class="mt-1 text-meta" style="color: var(--color-error)">{{ error }}</p>
   </div>
 </template>
 
@@ -86,7 +86,21 @@ function select(result: BggResult) {
 }
 
 function onBlur() {
-  // Small delay so mousedown on a list item fires first
   setTimeout(() => { showDropdown.value = false }, 150)
 }
 </script>
+
+<style scoped>
+.bgg-dropdown {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.bgg-option {
+  color: var(--color-text-primary);
+}
+.bgg-option:hover {
+  background: var(--color-surface-elevated);
+}
+</style>

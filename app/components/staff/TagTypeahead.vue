@@ -5,12 +5,12 @@
       <span
         v-for="tag in modelValue"
         :key="tag.id ?? tag.name"
-        class="inline-flex items-center gap-1 bg-[--color-surface-elevated] border border-[--color-border] text-[--color-text-secondary] text-tag rounded-[--radius-full] px-3 py-1"
+        class="selected-tag inline-flex items-center gap-1 text-tag px-3 py-1 border"
       >
         {{ tag.name }}
         <button
           type="button"
-          class="text-[--color-text-muted] hover:text-[--color-error] leading-none"
+          class="remove-btn leading-none"
           @click="remove(tag)"
         >
           ×
@@ -33,19 +33,19 @@
       <!-- Dropdown -->
       <ul
         v-if="open && (filtered.length > 0 || canCreate)"
-        class="absolute z-toolbar left-0 right-0 mt-1 bg-[--color-surface] border border-[--color-border] rounded-[--radius-md] shadow-[--shadow-md] max-h-48 overflow-y-auto"
+        class="tag-dropdown absolute z-toolbar left-0 right-0 mt-1 border max-h-48 overflow-y-auto"
       >
         <li
           v-for="tag in filtered"
           :key="tag.id"
-          class="px-3 py-2 text-ui text-[--color-text-primary] cursor-pointer hover:bg-[--color-surface-elevated]"
+          class="tag-option px-3 py-2 text-ui cursor-pointer"
           @mousedown.prevent="select(tag)"
         >
           {{ tag.name }}
         </li>
         <li
           v-if="canCreate"
-          class="px-3 py-2 text-ui text-[--color-brand] cursor-pointer hover:bg-[--color-surface-elevated] border-t border-[--color-border]"
+          class="tag-option tag-option-create px-3 py-2 text-ui cursor-pointer border-t"
           @mousedown.prevent="createNew"
         >
           Create "{{ query.trim() }}"
@@ -116,3 +116,38 @@ function onBlur() {
   setTimeout(() => { open.value = false }, 150)
 }
 </script>
+
+<style scoped>
+.selected-tag {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+}
+
+.remove-btn {
+  color: var(--color-text-muted);
+}
+.remove-btn:hover {
+  color: var(--color-error);
+}
+
+.tag-dropdown {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.tag-option {
+  color: var(--color-text-primary);
+}
+.tag-option:hover {
+  background: var(--color-surface-elevated);
+}
+
+.tag-option-create {
+  color: var(--color-brand);
+  border-top-color: var(--color-border);
+}
+</style>

@@ -1,65 +1,66 @@
 <template>
   <div>
     <div class="flex items-center justify-between mb-lg">
-      <h1 class="text-2xl font-bold text-[--color-text-primary]">Users</h1>
+      <h1 class="text-2xl font-bold" style="color: var(--color-text-primary)">Users</h1>
       <SharedButton @click="showAddForm = !showAddForm">
         {{ showAddForm ? 'Cancel' : 'Add user' }}
       </SharedButton>
     </div>
 
     <!-- Add user form -->
-    <div v-if="showAddForm" class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] p-6 mb-lg">
-      <h2 class="text-base font-semibold text-[--color-text-primary] mb-md">New account</h2>
+    <div v-if="showAddForm" class="card border p-6 mb-lg">
+      <h2 class="text-base font-semibold mb-md" style="color: var(--color-text-primary)">New account</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-md mb-md">
         <div>
-          <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Username *</label>
+          <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Username *</label>
           <SharedInput v-model="newUser.username" type="text" maxlength="100" />
         </div>
         <div>
-          <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Password * <span class="font-normal text-[--color-text-muted]">(min 8 chars)</span></label>
+          <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">
+            Password *
+            <span class="font-normal" style="color: var(--color-text-muted)">(min 8 chars)</span>
+          </label>
           <SharedInput v-model="newUser.password" type="password" />
         </div>
       </div>
       <div class="mb-md">
-        <label class="block text-ui font-medium text-[--color-text-secondary] mb-1">Role</label>
+        <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Role</label>
         <div class="flex gap-4">
-          <label class="flex items-center gap-2 cursor-pointer text-ui text-[--color-text-primary]">
+          <label class="flex items-center gap-2 cursor-pointer text-ui" style="color: var(--color-text-primary)">
             <input v-model="newUser.role" type="radio" value="staff" /> Staff
           </label>
-          <label class="flex items-center gap-2 cursor-pointer text-ui text-[--color-text-primary]">
+          <label class="flex items-center gap-2 cursor-pointer text-ui" style="color: var(--color-text-primary)">
             <input v-model="newUser.role" type="radio" value="admin" /> Admin
           </label>
         </div>
       </div>
-      <p v-if="addError" class="text-ui text-[--color-error] mb-2">{{ addError }}</p>
+      <p v-if="addError" class="text-ui mb-2" style="color: var(--color-error)">{{ addError }}</p>
       <SharedButton :pending="addPending" pending-label="Creating…" @click="submitAdd">Create account</SharedButton>
     </div>
 
-    <div v-if="pending" class="text-sm text-[--color-text-muted]">Loading…</div>
+    <div v-if="pending" class="text-sm" style="color: var(--color-text-muted)">Loading…</div>
 
-    <div v-else-if="!users?.length" class="text-sm text-[--color-text-muted]">No users found.</div>
+    <div v-else-if="!users?.length" class="text-sm" style="color: var(--color-text-muted)">No users found.</div>
 
-    <div v-else class="bg-[--color-surface] rounded-[--radius-lg] border border-[--color-border] divide-y divide-[--color-border]">
+    <div v-else class="card border user-list">
       <div
         v-for="user in users"
         :key="user.id"
-        class="px-md py-3"
+        class="user-row px-md py-3"
       >
         <!-- Normal row -->
         <div v-if="resettingId !== user.id" class="flex items-center justify-between gap-4">
           <div class="min-w-0">
-            <span class="text-card-title font-medium text-[--color-text-primary]">{{ user.username }}</span>
+            <span class="text-card-title font-medium" style="color: var(--color-text-primary)">{{ user.username }}</span>
             <span
-              class="ml-2 text-tag font-medium rounded-[--radius-sm] px-2 py-0.5"
-              :class="user.role === 'admin'
-                ? 'bg-[rgb(21_128_61/0.12)] text-[--color-brand]'
-                : 'bg-[--color-surface-elevated] text-[--color-text-muted]'"
+              class="role-pill ml-2 text-tag font-medium px-2 py-0.5"
+              :class="user.role === 'admin' ? 'role-pill-admin' : 'role-pill-staff'"
             >
               {{ user.role }}
             </span>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <button class="text-ui text-[--color-brand] hover:underline" @click="startReset(user.id)">Reset password</button>
+            <button class="text-ui hover:underline" style="color: var(--color-brand)" @click="startReset(user.id)">Reset password</button>
             <SharedButton
               variant="danger"
               :disabled="user.id === currentUserId"
@@ -72,7 +73,7 @@
 
         <!-- Reset password inline form -->
         <div v-else class="flex items-center gap-2 flex-wrap">
-          <span class="text-ui text-[--color-text-secondary]">New password for <strong>{{ user.username }}</strong>:</span>
+          <span class="text-ui" style="color: var(--color-text-secondary)">New password for <strong>{{ user.username }}</strong>:</span>
           <SharedInput
             v-model="resetPassword"
             type="password"
@@ -82,8 +83,8 @@
             @keydown.escape="cancelReset"
           />
           <SharedButton :pending="resetPending" pending-label="Saving…" @click="submitReset(user.id)">Save</SharedButton>
-          <button class="text-ui text-[--color-text-muted] hover:text-[--color-text-primary]" @click="cancelReset">Cancel</button>
-          <p v-if="resetError" class="text-meta text-[--color-error] w-full">{{ resetError }}</p>
+          <button class="cancel-link text-ui" @click="cancelReset">Cancel</button>
+          <p v-if="resetError" class="text-meta w-full" style="color: var(--color-error)">{{ resetError }}</p>
         </div>
       </div>
     </div>
@@ -177,3 +178,36 @@ async function deleteUser(id: number, username: string) {
   }
 }
 </script>
+
+<style scoped>
+.card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.user-list > .user-row + .user-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.role-pill {
+  border-radius: var(--radius-sm);
+}
+
+.role-pill-admin {
+  background: rgb(21 128 61 / 0.12);
+  color: var(--color-brand);
+}
+
+.role-pill-staff {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-muted);
+}
+
+.cancel-link {
+  color: var(--color-text-muted);
+}
+.cancel-link:hover {
+  color: var(--color-text-primary);
+}
+</style>

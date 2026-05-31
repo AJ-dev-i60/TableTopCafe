@@ -163,19 +163,21 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
                 </svg>
                 Featured
               </h2>
-              <div
-                v-if="view === 'grid'"
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
-              >
-                <NuxtLink
-                  v-for="game in featured"
-                  :key="game.id"
-                  :to="`/games/${game.id}`"
-                  class="block focus:outline-none focus-visible:ring-2 card-link"
-                >
-                  <CatalogueGameCard :game="game" />
-                </NuxtLink>
-              </div>
+              <template v-if="view === 'grid'">
+                <!-- Mobile: compact carousel strip (curated "staff picks" glance) -->
+                <CatalogueFeaturedStrip :games="featured" class="sm:hidden" />
+                <!-- sm+ : full glass cards in the responsive grid -->
+                <div class="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <NuxtLink
+                    v-for="game in featured"
+                    :key="game.id"
+                    :to="`/games/${game.id}`"
+                    class="block focus:outline-none focus-visible:ring-2 card-link"
+                  >
+                    <CatalogueGameCard :game="game" />
+                  </NuxtLink>
+                </div>
+              </template>
               <div v-else class="list-container overflow-hidden">
                 <NuxtLink
                   v-for="game in featured"

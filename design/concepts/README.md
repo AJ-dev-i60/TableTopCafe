@@ -13,5 +13,5 @@ reference visual language — don't overwrite them.
 
 _(one line per concept — slug → summary → status: `concept` | `ready-to-build` | `implemented`)_
 
-- `mobile-featured-presentation` — compact mobile featured section: horizontal carousel (rec.) vs rotating spotlight, replacing the full-width featured cards below `sm:` — added 2026-05-31 — `concept`
+- `mobile-featured-presentation` — compact mobile featured section: horizontal carousel (rec.) vs rotating spotlight, replacing the full-width featured cards below `sm:` — added 2026-05-31 — `implemented` (Concept A carousel, auto-advance off; `app/components/catalogue/FeaturedStrip.vue`)
 - `staff-featured-toggle` — inline feature/un-feature toggle in the staff games list + 3-slot-cap replace-picker modal (needs `featuredAt`/`featuredBy` data) — added 2026-05-31 — `concept`

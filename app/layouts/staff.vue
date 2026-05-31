@@ -42,8 +42,9 @@
             Users
           </NuxtLink>
           <NuxtLink
-            to="/"
-            class="flex items-center px-3 text-ui transition-colors"
+            to="/staff/catalogue"
+            class="nav-link flex items-center px-3 text-ui transition-colors"
+            active-class="nav-link--active font-medium"
             style="color: var(--color-text-secondary)"
           >
             View catalogue

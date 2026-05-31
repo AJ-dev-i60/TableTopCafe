@@ -102,13 +102,9 @@
             <td class="px-md py-3 text-right">
               <div class="flex items-center justify-end gap-2">
                 <template v-if="!game.deletedAt">
-                  <NuxtLink
-                    :to="`/staff/games/${game.id}/edit`"
-                    class="text-ui font-medium hover:underline"
-                    style="color: var(--color-brand)"
-                  >
+                  <SharedButton variant="secondary" :to="`/staff/games/${game.id}/edit`">
                     Edit
-                  </NuxtLink>
+                  </SharedButton>
                   <SharedButton variant="danger" @click="deleteGame(game.id, game.name)">
                     Delete
                   </SharedButton>

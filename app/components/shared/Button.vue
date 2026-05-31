@@ -2,6 +2,7 @@
 withDefaults(defineProps<{
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
   type?: 'button' | 'submit' | 'reset'
+  to?: string
   disabled?: boolean
   pending?: boolean
   pendingLabel?: string
@@ -12,15 +13,20 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <button
-    :type="type"
-    :disabled="disabled || pending"
+  <!-- Renders as a NuxtLink when `to` is set (preserves link a11y: open in new
+       tab, middle/ctrl-click) and as a <button> otherwise. type/disabled/pending
+       only apply in button mode. -->
+  <component
+    :is="to ? resolveComponent('NuxtLink') : 'button'"
+    :to="to || undefined"
+    :type="to ? undefined : type"
+    :disabled="to ? undefined : (disabled || pending)"
     class="btn"
     :class="`btn-${variant}`"
   >
     {{ pending && pendingLabel ? pendingLabel : null }}
     <slot v-if="!(pending && pendingLabel)" />
-  </button>
+  </component>
 </template>
 
 <style scoped>
@@ -37,6 +43,7 @@ withDefaults(defineProps<{
   cursor: pointer;
   transition: background-color 150ms, color 150ms, opacity 150ms;
   white-space: nowrap;
+  text-decoration: none;
 }
 .btn:disabled {
   opacity: 0.6;

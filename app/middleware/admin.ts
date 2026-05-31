@@ -1,7 +1,10 @@
 export default defineNuxtRouteMiddleware(async () => {
+  // See app/middleware/auth.ts — useRequestFetch() forwards the session cookie
+  // during SSR so a hard refresh doesn't bounce the user to login.
+  const requestFetch = useRequestFetch()
   try {
-    const me = await $fetch('/api/auth/me')
-    if ((me as { role: string }).role !== 'admin') {
+    const me = await requestFetch<{ role: string }>('/api/auth/me')
+    if (me.role !== 'admin') {
       return navigateTo('/staff')
     }
   } catch {

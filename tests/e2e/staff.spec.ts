@@ -38,9 +38,11 @@ test('staff login → add game → appears in public catalogue', async ({ page }
 
   await page.getByRole('button', { name: 'Add game' }).click()
 
-  // Should redirect to staff dashboard
+  // Should redirect to staff dashboard. .first() because the dashboard renders
+  // each game twice responsively (desktop table + mobile card), so the name
+  // matches two nodes; the table one is visible at the CI/desktop viewport.
   await expect(page).toHaveURL(/\/staff$/)
-  await expect(page.getByText(gameName)).toBeVisible()
+  await expect(page.getByText(gameName).first()).toBeVisible()
 
   // Edit is a button-styled link (not a plain text link) — see SharedButton `to`
   await expect(page.getByRole('link', { name: 'Edit' }).first()).toBeVisible()

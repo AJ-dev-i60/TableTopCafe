@@ -4,7 +4,11 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Current milestone: M5 — Polish 🚧
 
-**Status: Visual design pass owner-verified on dev. Catalogue + staff form regressions fixed end-to-end on dev (2026-05-30 late session). `/app/photos` persistent volume now mounted on dev AND prod via Coolify API. Shared-component token migration awaits design sign-off. Auth bypass + data entry sprint still pending. `main` is significantly behind `dev` — needs a merge before next prod cut.**
+**Status: Visual design pass owner-verified on dev. Catalogue + staff form regressions fixed end-to-end on dev (2026-05-30 late session). `/app/photos` persistent volume now mounted on dev AND prod via Coolify API. `dev` → `main` merged 2026-05-31 — prod now carries the full M5 polish set (auto-deploy triggered). Shared-component token migration awaits design sign-off. Auth bypass + data entry sprint still pending.**
+
+### Session — 2026-05-31
+
+**Merged `dev` → `main` (next-action #1, done).** `main` was 61 commits behind `origin/main` locally; fast-forwarded to `origin/main` (build 5), then `git merge --no-ff dev`. Only conflict was a modify/delete on `BUILD_NUMBER` (main bumped it, dev deleted it as part of the commit-timestamp version rewrite) — resolved by taking dev's deletion. Merged `main` tree is byte-identical to `dev`. Pushed `291d223..6c7a108` → triggers GitHub CI + Coolify prod auto-deploy. CI not pollable locally (`gh` not installed) — verify via repo Actions tab; prod build version should now read `v26.05.3x.xxxx` (commit-timestamp scheme) instead of `BUILD_NUMBER=5`.
 
 ### Session end — 2026-05-30 (late session, picks up from earlier pivot point)
 
@@ -24,7 +28,7 @@ Granular session-level state: what's done, what's next, and anything needed to r
 - `/games/[id]` hydration mismatch warning **gone** as a side-effect of `c73f138` (the warning was triggered by the same SSR/CSR drift on the hero `<picture v-if>` branch).
 
 **Next action when resuming (in priority order):**
-1. **Merge `dev` → `main`** so prod gets every fix shipped since the M5 visual pass — currently prod is on the old `BUILD_NUMBER=5` deploy (pre-M5, pre-Tailwind v4.3 fix, pre-everything from today). The volume mount works on that old build, but the user-facing improvements are missing. Suggest reviewing the dev→main diff before merge — it's a large changeset.
+1. ✅ **Merge `dev` → `main`** (done 2026-05-31, commit `6c7a108`) — prod now carries every fix shipped since the M5 visual pass. **Follow-up: confirm the prod deploy went green** (GitHub Actions run on `main`, then check `https://tabletopcafe.edgestudios.co.za` renders the M5 catalogue and the header version reads the commit-timestamp scheme, not `v5`).
 2. **Investigate build-version drift** — `nuxt.config.ts` derives version from `git log -1 --format=%cI HEAD` but deployed dev build shows times ~5 min later than the actual commit timestamp (e.g. commit at 22:50 → deploy reports `v26.05.30.2255`). Theory: Coolify creates a transient internal commit during the build (merge of remote ref, etc.) and the build container reads that commit's time. Worth confirming with `docker exec` once during a fresh deploy to see what `git log -1` inside the builder actually returns.
 3. **Shared-component token migration** — awaiting design sign-off on mapping (see queue below). Files: [app/components/shared/Button.vue](app/components/shared/Button.vue), [app/components/shared/Input.vue](app/components/shared/Input.vue), [app/pages/staff/login.vue](app/pages/staff/login.vue).
 4. **Auth bypass removal** — explicitly deferred until last per owner instruction. Pre-req: resolve Coolify `ADMIN_PASSWORD` mismatch root cause first, otherwise prod admin is locked out.

@@ -9,7 +9,7 @@
         <div class="bgg-block border-2 border-dashed p-md">
           <p class="text-ui font-medium mb-2" style="color: var(--color-brand)">
             BGG lookup
-            <span class="font-normal" style="color: var(--color-text-muted)"> — select a game to pre-fill the form</span>
+            <span class="font-normal" style="color: var(--color-text-muted)"> — find the game to link it and pre-fill the name</span>
           </p>
           <StaffBggSearch @select="onBggSelect" />
 
@@ -17,19 +17,8 @@
             <div class="flex-1 text-ui" style="color: var(--color-text-primary)">
               <span class="font-medium">{{ selectedBgg.name }}</span>
               <span v-if="selectedBgg.yearPublished" class="ml-2" style="color: var(--color-text-muted)">({{ selectedBgg.yearPublished }})</span>
+              <span v-if="bggId !== null" class="ml-2 text-meta" style="color: var(--color-brand)">· linked — fetch the cover under Photos</span>
             </div>
-            <SharedButton
-              v-if="selectedBgg.bggId !== null"
-              type="button"
-              :pending="fetchingBgg"
-              pending-label="Fetching…"
-              @click="fetchBggInfo"
-            >
-              Fetch game info
-            </SharedButton>
-            <span v-else class="text-meta" style="color: var(--color-text-muted)">
-              No linked BGG entry — enter details manually.
-            </span>
             <button
               type="button"
               class="text-ui p-1 hover:opacity-70"
@@ -40,7 +29,6 @@
               ✕
             </button>
           </div>
-          <p v-if="bggError" class="mt-2 text-meta" style="color: var(--color-error)">{{ bggError }}</p>
         </div>
 
         <!-- Name -->
@@ -133,24 +121,11 @@
         <div class="form-card">
           <h2 class="text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">Photos</h2>
 
-          <div v-if="bggImages.length > 0 && savedGameId" class="mb-3">
-            <p class="text-meta mb-2" style="color: var(--color-text-muted)">Click a BGG image to attach it:</p>
-            <div class="flex gap-2 flex-wrap">
-              <button
-                v-for="url in bggImages"
-                :key="url"
-                type="button"
-                :disabled="attachingBggImage === url"
-                class="bgg-thumb overflow-hidden border-2 transition-colors disabled:opacity-50"
-                @click="attachBggImage(url)"
-              >
-                <img :src="url" alt="BGG image" class="w-24 h-24 object-cover" loading="lazy" />
-              </button>
-            </div>
-            <p v-if="bggImageError" class="mt-1 text-meta" style="color: var(--color-error)">{{ bggImageError }}</p>
-          </div>
-          <div v-else-if="bggImages.length > 0 && !savedGameId" class="mb-3">
-            <p class="text-meta" style="color: var(--color-text-muted)">Save the game first to attach the BGG image.</p>
+          <div v-if="savedGameId && bggId !== null" class="mb-3">
+            <SharedButton type="button" :pending="fetchingCover" pending-label="Fetching cover…" @click="fetchCover">
+              Fetch cover from BGG
+            </SharedButton>
+            <p v-if="coverError" class="mt-1 text-meta" style="color: var(--color-error)">{{ coverError }}</p>
           </div>
 
           <StaffPhotoUpload
@@ -160,7 +135,7 @@
             :existing-photos="existingPhotoHashes"
             @uploaded="onPhotosUploaded"
           />
-          <p v-else-if="bggImages.length === 0" class="text-ui" style="color: var(--color-text-muted)">Save the game first, then add photos.</p>
+          <p v-else class="text-ui" style="color: var(--color-text-muted)">Save the game first, then add photos.</p>
         </div>
 
       </div>
@@ -191,21 +166,6 @@
 <script setup lang="ts">
 import type { TagOption } from './TagTypeahead.vue'
 import type { BggResult } from './BggSearch.vue'
-
-type BggThingDetail = {
-  bggId: number
-  name: string
-  description: string | null
-  yearPublished: number | null
-  playerMin: number | null
-  playerMax: number | null
-  timeMin: number | null
-  timeMax: number | null
-  thumbnail: string | null
-  image: string | null
-  categories: string[]
-  mechanics: string[]
-}
 
 type GameFormData = {
   name: string
@@ -248,11 +208,8 @@ const form = reactive({
 
 const bggId = ref<number | null>(props.initial?.bggId ?? null)
 const selectedBgg = ref<BggResult | null>(null)
-const fetchingBgg = ref(false)
-const bggError = ref('')
-const bggImages = ref<string[]>([])
-const attachingBggImage = ref<string | null>(null)
-const bggImageError = ref('')
+const fetchingCover = ref(false)
+const coverError = ref('')
 
 const selectedTags = ref<TagOption[]>(
   (props.initial?.tagIds ?? []).map((id) => {
@@ -269,60 +226,34 @@ const pending = ref(false)
 
 function onBggSelect(result: BggResult) {
   selectedBgg.value = result
-  bggError.value = ''
-  // Pre-fill the name from the selected list entry. If the game has a BGG id and
-  // the user clicks "Fetch game info", the canonical BGG data overwrites this.
+  // Link the game to its BGG entry (enables the cover fetch + the detail-page
+  // "View on BoardGameGeek" link) and pre-fill the name if empty.
+  bggId.value = result.bggId
   if (!form.name.trim()) form.name = result.name
 }
 
 function clearBgg() {
   selectedBgg.value = null
-  bggImages.value = []
-  bggError.value = ''
   bggId.value = null
 }
 
-async function fetchBggInfo() {
-  const bgg = selectedBgg.value
-  if (!bgg || bgg.bggId === null) return
-  fetchingBgg.value = true
-  bggError.value = ''
-  try {
-    const detail = await $fetch<BggThingDetail>(`/api/bgg/thing/${bgg.bggId}`)
-    bggId.value = detail.bggId
-    if (detail.name) form.name = detail.name
-    if (detail.description) form.description = detail.description
-    if (detail.playerMin) form.playerMin = detail.playerMin
-    if (detail.playerMax) form.playerMax = detail.playerMax
-    if (detail.timeMin) form.timeMin = detail.timeMin
-    if (detail.timeMax) form.timeMax = detail.timeMax
-
-    const images: string[] = []
-    if (detail.image) images.push(detail.image)
-    else if (detail.thumbnail) images.push(detail.thumbnail)
-    bggImages.value = images
-  } catch {
-    bggError.value = 'Could not fetch BGG data. Fill in the form manually.'
-  } finally {
-    fetchingBgg.value = false
-  }
-}
-
-async function attachBggImage(url: string) {
+// Fetch the cover from the game's BGG page (scraped server-side) and store it as
+// a photo. Requires the game to be saved and linked to a BGG id.
+async function fetchCover() {
   if (!savedGameId.value) return
-  attachingBggImage.value = url
-  bggImageError.value = ''
+  fetchingCover.value = true
+  coverError.value = ''
   try {
     const res = await $fetch<{ hash: string }>(
-      `/api/staff/games/${savedGameId.value}/photos/bgg-fetch`,
-      { method: 'POST', body: { imageUrl: url } },
+      `/api/staff/games/${savedGameId.value}/photos/bgg-cover`,
+      { method: 'POST' },
     )
     existingPhotoHashes.value = [...existingPhotoHashes.value, res.hash]
-    bggImages.value = bggImages.value.filter((u) => u !== url)
-  } catch {
-    bggImageError.value = 'Failed to attach image. Try uploading manually.'
+  } catch (err: unknown) {
+    const msg = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
+    coverError.value = msg ?? 'Could not fetch the cover from BGG.'
   } finally {
-    attachingBggImage.value = null
+    fetchingCover.value = false
   }
 }
 
@@ -400,14 +331,6 @@ function onPhotosUploaded(hashes: string[]) {
 .checkbox {
   border-radius: var(--radius-sm);
   border-color: var(--color-border-strong);
-}
-
-.bgg-thumb {
-  border-radius: var(--radius-md);
-  border-color: var(--color-border);
-}
-.bgg-thumb:hover {
-  border-color: var(--color-brand);
 }
 
 .footer-border {

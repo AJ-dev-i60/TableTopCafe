@@ -3,6 +3,28 @@ import { z } from 'zod'
 
 const BGG_API = 'https://boardgamegeek.com/xmlapi2'
 
+/**
+ * Fetches a game's cover image URL by scraping its PUBLIC BGG page (the XML API
+ * now requires approved access, but the website is reachable). Prefers the box
+ * cover (__itemrep image variant) and falls back to the og:image social card.
+ * Returns null if the page can't be reached or no image is found.
+ */
+export async function fetchBggCoverUrl(bggId: number): Promise<string | null> {
+  const res = await fetch(`https://boardgamegeek.com/boardgame/${bggId}`, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TableTopCafe/1.0)' },
+  })
+  if (!res.ok) return null
+  const html = await res.text()
+
+  const itemrep = html.match(
+    /https:\/\/cf\.geekdo-images\.com\/[^"'\s]*__itemrep\/img\/[^"'\s]*\.(?:png|jpe?g)/i,
+  )
+  if (itemrep) return itemrep[0]
+
+  const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+  return og?.[1] ?? null
+}
+
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '@_',

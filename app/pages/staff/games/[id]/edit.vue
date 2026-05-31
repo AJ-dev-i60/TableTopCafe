@@ -22,6 +22,7 @@
           timeMax: game.timeMax,
           featured: game.featured,
           featuredNote: game.featuredNote ?? null,
+          bggId: game.bggId ?? null,
           tagIds: game.tags.map(t => t.id),
           photoHashes: game.photos.map(p => p.contentHash),
         }"

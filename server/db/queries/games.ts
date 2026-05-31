@@ -75,7 +75,7 @@ type PhotoRow = Pick<InferSelectModel<typeof photos>, 'id' | 'contentHash' | 'po
 
 export type GameDetail = Pick<
   GameRow,
-  'id' | 'name' | 'description' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'featuredNote'
+  'id' | 'name' | 'description' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'featuredNote' | 'bggId'
 > & {
   tags: TagRow[]
   photos: PhotoRow[]
@@ -93,6 +93,7 @@ export async function getGameById(id: number): Promise<GameDetail | null> {
       timeMax: games.timeMax,
       featured: games.featured,
       featuredNote: games.featuredNote,
+      bggId: games.bggId,
     })
     .from(games)
     .where(and(eq(games.id, id), isNull(games.deletedAt)))

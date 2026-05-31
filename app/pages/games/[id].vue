@@ -180,6 +180,21 @@ useSeoMeta({
           </div>
         </div>
 
+        <!-- BoardGameGeek link -->
+        <a
+          v-if="game.bggId"
+          :href="`https://boardgamegeek.com/boardgame/${game.bggId}`"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="bgg-link glass-panel flex items-center justify-between gap-3 p-4 text-ui motion-safe:transition-colors"
+          style="color: var(--color-text-primary)"
+        >
+          <span class="font-medium">View on BoardGameGeek</span>
+          <svg class="w-[18px] h-[18px] shrink-0" style="color: var(--color-text-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+
         <!-- Availability note -->
         <p class="text-ui text-center py-2 px-4" style="color: var(--color-text-secondary)">
           This is our library — not real-time availability.
@@ -193,6 +208,10 @@ useSeoMeta({
 <style scoped>
 .detail-grid {
   grid-template-columns: 1.15fr 1fr;
+}
+
+.bgg-link:hover {
+  background: rgb(255 255 255 / 0.70);
 }
 
 @media (min-width: 1024px) {

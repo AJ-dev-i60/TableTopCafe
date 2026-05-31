@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NuxtLink } from '#components'
+
 withDefaults(defineProps<{
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
   type?: 'button' | 'submit' | 'reset'
@@ -15,9 +17,10 @@ withDefaults(defineProps<{
 <template>
   <!-- Renders as a NuxtLink when `to` is set (preserves link a11y: open in new
        tab, middle/ctrl-click) and as a <button> otherwise. type/disabled/pending
-       only apply in button mode. -->
+       only apply in button mode. NuxtLink is imported from #components so it
+       resolves reliably here (resolveComponent in a template expression did not). -->
   <component
-    :is="to ? resolveComponent('NuxtLink') : 'button'"
+    :is="to ? NuxtLink : 'button'"
     :to="to || undefined"
     :type="to ? undefined : type"
     :disabled="to ? undefined : (disabled || pending)"

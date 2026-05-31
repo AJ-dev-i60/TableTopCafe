@@ -31,8 +31,10 @@ test('search filters games by name', async ({ page }) => {
   const searchInput = page.getByPlaceholder('Search games…')
   await searchInput.fill('Catan')
 
-  // Should show Catan
-  await expect(page.getByText('Catan').first()).toBeVisible()
+  // Should show Catan. Target the visible grid card heading (<h2>) — the mobile
+  // featured carousel also renders the title in a hidden (sm:hidden) <h3>, so a
+  // plain getByText().first() would resolve to that hidden node on desktop.
+  await expect(page.locator('h2', { hasText: 'Catan' }).first()).toBeVisible()
   // Should not show Pandemic (not matching the search)
   await expect(page.getByText('Pandemic')).not.toBeVisible()
 })

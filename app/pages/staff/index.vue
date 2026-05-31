@@ -4,7 +4,10 @@
     <div class="flex items-start justify-between mb-1">
       <div>
         <h1 class="text-2xl font-bold" style="color: var(--color-text-primary)">Games</h1>
-        <p class="text-meta mt-0.5" style="color: var(--color-text-muted)">{{ liveCount }} live · {{ deletedCount }} deleted</p>
+        <p class="text-meta mt-0.5" style="color: var(--color-text-muted)">
+          {{ liveCount }} live · {{ deletedCount }} deleted ·
+          <span :style="featuredCount >= 3 ? 'color: var(--color-brand); font-weight: 500' : undefined">Featured {{ featuredCount }} of 3</span>
+        </p>
       </div>
       <NuxtLink
         to="/staff/games/new"
@@ -47,7 +50,7 @@
             <th class="text-section-label font-semibold uppercase tracking-wider text-left px-md py-2.5" style="color: var(--color-text-secondary)">Game</th>
             <th class="text-section-label font-semibold uppercase tracking-wider text-left px-3 py-2.5 hidden sm:table-cell" style="color: var(--color-text-secondary)">Players</th>
             <th class="text-section-label font-semibold uppercase tracking-wider text-left px-3 py-2.5 hidden sm:table-cell" style="color: var(--color-text-secondary)">Play time</th>
-            <th class="text-section-label font-semibold uppercase tracking-wider text-left px-3 py-2.5" style="color: var(--color-text-secondary)">Status</th>
+            <th class="text-section-label font-semibold uppercase tracking-wider text-left px-3 py-2.5" style="color: var(--color-text-secondary)">Featured</th>
             <th class="text-section-label font-semibold uppercase tracking-wider text-right px-md py-2.5" style="color: var(--color-text-secondary)">Actions</th>
           </tr>
         </thead>
@@ -78,7 +81,13 @@
                 </div>
                 <div class="min-w-0">
                   <p class="text-card-title font-medium truncate" style="color: var(--color-text-primary)">{{ game.name }}</p>
-                  <SharedFeaturedBadge v-if="game.featured && !game.deletedAt" class="mt-0.5" />
+                  <p
+                    v-if="game.featured && !game.deletedAt && game.featuredAt"
+                    class="text-meta mt-0.5 truncate"
+                    style="color: var(--color-text-muted)"
+                  >
+                    Featured {{ relativeTime(game.featuredAt) }}<template v-if="game.featuredBy"> · by {{ byLabel(game.featuredBy) }}</template>
+                  </p>
                 </div>
               </div>
             </td>
@@ -91,11 +100,33 @@
               {{ game.timeMin }}–{{ game.timeMax }} min
             </td>
 
-            <!-- Status pill -->
+            <!-- Featured toggle (deleted rows show a non-interactive pill) -->
             <td class="px-3 py-3">
               <span v-if="game.deletedAt" class="pill-deleted inline-block px-2 py-0.5 text-tag">Deleted</span>
-              <span v-else-if="game.featured" class="pill-featured inline-block px-2 py-0.5 text-tag">Featured</span>
-              <span v-else class="pill-live inline-block px-2 py-0.5 text-tag">Live</span>
+              <button
+                v-else
+                type="button"
+                class="feat-toggle text-tag"
+                :class="game.featured ? 'feat-on' : 'feat-off'"
+                :disabled="pendingId === game.id"
+                :aria-pressed="game.featured"
+                :title="game.featured
+                  ? 'Featured — click to remove'
+                  : (featuredCount >= 3 ? '3 of 3 featured — choose one to replace' : 'Click to feature')"
+                @click="onToggle(game)"
+              >
+                <template v-if="pendingId === game.id">
+                  <span class="feat-spinner" aria-hidden="true" />
+                  {{ game.featured ? 'Removing…' : 'Featuring…' }}
+                </template>
+                <template v-else-if="game.featured">
+                  <span class="feat-rest"><span aria-hidden="true">★</span> Featured</span>
+                  <span class="feat-hover"><span aria-hidden="true">✕</span> Remove</span>
+                </template>
+                <template v-else>
+                  <span aria-hidden="true">☆</span> Feature
+                </template>
+              </button>
             </td>
 
             <!-- Actions -->
@@ -120,13 +151,34 @@
         </tbody>
       </table>
     </div>
+
+    <p v-if="actionError" class="mt-3 text-ui" style="color: var(--color-error)">{{ actionError }}</p>
+
+    <StaffFeaturedReplaceModal
+      v-if="replaceTarget"
+      :incoming="replaceTarget"
+      :featured="currentFeatured"
+      :current-username="currentUsername"
+      :pending="replacing"
+      @cancel="replaceTarget = null"
+      @replace="onReplaceConfirm"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { StaffGameListItem } from '../../../server/db/queries/games'
+import { relativeTime } from '../../utils/relativeTime'
+
 definePageMeta({ layout: 'staff', middleware: ['auth'] })
 
 const { data: games, pending, refresh } = await useFetch('/api/staff/games')
+const { data: me } = await useFetch('/api/auth/me')
+const currentUsername = computed(() => (me.value as { username?: string } | null)?.username ?? null)
+
+function byLabel(username: string): string {
+  return username === currentUsername.value ? 'you' : username
+}
 
 type FilterValue = 'live' | 'deleted' | 'all'
 const filter = ref<FilterValue>('live')
@@ -139,6 +191,8 @@ const filterOptions: { label: string; value: FilterValue }[] = [
 
 const liveCount = computed(() => games.value?.filter((g) => !g.deletedAt).length ?? 0)
 const deletedCount = computed(() => games.value?.filter((g) => !!g.deletedAt).length ?? 0)
+const currentFeatured = computed(() => games.value?.filter((g) => g.featured && !g.deletedAt) ?? [])
+const featuredCount = computed(() => currentFeatured.value.length)
 
 const filteredGames = computed(() => {
   if (!games.value) return []
@@ -175,6 +229,76 @@ async function restoreGame(id: number, name: string) {
   if (!confirm(`Restore "${name}"? It will reappear in the catalogue.`)) return
   await $fetch(`/api/staff/games/${id}/restore`, { method: 'POST' })
   await refresh()
+}
+
+// ── Featured toggle ──────────────────────────────────────────────────────────
+const pendingId = ref<number | null>(null)
+const actionError = ref('')
+const replaceTarget = ref<{ id: number; name: string } | null>(null)
+const replacing = ref(false)
+
+function onToggle(game: StaffGameListItem) {
+  if (pendingId.value !== null) return
+  if (game.featured) {
+    void unfeature(game)
+    return
+  }
+  // Featuring at the cap opens the replace-picker instead of failing.
+  if (featuredCount.value >= 3) {
+    replaceTarget.value = { id: game.id, name: game.name }
+    return
+  }
+  void feature(game)
+}
+
+async function feature(game: StaffGameListItem) {
+  pendingId.value = game.id
+  actionError.value = ''
+  try {
+    await $fetch(`/api/staff/games/${game.id}/feature`, { method: 'POST' })
+    await refresh()
+  } catch (err: unknown) {
+    // Safety net: cap filled between render and click → open the picker.
+    const status = (err as { statusCode?: number }).statusCode
+    if (status === 422) {
+      replaceTarget.value = { id: game.id, name: game.name }
+    } else {
+      actionError.value = 'Could not feature that game. Please try again.'
+    }
+  } finally {
+    pendingId.value = null
+  }
+}
+
+async function unfeature(game: StaffGameListItem) {
+  pendingId.value = game.id
+  actionError.value = ''
+  try {
+    await $fetch(`/api/staff/games/${game.id}/unfeature`, { method: 'POST' })
+    await refresh()
+  } catch {
+    actionError.value = 'Could not remove that game from featured. Please try again.'
+  } finally {
+    pendingId.value = null
+  }
+}
+
+async function onReplaceConfirm(outgoingId: number) {
+  if (!replaceTarget.value) return
+  replacing.value = true
+  actionError.value = ''
+  try {
+    await $fetch(`/api/staff/games/${replaceTarget.value.id}/feature`, {
+      method: 'POST',
+      body: { replace: outgoingId },
+    })
+    replaceTarget.value = null
+    await refresh()
+  } catch {
+    actionError.value = 'Could not replace the featured game. Please try again.'
+  } finally {
+    replacing.value = false
+  }
 }
 </script>
 
@@ -238,5 +362,85 @@ async function restoreGame(id: number, name: string) {
   background: rgb(21 128 61 / 0.12);
   color: var(--color-brand);
   border-radius: var(--radius-full);
+}
+
+/* Featured toggle button (replaces the static status pill) */
+.feat-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 92px;
+  padding: 4px 10px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.feat-toggle:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+.feat-toggle:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .feat-toggle {
+    transition: background-color var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
+  }
+}
+
+/* On = currently featured: resting brand pill, hover reveals destructive "Remove" */
+.feat-on {
+  background: rgb(21 128 61 / 0.12);
+  border-color: rgb(21 128 61 / 0.28);
+  color: var(--color-brand);
+}
+.feat-on .feat-hover {
+  display: none;
+}
+.feat-on:hover:not(:disabled) {
+  background: var(--color-error-soft);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+.feat-on:hover:not(:disabled) .feat-rest {
+  display: none;
+}
+.feat-on:hover:not(:disabled) .feat-hover {
+  display: inline;
+}
+
+/* Off = not featured: neutral "empty slot", hover previews the brand state */
+.feat-off {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-secondary);
+}
+.feat-off:hover:not(:disabled) {
+  background: rgb(21 128 61 / 0.08);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.feat-spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: feat-spin 0.6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .feat-spinner {
+    animation: none;
+  }
+}
+@keyframes feat-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

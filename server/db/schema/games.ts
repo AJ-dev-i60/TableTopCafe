@@ -11,6 +11,8 @@ export const games = pgTable('games', {
   bggId: integer('bgg_id'),
   featured: boolean('featured').notNull().default(false),
   featuredNote: text('featured_note'),
+  featuredAt: timestamp('featured_at', { withTimezone: true }),
+  featuredById: integer('featured_by_id'),
   createdById: integer('created_by_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   lastEditedById: integer('last_edited_by_id'),

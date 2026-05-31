@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm'
 import type { InferSelectModel } from 'drizzle-orm'
 import { db } from '../client'
-import { gameTags, games, photos, tags } from '../schema'
+import { gameTags, games, photos, tags, users } from '../schema'
 
 type GameRow = InferSelectModel<typeof games>
 type TagRow = Pick<InferSelectModel<typeof tags>, 'id' | 'name'>
@@ -147,6 +147,8 @@ export async function createGame(
       bggId: input.bggId ?? null,
       featured: input.featured ?? false,
       featuredNote: input.featuredNote ?? null,
+      featuredAt: input.featured ? new Date() : null,
+      featuredById: input.featured ? actorId : null,
       createdById: actorId,
       createdAt: new Date(),
     })
@@ -182,6 +184,14 @@ export async function updateGame(
       bggId: input.bggId ?? null,
       featured: input.featured ?? false,
       featuredNote: input.featuredNote ?? null,
+      // Stamp featured audit on transition: keep the existing values while it
+      // stays featured, set now()/actor when newly featured, clear when unfeatured.
+      featuredAt: input.featured
+        ? sql`coalesce(${games.featuredAt}, now())`
+        : null,
+      featuredById: input.featured
+        ? sql`coalesce(${games.featuredById}, ${actorId})`
+        : null,
       lastEditedById: actorId,
       lastEditedAt: new Date(),
     })
@@ -204,6 +214,37 @@ export async function countFeaturedGames(excludeId?: number): Promise<number> {
   return row?.n ?? 0
 }
 
+// Toggle a single game's featured state, stamping/clearing the featured audit.
+export async function setFeatured(id: number, featured: boolean, actorId: number): Promise<void> {
+  await db
+    .update(games)
+    .set({
+      featured,
+      featuredAt: featured ? new Date() : null,
+      featuredById: featured ? actorId : null,
+    })
+    .where(and(eq(games.id, id), isNull(games.deletedAt)))
+}
+
+// Atomically swap one featured game for another so the 3-slot cap is never
+// transiently exceeded and a partial failure can't leave 2 or 4 featured.
+export async function replaceFeatured(
+  outgoingId: number,
+  incomingId: number,
+  actorId: number,
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx
+      .update(games)
+      .set({ featured: false, featuredAt: null, featuredById: null })
+      .where(and(eq(games.id, outgoingId), isNull(games.deletedAt)))
+    await tx
+      .update(games)
+      .set({ featured: true, featuredAt: new Date(), featuredById: actorId })
+      .where(and(eq(games.id, incomingId), isNull(games.deletedAt)))
+  })
+}
+
 export async function softDeleteGame(id: number, actorId: number): Promise<void> {
   await db
     .update(games)
@@ -221,8 +262,8 @@ export async function restoreGame(id: number, actorId: number): Promise<void> {
 // Staff list — includes all columns needed for the dashboard (no deleted filter)
 export type StaffGameListItem = Pick<
   GameRow,
-  'id' | 'name' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'deletedAt'
-> & { photoHash: string | null }
+  'id' | 'name' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'featuredAt' | 'deletedAt'
+> & { photoHash: string | null; featuredBy: string | null }
 
 export async function listBggIdsInCatalogue(): Promise<number[]> {
   const rows = await db
@@ -242,9 +283,12 @@ export async function listAllGamesForStaff(): Promise<StaffGameListItem[]> {
       timeMin: games.timeMin,
       timeMax: games.timeMax,
       featured: games.featured,
+      featuredAt: games.featuredAt,
+      featuredBy: users.username,
       deletedAt: games.deletedAt,
     })
     .from(games)
+    .leftJoin(users, eq(games.featuredById, users.id))
     .orderBy(asc(games.name))
 
   if (gameRows.length === 0) return gameRows.map((g) => ({ ...g, photoHash: null }))

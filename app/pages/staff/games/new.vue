@@ -8,7 +8,7 @@
       <h1 class="text-xl font-bold" style="color: var(--color-text-primary)">Add game</h1>
     </div>
 
-    <div class="form-shell border p-6">
+    <div class="form-shell border p-4 sm:p-6">
       <StaffGameForm
         :available-tags="tags ?? []"
         :featured-count="featuredCount?.count ?? 0"

@@ -42,8 +42,9 @@
       {{ filter === 'deleted' ? 'No deleted games.' : filter === 'live' ? 'No live games yet. Add the first one.' : 'No games yet.' }}
     </div>
 
-    <!-- Table -->
-    <div v-else class="table-container overflow-hidden" style="background: var(--color-surface)">
+    <template v-else>
+    <!-- Table (≥ sm) -->
+    <div class="hidden sm:block table-container overflow-hidden" style="background: var(--color-surface)">
       <table class="w-full">
         <thead>
           <tr class="table-header border-b" style="border-color: var(--color-border)">
@@ -103,30 +104,13 @@
             <!-- Featured toggle (deleted rows show a non-interactive pill) -->
             <td class="px-3 py-3">
               <span v-if="game.deletedAt" class="pill-deleted inline-block px-2 py-0.5 text-tag">Deleted</span>
-              <button
+              <StaffFeaturedToggle
                 v-else
-                type="button"
-                class="feat-toggle text-tag"
-                :class="game.featured ? 'feat-on' : 'feat-off'"
-                :disabled="pendingId === game.id"
-                :aria-pressed="game.featured"
-                :title="game.featured
-                  ? 'Featured — click to remove'
-                  : (featuredCount >= 3 ? '3 of 3 featured — choose one to replace' : 'Click to feature')"
-                @click="onToggle(game)"
-              >
-                <template v-if="pendingId === game.id">
-                  <span class="feat-spinner" aria-hidden="true" />
-                  {{ game.featured ? 'Removing…' : 'Featuring…' }}
-                </template>
-                <template v-else-if="game.featured">
-                  <span class="feat-rest"><span aria-hidden="true">★</span> Featured</span>
-                  <span class="feat-hover"><span aria-hidden="true">✕</span> Remove</span>
-                </template>
-                <template v-else>
-                  <span aria-hidden="true">☆</span> Feature
-                </template>
-              </button>
+                :featured="game.featured"
+                :pending="pendingId === game.id"
+                :at-cap="featuredCount >= 3"
+                @toggle="onToggle(game)"
+              />
             </td>
 
             <!-- Actions -->
@@ -151,6 +135,57 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Cards (< sm) -->
+    <div class="sm:hidden flex flex-col gap-3">
+      <div v-for="game in filteredGames" :key="game.id" class="m-card">
+        <div class="flex items-start gap-3">
+          <div class="shrink-0 w-10 h-10 overflow-hidden" style="border-radius: var(--radius-sm)">
+            <img
+              v-if="game.photoHash && !failedThumbs[game.id]"
+              :data-game-id="game.id"
+              :src="`/api/photos/${game.photoHash}/thumb.jpg`"
+              :alt="game.name"
+              loading="lazy"
+              class="w-full h-full object-cover"
+              @error="failedThumbs[game.id] = true"
+            />
+            <div v-else class="thumb-fallback w-full h-full flex items-center justify-center">
+              <span class="text-sm font-bold text-white/60 leading-none select-none" aria-hidden="true">{{ game.name.charAt(0) }}</span>
+            </div>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-card-title font-medium truncate" style="color: var(--color-text-primary)">{{ game.name }}</p>
+            <p
+              v-if="game.featured && !game.deletedAt && game.featuredAt"
+              class="text-meta mt-0.5 truncate"
+              style="color: var(--color-text-muted)"
+            >
+              Featured {{ relativeTime(game.featuredAt) }}<template v-if="game.featuredBy"> · by {{ byLabel(game.featuredBy) }}</template>
+            </p>
+            <p v-else-if="!game.deletedAt" class="text-meta mt-0.5" style="color: var(--color-text-muted)">
+              {{ game.playerMin }}–{{ game.playerMax }} players · {{ game.timeMin }}–{{ game.timeMax }} min
+            </p>
+          </div>
+          <span v-if="game.deletedAt" class="pill-deleted inline-block px-2 py-0.5 text-tag shrink-0">Deleted</span>
+          <StaffFeaturedToggle
+            v-else
+            :featured="game.featured"
+            :pending="pendingId === game.id"
+            :at-cap="featuredCount >= 3"
+            @toggle="onToggle(game)"
+          />
+        </div>
+        <div class="flex gap-2 mt-3">
+          <template v-if="!game.deletedAt">
+            <SharedButton variant="secondary" :to="`/staff/games/${game.id}/edit`" class="flex-1">Edit</SharedButton>
+            <SharedButton variant="danger" class="flex-1" @click="deleteGame(game.id, game.name)">Delete</SharedButton>
+          </template>
+          <SharedButton v-else variant="secondary" class="flex-1" @click="restoreGame(game.id, game.name)">Restore</SharedButton>
+        </div>
+      </div>
+    </div>
+    </template>
 
     <p v-if="actionError" class="mt-3 text-ui" style="color: var(--color-error)">{{ actionError }}</p>
 
@@ -346,101 +381,17 @@ async function onReplaceConfirm(outgoingId: number) {
   background: linear-gradient(150deg, var(--color-brand), var(--color-brand-hover));
 }
 
-.pill-live {
-  background: var(--color-neutral-100);
-  color: var(--color-neutral-700);
-  border-radius: var(--radius-full);
-}
-
 .pill-deleted {
   background: var(--color-error-soft);
   color: var(--color-error);
   border-radius: var(--radius-full);
 }
 
-.pill-featured {
-  background: rgb(21 128 61 / 0.12);
-  color: var(--color-brand);
-  border-radius: var(--radius-full);
-}
-
-/* Featured toggle button (replaces the static status pill) */
-.feat-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 92px;
-  padding: 4px 10px;
-  font-weight: 600;
-  border-radius: var(--radius-full);
-  border: 1px solid transparent;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.feat-toggle:disabled {
-  cursor: default;
-  opacity: 0.7;
-}
-.feat-toggle:focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 2px;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .feat-toggle {
-    transition: background-color var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
-  }
-}
-
-/* On = currently featured: resting brand pill, hover reveals destructive "Remove" */
-.feat-on {
-  background: rgb(21 128 61 / 0.12);
-  border-color: rgb(21 128 61 / 0.28);
-  color: var(--color-brand);
-}
-.feat-on .feat-hover {
-  display: none;
-}
-.feat-on:hover:not(:disabled) {
-  background: var(--color-error-soft);
-  border-color: var(--color-error);
-  color: var(--color-error);
-}
-.feat-on:hover:not(:disabled) .feat-rest {
-  display: none;
-}
-.feat-on:hover:not(:disabled) .feat-hover {
-  display: inline;
-}
-
-/* Off = not featured: neutral "empty slot", hover previews the brand state */
-.feat-off {
+/* Mobile game card (< sm) */
+.m-card {
   background: var(--color-surface);
-  border-color: var(--color-border-strong);
-  color: var(--color-text-secondary);
-}
-.feat-off:hover:not(:disabled) {
-  background: rgb(21 128 61 / 0.08);
-  border-color: var(--color-brand);
-  color: var(--color-brand);
-}
-
-.feat-spinner {
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-full);
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  animation: feat-spin 0.6s linear infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .feat-spinner {
-    animation: none;
-  }
-}
-@keyframes feat-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
 }
 </style>

@@ -49,8 +49,8 @@
           <SharedInput id="game-name" v-model="form.name" type="text" required maxlength="255" />
         </div>
 
-        <!-- Players min/max: 2-up -->
-        <div class="grid grid-cols-2 gap-md">
+        <!-- Players min/max: 2-up (stacks on phones) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
           <div>
             <label for="game-player-min" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Min players *</label>
             <SharedInput id="game-player-min" v-model.number="form.playerMin" type="number" min="1" required />
@@ -61,8 +61,8 @@
           </div>
         </div>
 
-        <!-- Play time min/max: 2-up -->
-        <div class="grid grid-cols-2 gap-md">
+        <!-- Play time min/max: 2-up (stacks on phones) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
           <div>
             <label for="game-time-min" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Min time (min) *</label>
             <SharedInput id="game-time-min" v-model.number="form.timeMin" type="number" min="1" required />

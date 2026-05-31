@@ -10,7 +10,7 @@
 
     <div v-if="pending" class="text-ui" style="color: var(--color-text-muted)">Loading…</div>
     <div v-else-if="!game" class="text-sm" style="color: var(--color-error)">Game not found.</div>
-    <div v-else class="form-shell border p-6">
+    <div v-else class="form-shell border p-4 sm:p-6">
       <StaffGameForm
         :initial="{
           id: game.id,

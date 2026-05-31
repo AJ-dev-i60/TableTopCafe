@@ -14,7 +14,7 @@
           class="tag-row px-md py-3"
         >
           <!-- Normal row -->
-          <div v-if="editingId !== tag.id && mergingId !== tag.id" class="flex items-center justify-between gap-4">
+          <div v-if="editingId !== tag.id && mergingId !== tag.id" class="flex items-center justify-between gap-4 flex-wrap">
             <div class="min-w-0">
               <span class="text-card-title font-medium" style="color: var(--color-text-primary)">{{ tag.name }}</span>
               <span class="ml-2 text-meta" style="color: var(--color-text-muted)">{{ tag.gameCount }} {{ tag.gameCount === 1 ? 'game' : 'games' }}</span>
@@ -27,7 +27,7 @@
           </div>
 
           <!-- Rename form -->
-          <div v-else-if="editingId === tag.id" class="flex items-center gap-2">
+          <div v-else-if="editingId === tag.id" class="flex items-center gap-2 flex-wrap">
             <SharedInput
               v-model="editName"
               type="text"

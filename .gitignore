@@ -14,3 +14,6 @@ Thumbs.db
 # Claude Code — version the shared agent definitions, ignore machine-local state
 .claude/*
 !.claude/agents/
+
+# Raw BGG data dump — only the derived server/data/board-games.json is committed
+/data/

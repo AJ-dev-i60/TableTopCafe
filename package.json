@@ -16,7 +16,8 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:seed-admin": "tsx scripts/seed-admin.ts",
     "db:studio": "drizzle-kit studio",
-    "gen:game-names": "tsx scripts/refresh-game-names.ts"
+    "gen:game-names": "tsx scripts/refresh-game-names.ts",
+    "bgg:ranks": "tsx scripts/convert-bgg-ranks.ts"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",

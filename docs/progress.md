@@ -15,6 +15,8 @@ Granular session-level state: what's done, what's next, and anything needed to r
 - **Known data quirk:** base "Catan"/"Carcassonne" lack a BGG id in Wikidata (id sits on other entities) → those specific picks fall to manual entry; most titles carry an id.
 - **Follow-up flagged:** if BGG `thing` auth proves permanent, swap the auto-fill source (Wikidata entity / other).
 
+**Design workflow tooling added.** New `design-worker` subagent (`.claude/agents/design-worker.md`, versioned in the repo) — a design-only, read-the-design-system persona that produces UI concepts/specs and saves them under `design/concepts/`, committing + pushing to `dev` so design (laptop) and implementation (home PC) can happen in separate sessions. It's forbidden from touching app source. `.gitignore` now tracks `.claude/agents/` but ignores machine-local `.claude` state. Invoke it explicitly ("use the design-worker …"); concepts come back here for the coding agent to implement.
+
 **Merged `dev` → `main` (next-action #1, done).** `main` was 61 commits behind `origin/main` locally; fast-forwarded to `origin/main` (build 5), then `git merge --no-ff dev`. Only conflict was a modify/delete on `BUILD_NUMBER` (main bumped it, dev deleted it as part of the commit-timestamp version rewrite) — resolved by taking dev's deletion. Merged `main` tree is byte-identical to `dev`. Pushed `291d223..6c7a108` → triggers GitHub CI + Coolify prod auto-deploy. CI not pollable locally (`gh` not installed) — verify via repo Actions tab; prod build version should now read `v26.05.3x.xxxx` (commit-timestamp scheme) instead of `BUILD_NUMBER=5`.
 
 ### Session end — 2026-05-30 (late session, picks up from earlier pivot point)

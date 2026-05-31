@@ -10,3 +10,7 @@ Thumbs.db
 
 # Playwright MCP scratch (screenshots/snapshots from local rendering)
 .playwright-mcp/
+
+# Claude Code — version the shared agent definitions, ignore machine-local state
+.claude/*
+!.claude/agents/

@@ -107,6 +107,18 @@
   --z-header:  20;
 }
 
+/* Named z-index utilities. Tailwind v4 does not generate `z-{name}` utilities
+   from the --z-* theme vars, so `z-header`/`z-toolbar` were emitting NO css —
+   the sticky header had no z-index and glass content (backdrop-filter creates a
+   stacking context) painted over it. Defining them explicitly keeps the header
+   above the toolbar, which sits above page content. */
+@utility z-toolbar {
+  z-index: var(--z-toolbar);
+}
+@utility z-header {
+  z-index: var(--z-header);
+}
+
 @layer base {
   :root {
     /* Soft pastel mesh — public page background.

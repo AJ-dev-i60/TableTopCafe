@@ -34,7 +34,7 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
 <template>
   <div>
     <!-- Toolbar: sticky glass chrome -->
-    <div class="sticky top-[--header-height] z-toolbar glass-chrome border-b">
+    <div class="toolbar-sticky z-toolbar glass-chrome border-b">
       <div class="max-w-7xl mx-auto px-md py-2.5 flex items-center gap-2">
 
         <!-- Search: pill shape, glass fill -->
@@ -235,6 +235,13 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
   background: var(--glass-fill);
   border-color: var(--glass-stroke);
   backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+}
+
+/* Sticks below the header. Was `top-[--header-height]`, but Tailwind v4.3
+   strips the var() from arbitrary-value utilities, so the offset never applied. */
+.toolbar-sticky {
+  position: sticky;
+  top: var(--header-height);
 }
 
 .glass-chip {

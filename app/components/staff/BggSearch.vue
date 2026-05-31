@@ -3,7 +3,7 @@
     <SharedInput
       v-model="query"
       type="text"
-      placeholder="Search BoardGameGeek…"
+      placeholder="Search board games…"
       autocomplete="off"
       @focus="showDropdown = results.length > 0"
       @blur="onBlur"
@@ -19,7 +19,7 @@
     >
       <li
         v-for="result in results"
-        :key="result.bggId"
+        :key="result.name"
         class="bgg-option px-3 py-2 text-ui cursor-pointer flex items-center justify-between gap-2"
         @mousedown.prevent="select(result)"
       >
@@ -36,8 +36,8 @@
 
 <script setup lang="ts">
 export type BggResult = {
-  bggId: number
   name: string
+  bggId: number | null
   yearPublished: number | null
 }
 
@@ -56,12 +56,13 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null
 watch(query, (val) => {
   error.value = ''
   if (debounceTimer) clearTimeout(debounceTimer)
-  if (val.trim().length < 2) {
+  if (val.trim().length < 1) {
     results.value = []
     showDropdown.value = false
     return
   }
-  debounceTimer = setTimeout(() => search(val.trim()), 350)
+  // Local in-memory search — short debounce just to coalesce keystrokes.
+  debounceTimer = setTimeout(() => search(val.trim()), 150)
 })
 
 async function search(q: string) {
@@ -71,7 +72,7 @@ async function search(q: string) {
     results.value = data
     showDropdown.value = data.length > 0
   } catch {
-    error.value = 'BGG search unavailable — searching local cache'
+    error.value = 'Search failed. Try again.'
     results.value = []
     showDropdown.value = false
   } finally {

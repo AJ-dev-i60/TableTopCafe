@@ -19,6 +19,7 @@
               <span v-if="selectedBgg.yearPublished" class="ml-2" style="color: var(--color-text-muted)">({{ selectedBgg.yearPublished }})</span>
             </div>
             <SharedButton
+              v-if="selectedBgg.bggId !== null"
               type="button"
               :pending="fetchingBgg"
               pending-label="Fetching…"
@@ -26,6 +27,9 @@
             >
               Fetch game info
             </SharedButton>
+            <span v-else class="text-meta" style="color: var(--color-text-muted)">
+              No linked BGG entry — enter details manually.
+            </span>
             <button
               type="button"
               class="text-ui p-1 hover:opacity-70"
@@ -266,6 +270,9 @@ const pending = ref(false)
 function onBggSelect(result: BggResult) {
   selectedBgg.value = result
   bggError.value = ''
+  // Pre-fill the name from the selected list entry. If the game has a BGG id and
+  // the user clicks "Fetch game info", the canonical BGG data overwrites this.
+  if (!form.name.trim()) form.name = result.name
 }
 
 function clearBgg() {
@@ -276,11 +283,12 @@ function clearBgg() {
 }
 
 async function fetchBggInfo() {
-  if (!selectedBgg.value) return
+  const bgg = selectedBgg.value
+  if (!bgg || bgg.bggId === null) return
   fetchingBgg.value = true
   bggError.value = ''
   try {
-    const detail = await $fetch<BggThingDetail>(`/api/bgg/thing/${selectedBgg.value.bggId}`)
+    const detail = await $fetch<BggThingDetail>(`/api/bgg/thing/${bgg.bggId}`)
     bggId.value = detail.bggId
     if (detail.name) form.name = detail.name
     if (detail.description) form.description = detail.description

@@ -15,7 +15,8 @@
     "db:migrate": "tsx server/db/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:seed-admin": "tsx scripts/seed-admin.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "gen:game-names": "tsx scripts/refresh-game-names.ts"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",

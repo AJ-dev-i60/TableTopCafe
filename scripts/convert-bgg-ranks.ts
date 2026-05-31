@@ -21,7 +21,13 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const INPUT = process.argv[2] ?? resolve(HERE, '../data/boardgames_ranks.csv')
 const OUTPUT = resolve(HERE, '../server/data/board-games.json')
 
-type BoardGame = { name: string; bggId: number | null; yearPublished: number | null }
+// Drop the ultra-obscure long tail: BGG's full dump is ~177k games, mostly with
+// almost no ratings. Keeping games with at least this many ratings (~42k at 30)
+// covers everything a café would realistically own while keeping the committed
+// file small and the search relevant. Override with MIN_RATINGS=0 for everything.
+const MIN_RATINGS = Number(process.env.MIN_RATINGS ?? 30)
+
+type BoardGame = { name: string; bggId: number; yearPublished: number | null; usersRated: number }
 
 // Minimal RFC-4180 CSV parser: handles quoted fields, escaped quotes ("") and
 // commas/newlines inside quotes. Returns rows of string cells.
@@ -73,32 +79,41 @@ async function main(): Promise<void> {
   const idIdx = header.indexOf('id')
   const nameIdx = header.indexOf('name')
   const yearIdx = header.indexOf('yearpublished')
+  const ratedIdx = header.indexOf('usersrated')
   if (idIdx === -1 || nameIdx === -1) {
     throw new Error(`Unexpected CSV columns: [${header.join(', ')}] — need at least "id" and "name".`)
   }
 
   const byId = new Map<number, BoardGame>()
+  let skippedLowRatings = 0
   for (let r = 1; r < rows.length; r++) {
     const cells = rows[r]
     const name = (cells[nameIdx] ?? '').trim()
     if (name === '') continue
     const bggId = Number.parseInt(cells[idIdx] ?? '', 10)
-    const key = Number.isFinite(bggId) ? bggId : NaN
-    const entry: BoardGame = {
-      name,
-      bggId: Number.isFinite(bggId) ? bggId : null,
-      yearPublished: yearIdx === -1 ? null : toYear(cells[yearIdx]),
+    if (!Number.isFinite(bggId)) continue // skip rows without a usable id
+
+    const usersRated = ratedIdx === -1 ? 0 : (Number.parseInt(cells[ratedIdx] ?? '', 10) || 0)
+    if (usersRated < MIN_RATINGS) { skippedLowRatings++; continue }
+
+    if (!byId.has(bggId)) {
+      byId.set(bggId, {
+        name,
+        bggId,
+        yearPublished: yearIdx === -1 ? null : toYear(cells[yearIdx]),
+        usersRated,
+      })
     }
-    if (Number.isNaN(key)) continue // skip rows without a usable id
-    if (!byId.has(key)) byId.set(key, entry)
   }
 
+  // Stable, readable order in the committed file (search re-sorts by popularity).
   const games = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name))
 
   await mkdir(dirname(OUTPUT), { recursive: true })
   await writeFile(OUTPUT, `${JSON.stringify(games, null, 0)}\n`, 'utf-8')
 
   console.log(`Wrote ${games.length} board games to ${OUTPUT} (source: ${INPUT}).`)
+  console.log(`Filter: usersRated >= ${MIN_RATINGS} (skipped ${skippedLowRatings} below threshold).`)
 }
 
 main().catch((err) => {

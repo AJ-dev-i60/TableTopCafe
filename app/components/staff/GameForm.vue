@@ -45,7 +45,7 @@
               type="button"
               class="wiki-btn inline-flex items-center gap-1 text-meta font-medium"
               :disabled="!form.name.trim() || fetchingWiki"
-              @click="fetchWikiDescription"
+              @click="fetchWikiInfo"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.5c1.5-1.5 4-2 6-1.5v12c-2-0.5-4.5 0-6 1.5m0-12C10.5 5 8 4.5 6 5v12c2-.5 4.5 0 6 1.5m0-12v12" />
@@ -240,22 +240,34 @@ function clearBgg() {
   bggId.value = null
 }
 
-// Pull a description from Wikipedia for the current game name (editable).
-async function fetchWikiDescription() {
+type WikiInfo = {
+  description: string | null
+  playerMin: number | null
+  playerMax: number | null
+  timeMin: number | null
+  timeMax: number | null
+}
+
+// Pull description + players + play time from Wikipedia for the current game name
+// (each field editable; only what Wikipedia returns is applied).
+async function fetchWikiInfo() {
   const name = form.name.trim()
   if (!name) return
   fetchingWiki.value = true
   wikiMessage.value = ''
   wikiError.value = false
   try {
-    const { description } = await $fetch<{ description: string | null }>('/api/wikipedia/description', {
-      query: { name },
-    })
-    if (description) {
-      form.description = description
+    const info = await $fetch<WikiInfo>('/api/wikipedia/info', { query: { name } })
+    let filled = false
+    if (info.description) { form.description = info.description; filled = true }
+    if (info.playerMin !== null) { form.playerMin = info.playerMin; filled = true }
+    if (info.playerMax !== null) { form.playerMax = info.playerMax; filled = true }
+    if (info.timeMin !== null) { form.timeMin = info.timeMin; filled = true }
+    if (info.timeMax !== null) { form.timeMax = info.timeMax; filled = true }
+    if (filled) {
       wikiMessage.value = 'Filled from Wikipedia — review and edit.'
     } else {
-      wikiMessage.value = 'No confident Wikipedia match — write a description.'
+      wikiMessage.value = 'No confident Wikipedia match — fill in manually.'
       wikiError.value = true
     }
   } catch {

@@ -3,56 +3,84 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
-const { fetchGameDescription } = await import('./wikipedia')
+const { fetchGameInfo } = await import('./wikipedia')
 
 function jsonOk(body: unknown) {
   return { ok: true, status: 200, json: () => Promise.resolve(body) }
 }
+const searchResp = (title: string | null) =>
+  jsonOk({ query: { search: title ? [{ title }] : [] } })
+const wikitextResp = (wt: string) =>
+  jsonOk({ query: { pages: { '1': { revisions: [{ slots: { main: { '*': wt } } }] } } } })
+const summaryResp = (extract: string) => jsonOk({ extract })
 
-// First fetch = search, second = summary.
-function mockSearchThenSummary(title: string, summary: unknown) {
-  mockFetch
-    .mockResolvedValueOnce(jsonOk({ query: { search: title ? [{ title }] : [] } }))
-    .mockResolvedValueOnce(jsonOk(summary))
-}
+const infobox = (players: string, time: string) =>
+  `{{Infobox game\n| title = X\n| players = ${players}\n| playing_time = ${time}\n}}\n'''X''' is a game.`
 
 beforeEach(() => mockFetch.mockReset())
 
-describe('fetchGameDescription', () => {
-  it('returns the summary extract for a matching article', async () => {
-    mockSearchThenSummary('Azul (board game)', {
-      type: 'standard',
-      extract: 'Azul is an abstract strategy board game designed by Michael Kiesling.',
+describe('fetchGameInfo', () => {
+  it('fills description, players and time from a matching game article', async () => {
+    mockFetch
+      .mockResolvedValueOnce(searchResp('Azul (board game)'))
+      .mockResolvedValueOnce(wikitextResp(infobox('2–4', '30–45 minutes')))
+      .mockResolvedValueOnce(summaryResp('Azul is an abstract strategy board game.'))
+    expect(await fetchGameInfo('Azul')).toEqual({
+      description: 'Azul is an abstract strategy board game.',
+      playerMin: 2,
+      playerMax: 4,
+      timeMin: 30,
+      timeMax: 45,
     })
-    const d = await fetchGameDescription('Azul')
-    expect(d).toBe('Azul is an abstract strategy board game designed by Michael Kiesling.')
   })
 
-  it('rejects an unrelated article (no Wikipedia page for the game)', async () => {
-    mockSearchThenSummary('Phasmophobia (video game)', {
-      type: 'standard',
-      extract: 'Phasmophobia is a video game.',
+  it('converts hours to minutes', async () => {
+    mockFetch
+      .mockResolvedValueOnce(searchResp('Catan'))
+      .mockResolvedValueOnce(wikitextResp(infobox('3–4', '1–2 hours')))
+      .mockResolvedValueOnce(summaryResp('Catan is a board game.'))
+    const info = await fetchGameInfo('Catan')
+    expect(info).toMatchObject({ timeMin: 60, timeMax: 120 })
+  })
+
+  it('takes the first entry of a list-template value', async () => {
+    mockFetch
+      .mockResolvedValueOnce(searchResp('Catan'))
+      .mockResolvedValueOnce(wikitextResp(infobox('{{ubl|3–4 (standard)|5–6 (with extensions)}}', '1 hour')))
+      .mockResolvedValueOnce(summaryResp('Catan is a board game.'))
+    const info = await fetchGameInfo('Catan')
+    expect(info).toMatchObject({ playerMin: 3, playerMax: 4, timeMin: 60, timeMax: 60 })
+  })
+
+  it('rejects an unrelated article (title mismatch) without fetching the page', async () => {
+    mockFetch.mockResolvedValueOnce(searchResp('Phasmophobia (video game)'))
+    expect(await fetchGameInfo('Disturbed Friends')).toBeNull()
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejects a same-named non-tabletop article (no game infobox)', async () => {
+    mockFetch
+      .mockResolvedValueOnce(searchResp('Pandemic'))
+      .mockResolvedValueOnce(wikitextResp('{{Infobox video game\n| title = Pandemic\n}}'))
+    expect(await fetchGameInfo('Pandemic')).toBeNull()
+  })
+
+  it('returns description with null players/time when the infobox lacks them', async () => {
+    mockFetch
+      .mockResolvedValueOnce(searchResp('Hive'))
+      .mockResolvedValueOnce(wikitextResp('{{Infobox game\n| title = Hive\n}}'))
+      .mockResolvedValueOnce(summaryResp('Hive is an abstract strategy board game.'))
+    expect(await fetchGameInfo('Hive')).toEqual({
+      description: 'Hive is an abstract strategy board game.',
+      playerMin: null,
+      playerMax: null,
+      timeMin: null,
+      timeMax: null,
     })
-    expect(await fetchGameDescription('Disturbed Friends')).toBeNull()
-  })
-
-  it('rejects a disambiguation page', async () => {
-    mockSearchThenSummary('Pandemic', { type: 'disambiguation', extract: 'Pandemic may refer to…' })
-    expect(await fetchGameDescription('Pandemic')).toBeNull()
-  })
-
-  it('rejects a title match whose summary is not about a game', async () => {
-    mockSearchThenSummary('Catan', { type: 'standard', extract: 'Catan is a region in Spain.' })
-    expect(await fetchGameDescription('Catan')).toBeNull()
-  })
-
-  it('returns null when there is no search hit', async () => {
-    mockFetch.mockResolvedValueOnce(jsonOk({ query: { search: [] } }))
-    expect(await fetchGameDescription('Zzzznomatch')).toBeNull()
   })
 
   it('returns null when the search request fails', async () => {
     mockFetch.mockResolvedValueOnce({ ok: false, status: 500 })
-    expect(await fetchGameDescription('Catan')).toBeNull()
+    expect(await fetchGameInfo('Catan')).toBeNull()
   })
 })

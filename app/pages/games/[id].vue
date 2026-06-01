@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { GameDetail } from '../../../server/db/queries/games'
 
+definePageMeta({ layout: 'detail' })
+
 const route = useRoute()
 const id = Number(route.params.id)
 
@@ -29,6 +31,12 @@ function timeLabel(min: number, max: number): string {
 const primaryPhotoHash = computed(() => game.value?.photos[0]?.contentHash ?? null)
 const heroImageFailed = ref(false)
 const heroImgEl = ref<HTMLImageElement | null>(null)
+
+// Lightbox: holds the index of the photo on show, or null when closed.
+const lightboxIndex = ref<number | null>(null)
+function openLightbox(i: number) {
+  lightboxIndex.value = i
+}
 
 // See GameCard.vue: catches errors that fired before hydration.
 onMounted(() => {
@@ -77,25 +85,34 @@ useSeoMeta({
           </div>
 
           <!-- Scrim -->
-          <div class="scrim absolute inset-0" />
+          <div class="scrim absolute inset-0 pointer-events-none" />
 
-          <!-- Back pill: glass, top-left -->
-          <NuxtLink
-            to="/"
-            class="back-pill absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-ui font-medium text-white focus:outline-none focus-visible:ring-2"
-            style="--tw-ring-color: rgb(255 255 255 / 0.7)"
+          <!-- Tap the photo to open the full-screen gallery -->
+          <button
+            v-if="primaryPhotoHash && !heroImageFailed"
+            type="button"
+            class="gallery-trigger absolute inset-0 cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-inset"
+            style="--tw-ring-color: rgb(255 255 255 / 0.8)"
+            :aria-label="game.photos.length > 1 ? `View all ${game.photos.length} photos` : 'View photo'"
+            @click="openLightbox(0)"
+          />
+
+          <!-- Photo-count hint: top-left (where back used to be) -->
+          <div
+            v-if="primaryPhotoHash && !heroImageFailed"
+            class="gallery-hint absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 text-meta font-medium text-white pointer-events-none"
           >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2" />
             </svg>
-            Catalogue
-          </NuxtLink>
+            <span>{{ game.photos.length > 1 ? `${game.photos.length} photos` : 'View' }}</span>
+          </div>
 
           <!-- Featured badge: top-right -->
-          <SharedFeaturedBadge v-if="game.featured" class="absolute top-3 right-3" />
+          <SharedFeaturedBadge v-if="game.featured" class="absolute top-3 right-3 pointer-events-none" />
 
           <!-- Title + meta: overlaid bottom-left -->
-          <div class="absolute bottom-0 left-0 right-0 p-4 lg:p-5">
+          <div class="absolute bottom-0 left-0 right-0 p-4 lg:p-5 pointer-events-none">
             <h1 class="text-detail-title font-bold text-white leading-tight title-shadow">
               {{ game.name }}
             </h1>
@@ -161,11 +178,14 @@ useSeoMeta({
         <div v-if="game.photos.length > 1" class="glass-panel p-4">
           <h2 class="text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">More photos</h2>
           <div class="grid grid-cols-3 gap-2">
-            <div
-              v-for="photo in game.photos.slice(1)"
+            <button
+              v-for="(photo, i) in game.photos.slice(1)"
               :key="photo.id"
-              class="photo-thumb overflow-hidden aspect-square"
-              style="background: var(--color-surface-elevated)"
+              type="button"
+              class="photo-thumb overflow-hidden aspect-square cursor-pointer focus:outline-none focus-visible:ring-2"
+              style="background: var(--color-surface-elevated); --tw-ring-color: var(--color-brand)"
+              :aria-label="`View photo ${i + 2}`"
+              @click="openLightbox(i + 1)"
             >
               <picture>
                 <source type="image/webp" :srcset="photoUrl(photo.contentHash, 'thumb', 'webp')" />
@@ -173,10 +193,10 @@ useSeoMeta({
                   :src="photoUrl(photo.contentHash, 'thumb', 'jpg')"
                   :alt="game.name"
                   loading="lazy"
-                  class="w-full h-full object-cover"
+                  class="w-full h-full object-cover motion-safe:transition-transform"
                 />
               </picture>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -195,13 +215,14 @@ useSeoMeta({
           </svg>
         </a>
 
-        <!-- Availability note -->
-        <p class="text-ui text-center py-2 px-4" style="color: var(--color-text-secondary)">
-          This is our library — not real-time availability.
-          Ask a staff member to grab a game for you.
-        </p>
       </div>
     </div>
+
+    <CataloguePhotoLightbox
+      v-model="lightboxIndex"
+      :photos="game.photos"
+      :game-name="game.name"
+    />
   </div>
 </template>
 
@@ -247,11 +268,18 @@ useSeoMeta({
   border-radius: var(--radius-xl);
 }
 
-.back-pill {
+.gallery-hint {
   background: rgb(255 255 255 / 0.16);
   border: 1px solid rgb(255 255 255 / 0.40);
   backdrop-filter: blur(10px);
   border-radius: var(--radius-full);
+}
+
+.gallery-trigger {
+  border-radius: var(--radius-xl);
+}
+.gallery-trigger:hover {
+  background: rgb(255 255 255 / 0.06);
 }
 
 .title-shadow {
@@ -264,5 +292,11 @@ useSeoMeta({
 
 .photo-thumb {
   border-radius: var(--radius-md);
+}
+.photo-thumb img {
+  transition: transform 200ms ease;
+}
+.photo-thumb:hover img {
+  transform: scale(1.05);
 }
 </style>

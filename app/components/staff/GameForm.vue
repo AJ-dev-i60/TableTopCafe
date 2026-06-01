@@ -34,7 +34,7 @@
         <!-- Name -->
         <div>
           <label for="game-name" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Name *</label>
-          <SharedInput id="game-name" v-model="form.name" type="text" required maxlength="255" />
+          <SharedInput id="game-name" v-model="form.name" type="text" required maxlength="255" style="font-size: 1.15rem; font-weight: 700" />
         </div>
 
         <!-- Description -->

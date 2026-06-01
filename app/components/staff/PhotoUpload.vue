@@ -19,22 +19,22 @@
       />
     </label>
 
-    <!-- Square action buttons: take a photo (mobile) + upload -->
+    <!-- Action buttons: take a photo (mobile) + upload — together span the row -->
     <div class="flex gap-3 mt-3">
-      <label class="photo-action sm:hidden">
-        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <label class="photo-action flex-1 sm:hidden">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        <span class="text-meta text-center">Take a photo</span>
+        <span class="text-ui font-medium">Take a photo</span>
         <input type="file" accept="image/*" capture="environment" class="hidden" @change="onFileChange" />
       </label>
 
-      <label class="photo-action">
-        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <label class="photo-action flex-1">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 16V4m0 0L8 8m4-4l4 4M4 17v1a2 2 0 002 2h12a2 2 0 002-2v-1" />
         </svg>
-        <span class="text-meta text-center">Upload</span>
+        <span class="text-ui font-medium">Upload</span>
         <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden" @change="onFileChange" />
       </label>
     </div>
@@ -61,7 +61,7 @@
           class="photo-thumb group relative w-20 h-20 overflow-hidden border"
           :class="{ dragging: dragActive && dragIndex === index, cover: index === 0 }"
           :style="[
-            index === 0 ? null : { borderColor: 'var(--color-border)' },
+            { borderColor: 'var(--color-border)' },
             dragActive && dragIndex === index ? { transform: `translate(${dragDX}px, ${dragDY}px) scale(1.05)` } : null,
           ]"
           :aria-label="index === 0 ? `Photo 1 (cover)` : `Photo ${index + 1}`"
@@ -427,9 +427,11 @@ defineExpose({ upload })
   cursor: grabbing;
 }
 
-/* The first photo is the cover — flag it with a dashed brand outline. */
+/* The first photo is the cover — outline the slot it sits in (offset outward so
+   the dashed frame surrounds the tile rather than hugging the image). */
 .photo-thumb.cover {
-  border: 2px dashed var(--color-brand);
+  outline: 2px dashed var(--color-brand);
+  outline-offset: 3px;
 }
 
 .thumb-overlay {
@@ -462,12 +464,11 @@ defineExpose({ upload })
 
 .photo-action {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 7rem;
-  height: 7rem;
+  padding: 11px 12px;
   color: var(--color-text-primary);
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);

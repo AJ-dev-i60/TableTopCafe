@@ -5,11 +5,11 @@
       <!-- ── Left: Details card ────────────────────────────── -->
       <div class="form-card mb-6 lg:mb-0 flex flex-col gap-md">
 
-        <!-- BGG lookup: dashed border with brand accent -->
+        <!-- Find game (BGG-backed name search): dashed border with brand accent -->
         <div class="bgg-block border-2 border-dashed p-md">
           <p class="text-ui font-medium mb-2" style="color: var(--color-brand)">
-            BGG lookup
-            <span class="font-normal" style="color: var(--color-text-muted)"> — find the game to fill its name and link its BoardGameGeek page</span>
+            Find game
+            <span class="font-normal" style="color: var(--color-text-muted)"> — fills the name and links its BoardGameGeek page</span>
           </p>
           <StaffBggSearch @select="onBggSelect" />
 
@@ -23,7 +23,7 @@
               type="button"
               class="text-ui p-1 hover:opacity-70"
               style="color: var(--color-text-muted)"
-              aria-label="Clear BGG selection"
+              aria-label="Clear selection"
               @click="clearBgg"
             >
               ✕

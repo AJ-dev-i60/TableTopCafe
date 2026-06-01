@@ -43,7 +43,7 @@
 
     <div v-else-if="!filteredGames.length" class="text-ui" style="color: var(--color-text-muted)">
       <template v-if="search.trim()">No games match “{{ search.trim() }}”.</template>
-      <template v-else>{{ filter === 'deleted' ? 'No deleted games.' : filter === 'live' ? 'No live games yet. Add the first one.' : 'No games yet.' }}</template>
+      <template v-else>{{ filter === 'deleted' ? 'No deleted games.' : filter === 'featured' ? 'No featured games yet.' : filter === 'live' ? 'No live games yet. Add the first one.' : 'No games yet.' }}</template>
     </div>
 
     <template v-else>
@@ -229,11 +229,12 @@ function byLabel(username: string): string {
   return username === currentUsername.value ? 'you' : username
 }
 
-type FilterValue = 'live' | 'deleted' | 'all'
+type FilterValue = 'live' | 'featured' | 'deleted' | 'all'
 const filter = ref<FilterValue>('live')
 
 const filterOptions: { label: string; value: FilterValue }[] = [
   { label: 'Live', value: 'live' },
+  { label: 'Featured', value: 'featured' },
   { label: 'Deleted', value: 'deleted' },
   { label: 'All', value: 'all' },
 ]
@@ -249,6 +250,7 @@ const filteredGames = computed(() => {
   if (!games.value) return []
   let list = games.value
   if (filter.value === 'live') list = list.filter((g) => !g.deletedAt)
+  else if (filter.value === 'featured') list = list.filter((g) => g.featured && !g.deletedAt)
   else if (filter.value === 'deleted') list = list.filter((g) => !!g.deletedAt)
   const q = search.value.trim().toLowerCase()
   if (q) list = list.filter((g) => g.name.toLowerCase().includes(q))

@@ -28,13 +28,11 @@ test('staff login → add game → appears in public catalogue', async ({ page }
   await page.getByRole('link', { name: 'Add game' }).click()
   await expect(page).toHaveURL(/\/staff\/games\/new/)
 
-  // Fill in the form
+  // Fill in the form. Players and play time are double-ended sliders
+  // (SharedRangeSlider) that default to 2–4 players / 30–60 min, which is fine
+  // for this smoke test, so only the name needs filling.
   const gameName = `Test Game ${Date.now()}`
   await page.getByLabel('Name *').fill(gameName)
-  await page.getByLabel('Min players *').fill('2')
-  await page.getByLabel('Max players *').fill('4')
-  await page.getByLabel('Min time (min) *').fill('30')
-  await page.getByLabel('Max time (min) *').fill('60')
 
   await page.getByRole('button', { name: 'Add game' }).click()
 

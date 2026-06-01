@@ -168,6 +168,9 @@ function onTouchMove(e: TouchEvent) {
   if (e.touches.length === 1 && scale.value > 1) {
     const t = e.touches[0]
     if (!panning) {
+      // Deadzone: ignore micro-jitter so a stationary touch stays a tap — keeps
+      // double-tap-to-zoom-out reliable while zoomed in.
+      if (Math.hypot(t.clientX - tapStartX, t.clientY - tapStartY) < 6) return
       panning = true
       panStartX = t.clientX
       panStartY = t.clientY
@@ -187,18 +190,22 @@ function onTouchEnd(e: TouchEvent) {
   pinchLastDist = 0
   if (e.touches.length > 0) return
 
+  const wasPinch = didPinch
   panning = false
-  if (didPinch) {
+  didPan = false
+  didPinch = false
+
+  if (wasPinch) {
     if (scale.value <= 1.02) resetZoom()
     return
   }
-  if (didPan) return
 
-  // A clean single-finger tap with little movement: navigate or double-tap zoom.
+  // Classify by net movement, not the pan flag: a near-stationary finger is a
+  // tap even if a pixel of pan slipped through — so double-tap always toggles.
   const t = e.changedTouches[0]
   const dx = t.clientX - tapStartX
   const dy = t.clientY - tapStartY
-  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+  if (Math.hypot(dx, dy) < 12) {
     const now = Date.now()
     if (now - lastTapTime < 300) {
       lastTapTime = 0
@@ -208,6 +215,8 @@ function onTouchEnd(e: TouchEvent) {
     }
     return
   }
+
+  // A real drag: navigate only when not zoomed (otherwise it was a pan).
   if (scale.value === 1 && Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
     go(dx < 0 ? 1 : -1)
   }

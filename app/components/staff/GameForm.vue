@@ -37,28 +37,34 @@
           <SharedInput id="game-name" v-model="form.name" type="text" required maxlength="255" />
         </div>
 
-        <!-- Players min/max: 2-up (stacks on phones) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
-          <div>
-            <label for="game-player-min" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Min players *</label>
-            <SharedInput id="game-player-min" v-model.number="form.playerMin" type="number" min="1" required />
-          </div>
-          <div>
-            <label for="game-player-max" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Max players *</label>
-            <SharedInput id="game-player-max" v-model.number="form.playerMax" type="number" min="1" required />
-          </div>
+        <!-- Players: double-ended slider -->
+        <div>
+          <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Players *</label>
+          <SharedRangeSlider
+            v-model:low="form.playerMin"
+            v-model:high="form.playerMax"
+            :min="1"
+            :max="12"
+            :step="1"
+            :format="formatPlayers"
+            low-label="Minimum players"
+            high-label="Maximum players"
+          />
         </div>
 
-        <!-- Play time min/max: 2-up (stacks on phones) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
-          <div>
-            <label for="game-time-min" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Min time (min) *</label>
-            <SharedInput id="game-time-min" v-model.number="form.timeMin" type="number" min="1" required />
-          </div>
-          <div>
-            <label for="game-time-max" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Max time (min) *</label>
-            <SharedInput id="game-time-max" v-model.number="form.timeMax" type="number" min="1" required />
-          </div>
+        <!-- Play time: double-ended slider -->
+        <div>
+          <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Play time *</label>
+          <SharedRangeSlider
+            v-model:low="form.timeMin"
+            v-model:high="form.timeMax"
+            :min="5"
+            :max="240"
+            :step="5"
+            :format="formatTime"
+            low-label="Minimum play time"
+            high-label="Maximum play time"
+          />
         </div>
 
         <!-- Description -->
@@ -194,6 +200,18 @@ const emit = defineEmits<{
 
 const submitLabel = computed(() => props.submitLabel ?? 'Save game')
 const atFeaturedLimit = computed(() => props.featuredCount >= 3 && !form.featured)
+
+// 12 is the slider ceiling; show it as "12+" since some games seat more.
+function formatPlayers(v: number): string {
+  return v >= 12 ? '12+' : String(v)
+}
+
+function formatTime(v: number): string {
+  if (v < 60) return `${v} min`
+  const h = Math.floor(v / 60)
+  const m = v % 60
+  return m > 0 ? `${h}h ${m}m` : `${h}h`
+}
 
 const form = reactive({
   name: props.initial?.name ?? '',

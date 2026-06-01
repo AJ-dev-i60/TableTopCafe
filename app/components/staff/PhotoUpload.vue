@@ -61,8 +61,10 @@
           class="photo-thumb group relative w-20 h-20 overflow-hidden border"
           :class="{ dragging: dragActive && dragIndex === index }"
           style="border-color: var(--color-border)"
+          :style="dragActive && dragIndex === index ? { transform: `translate(${dragDX}px, ${dragDY}px) scale(1.05)` } : null"
           :aria-label="`Photo ${index + 1}`"
           @pointerdown="onThumbPointerDown(index, $event)"
+          @contextmenu.prevent
           @click="onThumbClick(index)"
         >
           <img
@@ -189,6 +191,10 @@ const gridEl = ref<HTMLElement | null>(null)
 const dragActive = ref(false)
 const dragIndex = ref<number | null>(null)
 const savingOrder = ref(false)
+// Live translate of the grabbed thumbnail so it follows the finger (then snaps
+// to 0 when it crosses into a new slot).
+const dragDX = ref(0)
+const dragDY = ref(0)
 
 // ── Local display order (kept in sync with the prop except mid-drag) ─────────
 const localPhotos = ref<string[]>([])
@@ -255,6 +261,8 @@ async function onDelete(index: number) {
 let pressTimer: number | null = null
 let pressStartX = 0
 let pressStartY = 0
+let lastX = 0
+let lastY = 0
 let suppressClick = false
 
 function clearPressTimer() {
@@ -287,14 +295,21 @@ function onThumbPointerDown(index: number, e: PointerEvent) {
     pressTimer = null
     dragActive.value = true
     dragIndex.value = index
+    dragDX.value = 0
+    dragDY.value = 0
+    lastX = pressStartX
+    lastY = pressStartY
   }, 300)
 }
 
+// Which slot is under the pointer, ignoring the grabbed (floating) thumbnail so
+// it doesn't just match itself.
 function slotIndexAt(x: number, y: number): number | null {
   const grid = gridEl.value
   if (!grid) return null
   const children = Array.from(grid.children) as HTMLElement[]
   for (let i = 0; i < children.length; i++) {
+    if (i === dragIndex.value) continue
     const r = children[i].getBoundingClientRect()
     if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return i
   }
@@ -310,6 +325,12 @@ function onWindowPointerMove(e: PointerEvent) {
     }
     return
   }
+  // Rubber-band: the grabbed thumbnail follows the finger.
+  dragDX.value += e.clientX - lastX
+  dragDY.value += e.clientY - lastY
+  lastX = e.clientX
+  lastY = e.clientY
+
   const over = slotIndexAt(e.clientX, e.clientY)
   if (over !== null && dragIndex.value !== null && over !== dragIndex.value) {
     const arr = [...localPhotos.value]
@@ -317,6 +338,9 @@ function onWindowPointerMove(e: PointerEvent) {
     arr.splice(over, 0, item!)
     localPhotos.value = arr
     dragIndex.value = over
+    // Snap into the new slot and re-baseline the pull.
+    dragDX.value = 0
+    dragDY.value = 0
   }
 }
 
@@ -326,6 +350,8 @@ function onWindowPointerUp() {
   if (!dragActive.value) return // was a tap → onThumbClick handles it
   dragActive.value = false
   dragIndex.value = null
+  dragDX.value = 0
+  dragDY.value = 0
   suppressClick = true // swallow the click that follows the drag
   const order = [...localPhotos.value]
   if (!sameOrder(order, props.existingPhotos ?? [])) void persistOrder(order)
@@ -337,6 +363,8 @@ function onWindowPointerCancel() {
   if (dragActive.value) {
     dragActive.value = false
     dragIndex.value = null
+    dragDX.value = 0
+    dragDY.value = 0
     localPhotos.value = [...(props.existingPhotos ?? [])] // revert
   }
 }
@@ -380,12 +408,15 @@ defineExpose({ upload })
 
 .photo-thumb.group {
   cursor: pointer;
-  /* We own touch gestures (tap = view, hold = drag), so no native scroll/zoom. */
+  /* We own touch gestures (tap = view, hold = drag), so no native scroll/zoom,
+     and no long-press image callout/context menu getting in the way. */
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .photo-thumb.dragging {
-  transform: scale(1.08);
   box-shadow: var(--shadow-lg);
   opacity: 0.95;
   z-index: 10;

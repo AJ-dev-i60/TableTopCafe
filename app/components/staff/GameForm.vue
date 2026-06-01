@@ -93,35 +93,8 @@
       <!-- ── Right column ───────────────────────────────────── -->
       <div class="flex flex-col gap-4">
 
-        <!-- Featured card -->
-        <div class="form-card">
-          <h2 class="text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">Featured</h2>
-
-          <label class="flex items-center gap-2" :class="atFeaturedLimit ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
-            <input
-              v-model="form.featured"
-              type="checkbox"
-              class="checkbox"
-              :disabled="atFeaturedLimit"
-            />
-            <span class="text-ui font-medium" style="color: var(--color-text-primary)">Mark as featured</span>
-          </label>
-          <p class="text-meta mt-1" style="color: var(--color-text-muted)">
-            <span v-if="atFeaturedLimit">3 of 3 featured — un-feature one first.</span>
-            <span v-else>{{ props.featuredCount }} of 3 featured slots used.</span>
-          </p>
-
-          <div v-if="form.featured" class="mt-3">
-            <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Staff pick note</label>
-            <SharedInput
-              :model-value="form.featuredNote ?? undefined"
-              type="text"
-              maxlength="500"
-              placeholder="Optional — shown on the game's detail page"
-              @update:model-value="(v) => { form.featuredNote = String(v) }"
-            />
-          </div>
-        </div>
+        <!-- Featuring is managed from the games list, not here. The featured
+             state is still sent unchanged so editing a game preserves it. -->
 
         <!-- Photos card -->
         <div class="form-card">
@@ -203,7 +176,6 @@ const emit = defineEmits<{
 }>()
 
 const submitLabel = computed(() => props.submitLabel ?? 'Save game')
-const atFeaturedLimit = computed(() => props.featuredCount >= 3 && !form.featured)
 
 // 12 is the slider ceiling; show it as "12+" since some games seat more.
 function formatPlayers(v: number): string {

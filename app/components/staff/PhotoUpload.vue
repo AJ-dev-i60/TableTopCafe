@@ -59,10 +59,12 @@
           :key="hash"
           type="button"
           class="photo-thumb group relative w-20 h-20 overflow-hidden border"
-          :class="{ dragging: dragActive && dragIndex === index }"
-          style="border-color: var(--color-border)"
-          :style="dragActive && dragIndex === index ? { transform: `translate(${dragDX}px, ${dragDY}px) scale(1.05)` } : null"
-          :aria-label="`Photo ${index + 1}`"
+          :class="{ dragging: dragActive && dragIndex === index, cover: index === 0 }"
+          :style="[
+            index === 0 ? null : { borderColor: 'var(--color-border)' },
+            dragActive && dragIndex === index ? { transform: `translate(${dragDX}px, ${dragDY}px) scale(1.05)` } : null,
+          ]"
+          :aria-label="index === 0 ? `Photo 1 (cover)` : `Photo ${index + 1}`"
           @pointerdown="onThumbPointerDown(index, $event)"
           @contextmenu.prevent
           @click="onThumbClick(index)"
@@ -93,9 +95,11 @@
         </button>
       </div>
 
-      <p v-if="localPhotos.length > 1" class="text-meta mt-2" style="color: var(--color-text-muted)">
+      <p v-if="localPhotos.length > 0" class="text-meta mt-2" style="color: var(--color-text-muted)">
         <template v-if="savingOrder">Saving order…</template>
-        <template v-else>* Click and hold an image to drag and rearrange the order.</template>
+        <template v-else>
+          The first (outlined) image is the cover.<template v-if="localPhotos.length > 1"> Click and hold an image to drag and rearrange.</template>
+        </template>
       </p>
     </template>
 
@@ -421,6 +425,11 @@ defineExpose({ upload })
   opacity: 0.95;
   z-index: 10;
   cursor: grabbing;
+}
+
+/* The first photo is the cover — flag it with a dashed brand outline. */
+.photo-thumb.cover {
+  border: 2px dashed var(--color-brand);
 }
 
 .thumb-overlay {

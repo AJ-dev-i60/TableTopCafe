@@ -227,11 +227,12 @@ const error = ref('')
 const pending = ref(false)
 
 function onBggSelect(result: BggResult) {
+  // Always apply the picked result: set the name and link the BGG page (powers
+  // the detail-page "View on BoardGameGeek" link), so re-picking another result
+  // replaces the previous one.
   selectedBgg.value = result
-  // Link the game to its BGG entry (powers the detail-page "View on
-  // BoardGameGeek" link) and pre-fill the name if empty.
   bggId.value = result.bggId
-  if (!form.name.trim()) form.name = result.name
+  form.name = result.name
 }
 
 function clearBgg() {

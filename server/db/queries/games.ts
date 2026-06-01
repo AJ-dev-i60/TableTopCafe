@@ -310,3 +310,37 @@ export async function listAllGamesForStaff(): Promise<StaffGameListItem[]> {
 
   return gameRows.map((g) => ({ ...g, photoHash: firstPhotoByGame.get(g.id) ?? null }))
 }
+
+// ─── Photo row management (delete / rotate) ───────────────────────────────────
+
+export async function deleteGamePhoto(gameId: number, contentHash: string): Promise<void> {
+  await db.delete(photos).where(and(eq(photos.gameId, gameId), eq(photos.contentHash, contentHash)))
+}
+
+// Rotate stores a freshly-processed image under a new hash; point the same row
+// at it, keeping its position.
+export async function updateGamePhotoHash(gameId: number, oldHash: string, newHash: string): Promise<void> {
+  await db
+    .update(photos)
+    .set({ contentHash: newHash })
+    .where(and(eq(photos.gameId, gameId), eq(photos.contentHash, oldHash)))
+}
+
+// How many photo rows (across all games) still point at a hash — used to decide
+// whether the files on disk can be removed (placeholders are shared by hash).
+export async function countPhotoHashReferences(contentHash: string): Promise<number> {
+  const [row] = await db
+    .select({ c: sql<number>`count(*)` })
+    .from(photos)
+    .where(eq(photos.contentHash, contentHash))
+  return Number(row?.c ?? 0)
+}
+
+export async function gameHasPhoto(gameId: number, contentHash: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: photos.id })
+    .from(photos)
+    .where(and(eq(photos.gameId, gameId), eq(photos.contentHash, contentHash)))
+    .limit(1)
+  return !!row
+}

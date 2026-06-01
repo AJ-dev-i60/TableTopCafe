@@ -8,10 +8,16 @@ const props = defineProps<{
   modelValue: number | null
   photos: { id: number; contentHash: string }[]
   gameName: string
+  // Staff mode: show a rotate/delete toolbar and emit edit events.
+  editable?: boolean
+  // Disables the toolbar and shows a spinner while an edit is in flight.
+  busy?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: number | null]
+  rotate: [index: number, direction: 'cw' | 'ccw']
+  delete: [index: number]
 }>()
 
 const MAX_SCALE = 3
@@ -367,7 +373,7 @@ onBeforeUnmount(() => {
         </svg>
       </button>
 
-      <div v-if="count > 1" class="lb-dots">
+      <div v-if="count > 1" class="lb-dots" :class="editable ? 'lb-dots-raised' : ''">
         <button
           v-for="(photo, i) in photos"
           :key="photo.id"
@@ -377,6 +383,32 @@ onBeforeUnmount(() => {
           :aria-label="`Go to photo ${i + 1}`"
           @click.stop="select(i)"
         />
+      </div>
+
+      <!-- Staff edit toolbar -->
+      <div v-if="editable" class="lb-toolbar" @click.stop>
+        <button type="button" class="lb-tool" :disabled="busy" aria-label="Rotate left" title="Rotate left" @click="emit('rotate', modelValue ?? 0, 'ccw')">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14L4 9l5-5" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 9h11a5 5 0 015 5v2" />
+          </svg>
+        </button>
+        <button type="button" class="lb-tool" :disabled="busy" aria-label="Rotate right" title="Rotate right" @click="emit('rotate', modelValue ?? 0, 'cw')">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 14l5-5-5-5" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 9H9a5 5 0 00-5 5v2" />
+          </svg>
+        </button>
+        <button type="button" class="lb-tool lb-tool-danger" :disabled="busy" aria-label="Delete photo" title="Delete photo" @click="emit('delete', modelValue ?? 0)">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Busy overlay while a rotate/delete is in flight -->
+      <div v-if="editable && busy" class="lb-busy" aria-hidden="true">
+        <span class="lb-spinner" />
       </div>
     </div>
   </Teleport>
@@ -525,6 +557,71 @@ onBeforeUnmount(() => {
 .lb-dot-active {
   background: #fff;
   transform: scale(1.25);
+}
+/* Lift the dots above the edit toolbar in staff mode. */
+.lb-dots-raised {
+  bottom: 74px;
+}
+
+.lb-toolbar {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 2;
+}
+
+.lb-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  color: #fff;
+  background: rgb(255 255 255 / 0.14);
+  border: 1px solid rgb(255 255 255 / 0.30);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+.lb-tool:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.26);
+}
+.lb-tool:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.8);
+  outline-offset: 2px;
+}
+.lb-tool:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.lb-tool-danger:hover:not(:disabled) {
+  background: rgb(220 38 38 / 0.85);
+  border-color: rgb(220 38 38 / 0.9);
+}
+
+.lb-busy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+.lb-spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 3px solid rgb(255 255 255 / 0.3);
+  border-top-color: #fff;
+  animation: lb-spin 0.7s linear infinite;
+}
+@keyframes lb-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

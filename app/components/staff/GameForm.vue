@@ -139,7 +139,10 @@
             ref="photoUpload"
             :game-id="savedGameId"
             :existing-photos="existingPhotoHashes"
+            :game-name="form.name"
             @uploaded="onPhotosUploaded"
+            @deleted="onPhotoDeleted"
+            @rotated="onPhotoRotated"
           />
           <p v-else class="text-ui" style="color: var(--color-text-muted)">Save the game first, then add photos.</p>
         </div>
@@ -313,6 +316,16 @@ async function submit() {
 
 function onPhotosUploaded(hashes: string[]) {
   existingPhotoHashes.value = [...existingPhotoHashes.value, ...hashes]
+}
+
+function onPhotoDeleted(hash: string) {
+  existingPhotoHashes.value = existingPhotoHashes.value.filter((h) => h !== hash)
+}
+
+function onPhotoRotated(payload: { oldHash: string; newHash: string }) {
+  existingPhotoHashes.value = existingPhotoHashes.value.map((h) =>
+    h === payload.oldHash ? payload.newHash : h,
+  )
 }
 </script>
 

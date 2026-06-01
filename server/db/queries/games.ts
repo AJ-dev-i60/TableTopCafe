@@ -344,3 +344,15 @@ export async function gameHasPhoto(gameId: number, contentHash: string): Promise
     .limit(1)
   return !!row
 }
+
+// Persist a new photo order: each hash's position becomes its index in the list.
+export async function reorderGamePhotos(gameId: number, orderedHashes: string[]): Promise<void> {
+  await db.transaction(async (tx) => {
+    for (let i = 0; i < orderedHashes.length; i++) {
+      await tx
+        .update(photos)
+        .set({ position: i })
+        .where(and(eq(photos.gameId, gameId), eq(photos.contentHash, orderedHashes[i]!)))
+    }
+  })
+}

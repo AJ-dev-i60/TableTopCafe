@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- File input (above existing photos) -->
+    <!-- File input: drag-and-drop or click -->
     <label
       class="dropzone flex flex-col items-center justify-center w-full h-28 border-2 border-dashed transition-colors"
       @dragover.prevent
@@ -19,21 +19,25 @@
       />
     </label>
 
-    <!-- Take a photo (mobile: opens the camera) -->
-    <label class="camera-btn sm:hidden flex items-center justify-center gap-2 w-full mt-2 py-2.5 text-ui font-medium">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-      Take a photo
-      <input
-        type="file"
-        accept="image/*"
-        capture="environment"
-        class="hidden"
-        @change="onFileChange"
-      />
-    </label>
+    <!-- Square action buttons: take a photo (mobile) + upload -->
+    <div class="flex gap-3 mt-3">
+      <label class="photo-action sm:hidden">
+        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span class="text-meta text-center">Take a photo</span>
+        <input type="file" accept="image/*" capture="environment" class="hidden" @change="onFileChange" />
+      </label>
+
+      <label class="photo-action">
+        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 16V4m0 0L8 8m4-4l4 4M4 17v1a2 2 0 002 2h12a2 2 0 002-2v-1" />
+        </svg>
+        <span class="text-meta text-center">Upload</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden" @change="onFileChange" />
+      </label>
+    </div>
 
     <!-- Preview of newly selected files (upload on save) -->
     <div v-if="previews.length > 0" class="flex flex-wrap gap-3 mt-3">
@@ -47,41 +51,51 @@
       </div>
     </div>
 
-    <!-- Existing photos: click to view / rotate / delete -->
-    <div v-if="existingPhotos && existingPhotos.length > 0" class="flex flex-wrap gap-3 mt-4">
-      <button
-        v-for="(hash, index) in existingPhotos"
-        :key="hash"
-        type="button"
-        class="photo-thumb group relative w-20 h-20 overflow-hidden border"
-        style="border-color: var(--color-border)"
-        :aria-label="`View photo ${index + 1}`"
-        @click="openLightbox(index)"
-      >
-        <img
-          v-if="!failedPhotos[hash]"
-          :data-photo-hash="hash"
-          :src="`/api/photos/${hash}/thumb.webp`"
-          :alt="`Photo ${index + 1}`"
-          class="w-full h-full object-cover"
-          @error="failedPhotos[hash] = true"
-        />
-        <div
-          v-else
-          class="photo-missing w-full h-full flex items-center justify-center"
-          :title="`Photo file missing: ${hash}`"
+    <!-- Existing photos: tap to view/rotate/delete, click-and-hold to reorder -->
+    <template v-if="localPhotos.length > 0">
+      <div ref="gridEl" class="flex flex-wrap gap-3 mt-4">
+        <button
+          v-for="(hash, index) in localPhotos"
+          :key="hash"
+          type="button"
+          class="photo-thumb group relative w-20 h-20 overflow-hidden border"
+          :class="{ dragging: dragActive && dragIndex === index }"
+          style="border-color: var(--color-border)"
+          :aria-label="`Photo ${index + 1}`"
+          @pointerdown="onThumbPointerDown(index, $event)"
+          @click="onThumbClick(index)"
         >
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3l18 18M4 4h16v16H4z M4 16l5-5 3 3 M14 14l1-1 5 5" />
-          </svg>
-        </div>
-        <span class="thumb-overlay absolute inset-0 flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2" />
-          </svg>
-        </span>
-      </button>
-    </div>
+          <img
+            v-if="!failedPhotos[hash]"
+            :data-photo-hash="hash"
+            :src="`/api/photos/${hash}/thumb.webp`"
+            :alt="`Photo ${index + 1}`"
+            class="w-full h-full object-cover"
+            draggable="false"
+            @error="failedPhotos[hash] = true"
+          />
+          <div
+            v-else
+            class="photo-missing w-full h-full flex items-center justify-center"
+            :title="`Photo file missing: ${hash}`"
+          >
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3l18 18M4 4h16v16H4z M4 16l5-5 3 3 M14 14l1-1 5 5" />
+            </svg>
+          </div>
+          <span class="thumb-overlay absolute inset-0 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2" />
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <p v-if="localPhotos.length > 1" class="text-meta mt-2" style="color: var(--color-text-muted)">
+        <template v-if="savingOrder">Saving order…</template>
+        <template v-else>* Click and hold an image to drag and rearrange the order.</template>
+      </p>
+    </template>
 
     <CataloguePhotoLightbox
       v-model="lightboxIndex"
@@ -106,6 +120,7 @@ const emit = defineEmits<{
   uploaded: [hashes: string[]]
   deleted: [hash: string]
   rotated: [payload: { oldHash: string; newHash: string }]
+  reordered: [order: string[]]
 }>()
 
 const previews = ref<string[]>([])
@@ -114,7 +129,7 @@ let pendingFiles: File[] = []
 
 // Same SSR/hydration race as GameCard.vue: errors fired before Vue hydrates
 // the @error listener are lost. Sweep existing-photo <img>s after mount and
-// re-sweep when the existingPhotos prop changes (after upload).
+// re-sweep when the photo list changes.
 const failedPhotos = reactive<Record<string, boolean>>({})
 
 function syncFailedPhotos() {
@@ -127,14 +142,12 @@ function syncFailedPhotos() {
 }
 
 onMounted(syncFailedPhotos)
-watch(() => props.existingPhotos, () => nextTick(syncFailedPhotos))
 
 function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement
   if (!input.files) return
   addFiles(Array.from(input.files))
-  // Allow re-selecting the same file (e.g. retake a photo).
-  input.value = ''
+  input.value = '' // allow re-selecting the same file (e.g. retake)
 }
 
 function onDrop(e: DragEvent) {
@@ -171,20 +184,31 @@ async function upload(): Promise<void> {
   }
 }
 
-// ── View / rotate / delete existing photos ──────────────────────────────────
-const lightboxIndex = ref<number | null>(null)
-const photoBusy = ref(false)
+// ── Local display order (kept in sync with the prop except mid-drag) ─────────
+const localPhotos = ref<string[]>([])
+watch(
+  () => props.existingPhotos,
+  (val) => {
+    if (!dragActive.value) localPhotos.value = [...(val ?? [])]
+  },
+  { immediate: true },
+)
+watch(localPhotos, () => nextTick(syncFailedPhotos))
 
 const existingPhotoObjects = computed(() =>
-  (props.existingPhotos ?? []).map((hash, i) => ({ id: i, contentHash: hash })),
+  localPhotos.value.map((hash, i) => ({ id: i, contentHash: hash })),
 )
+
+// ── View / rotate / delete ──────────────────────────────────────────────────
+const lightboxIndex = ref<number | null>(null)
+const photoBusy = ref(false)
 
 function openLightbox(index: number) {
   lightboxIndex.value = index
 }
 
 async function onRotate(index: number, direction: 'cw' | 'ccw') {
-  const hash = props.existingPhotos?.[index]
+  const hash = localPhotos.value[index]
   if (!hash || photoBusy.value) return
   photoBusy.value = true
   try {
@@ -202,13 +226,13 @@ async function onRotate(index: number, direction: 'cw' | 'ccw') {
 }
 
 async function onDelete(index: number) {
-  const hash = props.existingPhotos?.[index]
+  const hash = localPhotos.value[index]
   if (!hash || photoBusy.value) return
   if (!confirm('Delete this photo? This cannot be undone.')) return
   photoBusy.value = true
   try {
     await $fetch(`/api/staff/games/${props.gameId}/photos/${hash}`, { method: 'DELETE' })
-    const remaining = (props.existingPhotos?.length ?? 1) - 1
+    const remaining = localPhotos.value.length - 1
     emit('deleted', hash)
     if (remaining <= 0) lightboxIndex.value = null
     else if (lightboxIndex.value !== null && lightboxIndex.value >= remaining) {
@@ -218,6 +242,130 @@ async function onDelete(index: number) {
     // Keep the lightbox open so the staffer can retry.
   } finally {
     photoBusy.value = false
+  }
+}
+
+// ── Click-and-hold drag-to-reorder ──────────────────────────────────────────
+const gridEl = ref<HTMLElement | null>(null)
+const dragActive = ref(false)
+const dragIndex = ref<number | null>(null)
+const savingOrder = ref(false)
+
+let pressTimer: number | null = null
+let pressStartX = 0
+let pressStartY = 0
+let suppressClick = false
+
+function clearPressTimer() {
+  if (pressTimer !== null) {
+    clearTimeout(pressTimer)
+    pressTimer = null
+  }
+}
+
+function addDragListeners() {
+  window.addEventListener('pointermove', onWindowPointerMove)
+  window.addEventListener('pointerup', onWindowPointerUp)
+  window.addEventListener('pointercancel', onWindowPointerCancel)
+}
+function removeDragListeners() {
+  window.removeEventListener('pointermove', onWindowPointerMove)
+  window.removeEventListener('pointerup', onWindowPointerUp)
+  window.removeEventListener('pointercancel', onWindowPointerCancel)
+}
+
+function onThumbPointerDown(index: number, e: PointerEvent) {
+  suppressClick = false
+  if (e.pointerType === 'mouse' && e.button !== 0) return
+  if (localPhotos.value.length < 2) return // nothing to reorder; tap still opens the lightbox
+  pressStartX = e.clientX
+  pressStartY = e.clientY
+  clearPressTimer()
+  addDragListeners()
+  pressTimer = window.setTimeout(() => {
+    pressTimer = null
+    dragActive.value = true
+    dragIndex.value = index
+  }, 300)
+}
+
+function slotIndexAt(x: number, y: number): number | null {
+  const grid = gridEl.value
+  if (!grid) return null
+  const children = Array.from(grid.children) as HTMLElement[]
+  for (let i = 0; i < children.length; i++) {
+    const r = children[i].getBoundingClientRect()
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return i
+  }
+  return null
+}
+
+function onWindowPointerMove(e: PointerEvent) {
+  if (!dragActive.value) {
+    // Moved before the hold fired → it's a scroll/swipe, not a drag.
+    if (pressTimer !== null && Math.hypot(e.clientX - pressStartX, e.clientY - pressStartY) > 8) {
+      clearPressTimer()
+      removeDragListeners()
+    }
+    return
+  }
+  const over = slotIndexAt(e.clientX, e.clientY)
+  if (over !== null && dragIndex.value !== null && over !== dragIndex.value) {
+    const arr = [...localPhotos.value]
+    const [item] = arr.splice(dragIndex.value, 1)
+    arr.splice(over, 0, item!)
+    localPhotos.value = arr
+    dragIndex.value = over
+  }
+}
+
+function onWindowPointerUp() {
+  clearPressTimer()
+  removeDragListeners()
+  if (!dragActive.value) return // was a tap → onThumbClick handles it
+  dragActive.value = false
+  dragIndex.value = null
+  suppressClick = true // swallow the click that follows the drag
+  const order = [...localPhotos.value]
+  if (!sameOrder(order, props.existingPhotos ?? [])) void persistOrder(order)
+}
+
+function onWindowPointerCancel() {
+  clearPressTimer()
+  removeDragListeners()
+  if (dragActive.value) {
+    dragActive.value = false
+    dragIndex.value = null
+    localPhotos.value = [...(props.existingPhotos ?? [])] // revert
+  }
+}
+
+onBeforeUnmount(removeDragListeners)
+
+function onThumbClick(index: number) {
+  if (suppressClick) {
+    suppressClick = false
+    return
+  }
+  openLightbox(index)
+}
+
+function sameOrder(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i])
+}
+
+async function persistOrder(order: string[]) {
+  savingOrder.value = true
+  try {
+    await $fetch(`/api/staff/games/${props.gameId}/photos/reorder`, {
+      method: 'POST',
+      body: { order },
+    })
+    emit('reordered', order)
+  } catch {
+    localPhotos.value = [...(props.existingPhotos ?? [])] // revert on failure
+  } finally {
+    savingOrder.value = false
   }
 }
 
@@ -231,6 +379,16 @@ defineExpose({ upload })
 
 .photo-thumb.group {
   cursor: pointer;
+  /* We own touch gestures (tap = view, hold = drag), so no native scroll/zoom. */
+  touch-action: none;
+}
+
+.photo-thumb.dragging {
+  transform: scale(1.08);
+  box-shadow: var(--shadow-lg);
+  opacity: 0.95;
+  z-index: 10;
+  cursor: grabbing;
 }
 
 .thumb-overlay {
@@ -241,6 +399,9 @@ defineExpose({ upload })
 .photo-thumb.group:hover .thumb-overlay,
 .photo-thumb.group:focus-visible .thumb-overlay {
   opacity: 1;
+}
+.photo-thumb.dragging .thumb-overlay {
+  opacity: 0;
 }
 
 .photo-missing {
@@ -258,14 +419,23 @@ defineExpose({ upload })
   border-color: var(--color-brand);
 }
 
-.camera-btn {
+.photo-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 7rem;
+  height: 7rem;
   color: var(--color-text-primary);
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   cursor: pointer;
+  transition: border-color 120ms ease;
 }
-.camera-btn:hover {
+.photo-action:hover {
   border-color: var(--color-brand);
+  color: var(--color-brand);
 }
 </style>

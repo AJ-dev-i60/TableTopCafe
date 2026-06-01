@@ -143,6 +143,7 @@
             @uploaded="onPhotosUploaded"
             @deleted="onPhotoDeleted"
             @rotated="onPhotoRotated"
+            @reordered="onPhotosReordered"
           />
           <p v-else class="text-ui" style="color: var(--color-text-muted)">Save the game first, then add photos.</p>
         </div>
@@ -326,6 +327,10 @@ function onPhotoRotated(payload: { oldHash: string; newHash: string }) {
   existingPhotoHashes.value = existingPhotoHashes.value.map((h) =>
     h === payload.oldHash ? payload.newHash : h,
   )
+}
+
+function onPhotosReordered(order: string[]) {
+  existingPhotoHashes.value = [...order]
 }
 </script>
 

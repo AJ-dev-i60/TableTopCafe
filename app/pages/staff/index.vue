@@ -34,7 +34,7 @@
           {{ opt.label }}
         </button>
       </div>
-      <div class="flex-1 min-w-[220px] max-w-sm">
+      <div class="flex-1 min-w-[220px] max-w-[22rem]">
         <SharedSearchInput v-model="search" placeholder="Search games…" />
       </div>
     </div>

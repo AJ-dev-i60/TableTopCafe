@@ -38,7 +38,7 @@
       <SharedButton :pending="addPending" pending-label="Creating…" @click="submitAdd">Create account</SharedButton>
     </div>
 
-    <div class="w-full max-w-sm mb-lg">
+    <div class="w-full max-w-[22rem] mb-lg">
       <SharedSearchInput v-model="search" placeholder="Search users…" />
     </div>
 

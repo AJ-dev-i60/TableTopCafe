@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold mb-1" style="color: var(--color-text-primary)">Tags</h1>
     <p class="text-meta mb-md" style="color: var(--color-text-muted)">{{ activeCount }} active · {{ archivedCount }} archived</p>
 
-    <div class="w-full max-w-sm mb-lg">
+    <div class="w-full max-w-[22rem] mb-lg">
       <SharedSearchInput v-model="search" placeholder="Search tags…" />
     </div>
 

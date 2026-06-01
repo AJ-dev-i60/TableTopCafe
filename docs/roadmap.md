@@ -76,6 +76,8 @@ Internal cleanup milestone inserted between M2 and M3. No new features, no visua
 
 ## Milestone 3 — BGG integration
 
+> **Superseded (2026-06-01).** The live BGG integration described below no longer works: the XML API is gated (`401`) and BGG's public pages are Cloudflare-blocked for server-side `fetch` (`403`). Delivered instead: **name autocomplete** from a static committed `board-games.json` (no DB cache, no weekly cron) and **description enrichment from Wikipedia's open API**. The "fetch game info" pre-fill of players/time is dropped — those stay manual. See the 2026-06-01 note in `ARCHITECTURE.md` and `docs/progress.md`. The text below is kept for historical context.
+
 Data-entry workflow becomes fast enough for the 400-game session.
 
 **In scope:**

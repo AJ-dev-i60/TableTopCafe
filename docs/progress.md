@@ -4,7 +4,55 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Current milestone: M5 — Polish 🚧
 
-**Status: Visual design pass owner-verified on dev. Catalogue + staff form regressions fixed end-to-end on dev (2026-05-30 late session). `/app/photos` persistent volume now mounted on dev AND prod via Coolify API. `dev` → `main` merged 2026-05-31 — prod now carries the full M5 polish set (auto-deploy triggered). Shared-component token migration awaits design sign-off. Auth bypass + data entry sprint still pending.**
+**Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). All on `dev`, owner testing in progress; NOT yet merged to `main` — awaiting owner sign-off, then `dev`→`main`. Remaining for launch: 400-game data entry, low-end Android perf pass, QR codes, auth-bypass removal, backups confirmation, shared-component token migration (design sign-off).**
+
+### Session — 2026-06-01
+
+Large UX + features pass, all pushed to `origin/dev` across the day and being owner-tested. Grouped by area:
+
+**Game detail page — full-screen redesign + photo lightbox.**
+- New `app/layouts/detail.vue`: the title bar carries a "← Catalogue" back link (replacing the wordmark) so an opened game reads as its own screen. Detail page uses `definePageMeta({ layout: 'detail' })`; the old glass back-pill over the image is gone.
+- New `app/components/catalogue/PhotoLightbox.vue`: full-screen viewer opened from the hero or any thumbnail. Cycles all photos via swipe / arrow buttons / ←→ keys / dots, with counter, Esc/backdrop/✕ close, focus-trap + scroll-lock (mirrors `FeaturedReplaceModal`). Directional slide animation between photos. Image is zoomable — pinch, double-tap, mouse wheel — to 3× with drag-to-pan (clamped), native page-zoom suppressed (`touch-action: none`). Click-off (the dark area, not the image) closes. Double-tap reliably toggles zoom (net-movement tap detection + pan deadzone).
+- Removed the duplicated availability disclaimer (in-page note dropped; the global footer note remains).
+
+**Staff photo management (the big one).**
+- The lightbox doubles as a staff editor (`editable` prop): a toolbar with rotate-left / rotate-right (circular icons) / delete + busy spinner. Click a thumbnail in the Photos card to open it.
+- Backend: `rotatePhoto` (re-process the detail image 90° into a new content hash via sharp), `deletePhotoFiles`, queries `deleteGamePhoto` / `updateGamePhotoHash` / `countPhotoHashReferences` / `gameHasPhoto` / `reorderGamePhotos`. Endpoints `DELETE photos/[hash]`, `POST photos/[hash]/rotate`, `POST photos/reorder`. File cleanup only when no other row (or a placeholder) shares the hash. `processPhoto` now auto-orients via EXIF (`.rotate()`) so phone-camera photos come out upright (content hash unaffected — it hashes the source).
+- PhotoUpload UX: upload dropzone moved **above** existing photos; two rectangular full-width buttons — **Take a photo** (mobile camera via `capture=environment`) + **Upload**; existing photos are tap-to-view and **click-and-hold to drag-reorder** (elastic follow-the-finger, snaps into slots, persists on drop; long-press suppresses the browser image menu). A static dashed **cover slot** sits behind the first tile (tiles carry no outline) to show which photo is the cover.
+
+**Add/edit game form.**
+- Players and play time are now **double-ended sliders** (`app/components/shared/RangeSlider.vue`, pointer + keyboard): players 1–12 ("12+" at the top), time 5–240 min in 5-min steps. Min/max end labels removed to save vertical space.
+- Description moved directly under the name; sliders below it. Name input is larger + bold (it's the title).
+- **Featured controls removed from the form** — featuring is done only from the games list now. Featured state is still sent unchanged so edits preserve it; the optional featured-**note** stays in the backend but is intentionally unsurfaced (owner's call; re-add later if requested).
+
+**Catalogue + staff lists.**
+- Staff games list: whole row (table + mobile card) is clickable to edit; new **Featured** segmented filter; client-side **quick search** (new shared `app/components/shared/SearchInput.vue`). Same search added to Tags and Users.
+- Featured carousel (mobile concept) now supports **mouse drag-to-scroll** on desktop (touch unchanged).
+
+**Tags.**
+- Rename is now a pencil icon next to the name; "Merge into…" is a proper button; the tag name links to a new **`/staff/tags/[id]` management page** that lists the games carrying a tag and lets you add (search picker) / remove games. New queries `getTagById` / `listGamesForTag` / `addGameToTag` / `removeGameFromTag`; endpoints `GET tags/[id]`, `POST`/`DELETE tags/[id]/games`.
+
+**BGG retired → Wikipedia for descriptions.**
+- Confirmed BGG is unusable server-side: XML API returns **401** (gated), and the public page is **Cloudflare-blocked for node `fetch` (403)** even though curl gets 200 — so the cover/detail scrapes never work from the deploy host. Removed all BGG network code (service, cover/fetch/thing/details endpoints, weekly `bgg:refresh` task + its schedule, cache queries). **Kept** the local name search (`/api/bgg/search` over the committed `board-games.json`) and the detail-page "View on BoardGameGeek" link. The unused `bgg_games_cache` table is left in place (avoids a prod migration).
+- New **Wikipedia** integration (`server/services/wikipedia.ts`, `GET /api/wikipedia/info`): searches "`<name>` board game", confirms it's a tabletop game via the `{{Infobox game}}` template (rejects video games / disambiguation / wrong matches — stronger than a text "is-a-game" check), then fills **description** (intro summary, ≤2000) **+ players + play time** parsed from the infobox (handles ranges, `{{ubl}}` lists, hours→minutes; best-effort, each field only applied if found). The form's "Fetch from Wikipedia" button applies whatever it returns, all editable.
+
+**Fixes worth remembering.**
+- `max-w-sm`/`max-w-md` in this Tailwind v4 theme resolve to `--spacing-sm`/`-md` (8px/16px!) — the cause of the collapsed search boxes. Use explicit `max-w-[Nrem]`.
+- PhotoUpload SSR 500: an `{ immediate: true }` watch read `dragActive` before its declaration (temporal dead zone) — declaration order fixed.
+- Game-search dropdown reopened after selecting a result (the name write retriggered the watcher) — suppressed; and selecting a result now **always** updates the name (was only when empty).
+
+**Verification:** `npm run build` clean and `npm run test` green throughout (now 9 unit tests incl. Wikipedia match-guard tests). e2e selectors preserved (the "add game" smoke test only fills the name). Interactive bits (lightbox gestures, drag-reorder, camera, Wikipedia fetch) verified on the dev deploy by the owner.
+
+**Next actions (in priority order):**
+1. **Owner finishes testing the 2026-06-01 set on `dev`** → then `dev`→`main` merge (prod deploy). Not before owner confirms.
+2. **Pre-launch cleanup** (carried over): remove the auth bypass in `server/api/auth/login.post.ts`; resolve the Coolify `ADMIN_PASSWORD` mismatch first or prod admin is locked out.
+3. **Shared-component token migration** — `SharedButton`/`SharedInput`/`login.vue` px/font literals → tokens. Blocked on design sign-off.
+4. **400-game data entry sprint**, **low-end Android perf pass**, **QR codes on tables**, **owner visual sign-off** — the remaining M5 launch items.
+5. **Confirm backups** — daily Postgres + `/app/photos` volume backup (requirements call for it; verify it's actually configured in Coolify/VPS).
+
+**Maintenance / tech-debt backlog (investigate, not scheduled):**
+- **Dependency upgrade pass** — investigate moving Nuxt, Vue, Drizzle, Tailwind, sharp, Vitest/Playwright, and the rest of `package.json` to their latest stable versions. Scope the breaking changes (esp. Nuxt/Tailwind majors), do it on a branch with build+test+e2e as the gate. Not started; flagged here so it isn't forgotten.
+- Drop the now-unused `bgg_games_cache` table + `schema/bgg.ts` (left in place to avoid a prod migration this cycle).
 
 ### Session — 2026-05-31
 
@@ -104,6 +152,13 @@ Lesson: verify e2e via CI (or a local DB) before declaring frontend changes done
   - `games/[id].vue`: back pill translucent 16% (was opaque 55%), "Staff pick" label added to featured note, tags use glass fill (was solid surface)
 - [x] `seed-admin.ts` — now syncs password on every deploy (not just first boot); ADMIN_PASSWORD in Coolify is always the source of truth
 - [x] `CLAUDE.md` — updated to pull from `origin dev` (was `origin main`)
+- [x] **2026-06-01 UX + features pass** (see the 2026-06-01 session entry for detail):
+  - Detail page → full-screen `detail` layout (back link in title bar) + `PhotoLightbox` (swipe/zoom/keyboard); duplicate availability note removed
+  - Staff photo management: lightbox rotate/delete (+ endpoints + sharp re-process + EXIF auto-orient), drag-to-reorder (+ `photos/reorder`), mobile camera capture, upload-above-existing, static cover-slot indicator
+  - Form: double-ended player/time sliders (`RangeSlider`), description above sliders, larger/bold name, featured controls removed (note kept backend-only)
+  - Lists: clickable staff game rows, Featured filter, shared `SearchInput` on games/tags/users; desktop drag-scroll on the featured carousel
+  - Tags: pencil-rename + Merge button + `/staff/tags/[id]` games manager
+  - BGG live integration removed (Cloudflare/401); Wikipedia description fetch added; local name search + "View on BoardGameGeek" link kept
 - [ ] **Pre-launch cleanup (do before data entry):**
   - Remove auth bypass in `server/api/auth/login.post.ts` (TODO comment marks it) — explicitly deferred until last; resolve Coolify credentials mismatch first or prod admin is locked out
   - Replace hardcoded `px`/`font-size` literals in `SharedInput`, `SharedButton`, and `login.vue` with `var(--*)` token references — currently breaks skinnable-via-tokens guarantee. **Blocked on design sign-off** for token mapping (see Session end note above)

@@ -1,7 +1,11 @@
 <template>
   <div>
     <h1 class="text-2xl font-bold mb-1" style="color: var(--color-text-primary)">Tags</h1>
-    <p class="text-meta mb-lg" style="color: var(--color-text-muted)">{{ activeCount }} active · {{ archivedCount }} archived</p>
+    <p class="text-meta mb-md" style="color: var(--color-text-muted)">{{ activeCount }} active · {{ archivedCount }} archived</p>
+
+    <div class="max-w-sm mb-lg">
+      <SharedSearchInput v-model="search" placeholder="Search tags by name…" />
+    </div>
 
     <div v-if="pending" class="text-sm" style="color: var(--color-text-muted)">Loading…</div>
 
@@ -15,13 +19,23 @@
         >
           <!-- Normal row -->
           <div v-if="editingId !== tag.id && mergingId !== tag.id" class="flex items-center justify-between gap-4 flex-wrap">
-            <div class="min-w-0">
-              <span class="text-card-title font-medium" style="color: var(--color-text-primary)">{{ tag.name }}</span>
-              <span class="ml-2 text-meta" style="color: var(--color-text-muted)">{{ tag.gameCount }} {{ tag.gameCount === 1 ? 'game' : 'games' }}</span>
+            <div class="min-w-0 flex items-center gap-2">
+              <NuxtLink
+                :to="`/staff/tags/${tag.id}`"
+                class="tag-name-link text-card-title font-medium"
+                style="color: var(--color-text-primary)"
+              >
+                {{ tag.name }}
+              </NuxtLink>
+              <button class="icon-btn" aria-label="Rename tag" title="Rename" @click="startEdit(tag)">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <span class="text-meta whitespace-nowrap" style="color: var(--color-text-muted)">{{ tag.gameCount }} {{ tag.gameCount === 1 ? 'game' : 'games' }}</span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <button class="text-ui hover:underline" style="color: var(--color-brand)" @click="startEdit(tag)">Rename</button>
-              <button class="text-ui hover:underline" style="color: var(--color-text-secondary)" @click="startMerge(tag)">Merge into…</button>
+              <SharedButton variant="secondary" @click="startMerge(tag)">Merge into…</SharedButton>
               <SharedButton variant="danger" @click="archiveTag(tag.id, tag.name)">Archive</SharedButton>
             </div>
           </div>
@@ -57,7 +71,9 @@
           </div>
         </div>
       </div>
-      <p v-else class="text-sm mb-lg" style="color: var(--color-text-muted)">No active tags yet.</p>
+      <p v-else class="text-sm mb-lg" style="color: var(--color-text-muted)">
+        {{ search.trim() ? `No active tags match “${search.trim()}”.` : 'No active tags yet.' }}
+      </p>
 
       <!-- Archived tags -->
       <template v-if="archivedTags.length">
@@ -87,13 +103,22 @@ definePageMeta({ layout: 'staff', middleware: ['auth'] })
 
 const { data: tags, pending, refresh } = await useFetch('/api/staff/tags')
 
-const activeTags = computed(() => tags.value?.filter((t) => !t.archivedAt) ?? [])
-const archivedTags = computed(() => tags.value?.filter((t) => !!t.archivedAt) ?? [])
-const activeCount = computed(() => activeTags.value.length)
-const archivedCount = computed(() => archivedTags.value.length)
+const allActiveTags = computed(() => tags.value?.filter((t) => !t.archivedAt) ?? [])
+const allArchivedTags = computed(() => tags.value?.filter((t) => !!t.archivedAt) ?? [])
+const activeCount = computed(() => allActiveTags.value.length)
+const archivedCount = computed(() => allArchivedTags.value.length)
+
+// Header counts stay total; the lists below filter by the search query.
+const search = ref('')
+function matchesSearch(tag: StaffTagItem) {
+  const q = search.value.trim().toLowerCase()
+  return !q || tag.name.toLowerCase().includes(q)
+}
+const activeTags = computed(() => allActiveTags.value.filter(matchesSearch))
+const archivedTags = computed(() => allArchivedTags.value.filter(matchesSearch))
 
 function otherActiveTags(excludeId: number) {
-  return activeTags.value.filter((t) => t.id !== excludeId)
+  return allActiveTags.value.filter((t) => t.id !== excludeId)
 }
 
 // ─── Rename ───────────────────────────────────────────────────────────────────
@@ -155,7 +180,7 @@ function cancelMerge() {
 
 async function submitMerge(sourceId: number, sourceName: string) {
   if (!mergeTargetId.value) return
-  const targetName = activeTags.value.find((t) => t.id === mergeTargetId.value)?.name ?? 'the target tag'
+  const targetName = allActiveTags.value.find((t) => t.id === mergeTargetId.value)?.name ?? 'the target tag'
   if (!confirm(`Merge "${sourceName}" into "${targetName}"? This cannot be undone — "${sourceName}" will be deleted and its games will be re-tagged.`)) return
   mergePending.value = true
   mergeError.value = ''
@@ -205,6 +230,31 @@ async function unarchiveTag(id: number) {
 }
 .cancel-link:hover {
   color: var(--color-text-primary);
+}
+
+.tag-name-link {
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+.tag-name-link:hover {
+  color: var(--color-brand) !important;
+  text-decoration: underline;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.icon-btn:hover {
+  background: var(--color-surface-elevated);
+  color: var(--color-brand);
 }
 
 .merge-select {

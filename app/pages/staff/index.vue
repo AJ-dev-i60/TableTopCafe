@@ -21,8 +21,8 @@
       </NuxtLink>
     </div>
 
-    <!-- Segmented filter control -->
-    <div class="flex mb-md mt-md">
+    <!-- Filter + search -->
+    <div class="flex flex-wrap items-center gap-3 mb-md mt-md">
       <div class="inline-flex overflow-hidden segmented-control">
         <button
           v-for="opt in filterOptions"
@@ -34,12 +34,16 @@
           {{ opt.label }}
         </button>
       </div>
+      <div class="flex-1 min-w-[200px] max-w-sm">
+        <SharedSearchInput v-model="search" placeholder="Search games by name…" />
+      </div>
     </div>
 
     <div v-if="pending" class="text-ui" style="color: var(--color-text-muted)">Loading…</div>
 
     <div v-else-if="!filteredGames.length" class="text-ui" style="color: var(--color-text-muted)">
-      {{ filter === 'deleted' ? 'No deleted games.' : filter === 'live' ? 'No live games yet. Add the first one.' : 'No games yet.' }}
+      <template v-if="search.trim()">No games match “{{ search.trim() }}”.</template>
+      <template v-else>{{ filter === 'deleted' ? 'No deleted games.' : filter === 'live' ? 'No live games yet. Add the first one.' : 'No games yet.' }}</template>
     </div>
 
     <template v-else>
@@ -60,6 +64,8 @@
             v-for="game in filteredGames"
             :key="game.id"
             class="table-row transition-colors"
+            :class="game.deletedAt ? '' : 'row-clickable'"
+            @click="openEdit(game)"
           >
             <!-- Game: thumb + name + featured pill -->
             <td class="px-md py-3">
@@ -102,7 +108,7 @@
             </td>
 
             <!-- Featured toggle (deleted rows show a non-interactive pill) -->
-            <td class="px-3 py-3">
+            <td class="px-3 py-3" @click.stop>
               <span v-if="game.deletedAt" class="pill-deleted inline-block px-2 py-0.5 text-tag">Deleted</span>
               <StaffFeaturedToggle
                 v-else
@@ -114,7 +120,7 @@
             </td>
 
             <!-- Actions -->
-            <td class="px-md py-3 text-right">
+            <td class="px-md py-3 text-right" @click.stop>
               <div class="flex items-center justify-end gap-2">
                 <template v-if="!game.deletedAt">
                   <SharedButton variant="secondary" :to="`/staff/games/${game.id}/edit`">
@@ -138,7 +144,13 @@
 
     <!-- Cards (< sm) -->
     <div class="sm:hidden flex flex-col gap-3">
-      <div v-for="game in filteredGames" :key="game.id" class="m-card">
+      <div
+        v-for="game in filteredGames"
+        :key="game.id"
+        class="m-card"
+        :class="game.deletedAt ? '' : 'row-clickable'"
+        @click="openEdit(game)"
+      >
         <div class="flex items-start gap-3">
           <div class="shrink-0 w-10 h-10 overflow-hidden" style="border-radius: var(--radius-sm)">
             <img
@@ -167,16 +179,18 @@
               {{ game.playerMin }}–{{ game.playerMax }} players · {{ game.timeMin }}–{{ game.timeMax }} min
             </p>
           </div>
-          <span v-if="game.deletedAt" class="pill-deleted inline-block px-2 py-0.5 text-tag shrink-0">Deleted</span>
-          <StaffFeaturedToggle
-            v-else
-            :featured="game.featured"
-            :pending="pendingId === game.id"
-            :at-cap="featuredCount >= 3"
-            @toggle="onToggle(game)"
-          />
+          <div class="shrink-0" @click.stop>
+            <span v-if="game.deletedAt" class="pill-deleted inline-block px-2 py-0.5 text-tag">Deleted</span>
+            <StaffFeaturedToggle
+              v-else
+              :featured="game.featured"
+              :pending="pendingId === game.id"
+              :at-cap="featuredCount >= 3"
+              @toggle="onToggle(game)"
+            />
+          </div>
         </div>
-        <div class="flex gap-2 mt-3">
+        <div class="flex gap-2 mt-3" @click.stop>
           <template v-if="!game.deletedAt">
             <SharedButton variant="secondary" :to="`/staff/games/${game.id}/edit`" class="flex-1">Edit</SharedButton>
             <SharedButton variant="danger" class="flex-1" @click="deleteGame(game.id, game.name)">Delete</SharedButton>
@@ -229,12 +243,22 @@ const deletedCount = computed(() => games.value?.filter((g) => !!g.deletedAt).le
 const currentFeatured = computed(() => games.value?.filter((g) => g.featured && !g.deletedAt) ?? [])
 const featuredCount = computed(() => currentFeatured.value.length)
 
+const search = ref('')
+
 const filteredGames = computed(() => {
   if (!games.value) return []
-  if (filter.value === 'live') return games.value.filter((g) => !g.deletedAt)
-  if (filter.value === 'deleted') return games.value.filter((g) => !!g.deletedAt)
-  return games.value
+  let list = games.value
+  if (filter.value === 'live') list = list.filter((g) => !g.deletedAt)
+  else if (filter.value === 'deleted') list = list.filter((g) => !!g.deletedAt)
+  const q = search.value.trim().toLowerCase()
+  if (q) list = list.filter((g) => g.name.toLowerCase().includes(q))
+  return list
 })
+
+function openEdit(game: StaffGameListItem) {
+  if (game.deletedAt) return
+  navigateTo(`/staff/games/${game.id}/edit`)
+}
 
 const failedThumbs = reactive<Record<number, boolean>>({})
 
@@ -375,6 +399,10 @@ async function onReplaceConfirm(outgoingId: number) {
 
 .table-row:hover {
   background: var(--color-surface-elevated);
+}
+
+.row-clickable {
+  cursor: pointer;
 }
 
 .thumb-fallback {

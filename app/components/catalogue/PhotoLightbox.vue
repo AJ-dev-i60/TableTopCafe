@@ -331,10 +331,11 @@ onBeforeUnmount(() => {
         </svg>
       </button>
 
+      <!-- No @click.stop here: clicking the empty area around the image bubbles
+           to the scrim and closes. Only the image itself stops the click. -->
       <div
         ref="stageEl"
         class="lb-stage"
-        @click.stop
         @touchstart.passive="onTouchStart"
         @touchmove.passive="onTouchMove"
         @touchend="onTouchEnd"
@@ -353,6 +354,7 @@ onBeforeUnmount(() => {
                 class="lb-img"
                 :style="imgStyle"
                 draggable="false"
+                @click.stop
               />
             </picture>
           </div>

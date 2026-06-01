@@ -38,13 +38,19 @@
       <SharedButton :pending="addPending" pending-label="Creating…" @click="submitAdd">Create account</SharedButton>
     </div>
 
+    <div class="max-w-sm mb-lg">
+      <SharedSearchInput v-model="search" placeholder="Search users by name…" />
+    </div>
+
     <div v-if="pending" class="text-sm" style="color: var(--color-text-muted)">Loading…</div>
 
-    <div v-else-if="!users?.length" class="text-sm" style="color: var(--color-text-muted)">No users found.</div>
+    <div v-else-if="!filteredUsers.length" class="text-sm" style="color: var(--color-text-muted)">
+      {{ search.trim() ? `No users match “${search.trim()}”.` : 'No users found.' }}
+    </div>
 
     <div v-else class="card border user-list">
       <div
-        v-for="user in users"
+        v-for="user in filteredUsers"
         :key="user.id"
         class="user-row px-md py-3"
       >
@@ -98,6 +104,13 @@ const { data: me } = await useFetch('/api/auth/me')
 const currentUserId = computed(() => (me.value as { id: number } | null)?.id ?? -1)
 
 const { data: users, pending, refresh } = await useFetch('/api/staff/users')
+
+const search = ref('')
+const filteredUsers = computed(() => {
+  const list = users.value ?? []
+  const q = search.value.trim().toLowerCase()
+  return q ? list.filter((u) => u.username.toLowerCase().includes(q)) : list
+})
 
 // ─── Add user ─────────────────────────────────────────────────────────────────
 

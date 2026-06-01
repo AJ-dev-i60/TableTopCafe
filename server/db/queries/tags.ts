@@ -1,7 +1,7 @@
-import { asc, count, eq, isNull } from 'drizzle-orm'
+import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm'
 import type { InferSelectModel } from 'drizzle-orm'
 import { db } from '../client'
-import { gameTags, tags } from '../schema'
+import { gameTags, games, photos, tags } from '../schema'
 
 export type TagItem = Pick<InferSelectModel<typeof tags>, 'id' | 'name'>
 
@@ -101,4 +101,53 @@ export async function listActiveTagsExcluding(excludeId: number): Promise<TagIte
     .where(isNull(tags.archivedAt))
     .orderBy(asc(tags.name))
     .then((rows) => rows.filter((r) => r.id !== excludeId))
+}
+
+// ─── Tag detail: manage which games carry a tag ───────────────────────────────
+
+export type TagDetail = Pick<InferSelectModel<typeof tags>, 'id' | 'name' | 'archivedAt'>
+
+export async function getTagById(id: number): Promise<TagDetail | null> {
+  const [row] = await db
+    .select({ id: tags.id, name: tags.name, archivedAt: tags.archivedAt })
+    .from(tags)
+    .where(eq(tags.id, id))
+    .limit(1)
+  return row ?? null
+}
+
+export type TagGameItem = { id: number; name: string; photoHash: string | null }
+
+// Live (non-deleted) games carrying this tag, with their first photo.
+export async function listGamesForTag(tagId: number): Promise<TagGameItem[]> {
+  const gameRows = await db
+    .select({ id: games.id, name: games.name })
+    .from(gameTags)
+    .innerJoin(games, eq(gameTags.gameId, games.id))
+    .where(and(eq(gameTags.tagId, tagId), isNull(games.deletedAt)))
+    .orderBy(asc(games.name))
+
+  if (gameRows.length === 0) return []
+
+  const ids = gameRows.map((g) => g.id)
+  const photoRows = await db
+    .select({ gameId: photos.gameId, contentHash: photos.contentHash })
+    .from(photos)
+    .where(inArray(photos.gameId, ids))
+    .orderBy(asc(photos.position))
+
+  const firstPhotoByGame = new Map<number, string>()
+  for (const row of photoRows) {
+    if (!firstPhotoByGame.has(row.gameId)) firstPhotoByGame.set(row.gameId, row.contentHash)
+  }
+
+  return gameRows.map((g) => ({ ...g, photoHash: firstPhotoByGame.get(g.id) ?? null }))
+}
+
+export async function addGameToTag(gameId: number, tagId: number): Promise<void> {
+  await db.insert(gameTags).values({ gameId, tagId }).onConflictDoNothing()
+}
+
+export async function removeGameFromTag(gameId: number, tagId: number): Promise<void> {
+  await db.delete(gameTags).where(and(eq(gameTags.gameId, gameId), eq(gameTags.tagId, tagId)))
 }

@@ -9,12 +9,26 @@ const BGG_API = 'https://boardgamegeek.com/xmlapi2'
  * cover (__itemrep image variant) and falls back to the og:image social card.
  * Returns null if the page can't be reached or no image is found.
  */
-export async function fetchBggCoverUrl(bggId: number): Promise<string | null> {
-  const res = await fetch(`https://boardgamegeek.com/boardgame/${bggId}`, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TableTopCafe/1.0)' },
-  })
+// Browser-ish headers for the public site. Note: BGG sits behind Cloudflare,
+// which can still block server-side (non-browser) clients by TLS fingerprint
+// regardless of headers — so these calls may fail from some hosts. Callers
+// degrade gracefully (return null / surface an error) when that happens.
+const BGG_PAGE_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+}
+
+async function fetchBggPageHtml(bggId: number): Promise<string | null> {
+  const res = await fetch(`https://boardgamegeek.com/boardgame/${bggId}`, { headers: BGG_PAGE_HEADERS })
   if (!res.ok) return null
-  const html = await res.text()
+  return res.text()
+}
+
+export async function fetchBggCoverUrl(bggId: number): Promise<string | null> {
+  const html = await fetchBggPageHtml(bggId)
+  if (html === null) return null
 
   const itemrep = html.match(
     /https:\/\/cf\.geekdo-images\.com\/[^"'\s]*__itemrep\/img\/[^"'\s]*\.(?:png|jpe?g)/i,
@@ -23,6 +37,111 @@ export async function fetchBggCoverUrl(bggId: number): Promise<string | null> {
 
   const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
   return og?.[1] ?? null
+}
+
+// ── Public-page detail scrape (the XML API is gated behind 401) ──────────────
+// BGG's public game page embeds the full item data as `GEEK.geekitemPreload`,
+// which carries the same description / players / time the XML API used to give.
+
+export type BggGameDetails = {
+  description: string | null
+  playerMin: number | null
+  playerMax: number | null
+  timeMin: number | null
+  timeMax: number | null
+  yearPublished: number | null
+}
+
+const PreloadSchema = z.object({
+  item: z.object({
+    description: z.string().optional(),
+    minplayers: z.union([z.string(), z.number()]).optional(),
+    maxplayers: z.union([z.string(), z.number()]).optional(),
+    minplaytime: z.union([z.string(), z.number()]).optional(),
+    maxplaytime: z.union([z.string(), z.number()]).optional(),
+    yearpublished: z.union([z.string(), z.number()]).optional(),
+  }),
+})
+
+export async function fetchBggGameDetails(bggId: number): Promise<BggGameDetails | null> {
+  const html = await fetchBggPageHtml(bggId)
+  if (html === null) return null
+
+  const json = extractBalancedJson(html, 'GEEK.geekitemPreload')
+  if (!json) return null
+
+  let raw: unknown
+  try {
+    raw = JSON.parse(json)
+  } catch {
+    return null
+  }
+
+  const parsed = PreloadSchema.safeParse(raw)
+  if (!parsed.success) return null
+  const item = parsed.data.item
+
+  return {
+    description: cleanBggDescription(item.description),
+    playerMin: toPositiveInt(item.minplayers),
+    playerMax: toPositiveInt(item.maxplayers),
+    timeMin: toPositiveInt(item.minplaytime),
+    timeMax: toPositiveInt(item.maxplaytime),
+    yearPublished: toPositiveInt(item.yearpublished),
+  }
+}
+
+// Extract the JSON object that follows `marker`, balancing braces while ignoring
+// any inside string literals.
+function extractBalancedJson(html: string, marker: string): string | null {
+  const markerIdx = html.indexOf(marker)
+  if (markerIdx === -1) return null
+  const start = html.indexOf('{', markerIdx)
+  if (start === -1) return null
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+  for (let i = start; i < html.length; i++) {
+    const ch = html[i]
+    if (escaped) {
+      escaped = false
+      continue
+    }
+    if (ch === '\\') {
+      escaped = true
+      continue
+    }
+    if (ch === '"') {
+      inString = !inString
+      continue
+    }
+    if (inString) continue
+    if (ch === '{') depth++
+    else if (ch === '}') {
+      depth--
+      if (depth === 0) return html.slice(start, i + 1)
+    }
+  }
+  return null
+}
+
+function toPositiveInt(value: string | number | undefined): number | null {
+  if (value === undefined) return null
+  const n = typeof value === 'number' ? value : parseInt(value, 10)
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : null
+}
+
+// BGG descriptions are HTML; turn them into plain text within the form's limit.
+function cleanBggDescription(html: string | undefined): string | null {
+  if (!html) return null
+  const stripped = html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>\s*/gi, '\n\n')
+    .replace(/<[^>]+>/g, '')
+  const text = (decodeHtmlEntities(stripped) ?? '').replace(/\n{3,}/g, '\n\n').trim()
+  if (text === '') return null
+  return text.length > 2000 ? text.slice(0, 2000).trim() : text
 }
 
 const parser = new XMLParser({
@@ -172,6 +291,12 @@ function decodeHtmlEntities(str: string | null): string | null {
     .replace(/&#10;/g, '\n')
     .replace(/&ndash;/g, '–')
     .replace(/&mdash;/g, '—')
+    .replace(/&rsquo;/g, '’')
+    .replace(/&lsquo;/g, '‘')
+    .replace(/&rdquo;/g, '”')
+    .replace(/&ldquo;/g, '“')
+    .replace(/&hellip;/g, '…')
+    .replace(/&nbsp;/g, ' ')
     .replace(/&#[0-9]+;/g, (m) => String.fromCharCode(parseInt(m.slice(2, -1), 10)))
     .trim()
 }

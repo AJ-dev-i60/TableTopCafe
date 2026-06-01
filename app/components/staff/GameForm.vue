@@ -9,7 +9,7 @@
         <div class="bgg-block border-2 border-dashed p-md">
           <p class="text-ui font-medium mb-2" style="color: var(--color-brand)">
             BGG lookup
-            <span class="font-normal" style="color: var(--color-text-muted)"> — find the game to link it and pre-fill the name</span>
+            <span class="font-normal" style="color: var(--color-text-muted)"> — find the game to link it and pull its details</span>
           </p>
           <StaffBggSearch @select="onBggSelect" />
 
@@ -17,7 +17,7 @@
             <div class="flex-1 text-ui" style="color: var(--color-text-primary)">
               <span class="font-medium">{{ selectedBgg.name }}</span>
               <span v-if="selectedBgg.yearPublished" class="ml-2" style="color: var(--color-text-muted)">({{ selectedBgg.yearPublished }})</span>
-              <span v-if="bggId !== null" class="ml-2 text-meta" style="color: var(--color-brand)">· linked — fetch the cover under Photos</span>
+              <span v-if="bggId !== null" class="ml-2 text-meta" style="color: var(--color-brand)">· linked</span>
             </div>
             <button
               type="button"
@@ -28,6 +28,18 @@
             >
               ✕
             </button>
+          </div>
+
+          <!-- Pull description / players / time from the game's public BGG page -->
+          <div v-if="bggId !== null" class="mt-3">
+            <div class="flex items-center gap-3 flex-wrap">
+              <SharedButton type="button" variant="secondary" :pending="fetchingDetails" pending-label="Fetching…" @click="fetchDetails">
+                Fetch details from BGG
+              </SharedButton>
+              <span class="text-meta" style="color: var(--color-text-muted)">Fills description, players &amp; play time</span>
+            </div>
+            <p v-if="detailsFilled" class="mt-1 text-meta" style="color: var(--color-brand)">Filled from BGG — review and edit as needed. Fetch the cover under Photos.</p>
+            <p v-if="detailsError" class="mt-1 text-meta" style="color: var(--color-error)">{{ detailsError }}</p>
           </div>
         </div>
 
@@ -204,6 +216,9 @@ const bggId = ref<number | null>(props.initial?.bggId ?? null)
 const selectedBgg = ref<BggResult | null>(null)
 const fetchingCover = ref(false)
 const coverError = ref('')
+const fetchingDetails = ref(false)
+const detailsError = ref('')
+const detailsFilled = ref(false)
 
 const selectedTags = ref<TagOption[]>(
   (props.initial?.tagIds ?? []).map((id) => {
@@ -229,6 +244,40 @@ function onBggSelect(result: BggResult) {
 function clearBgg() {
   selectedBgg.value = null
   bggId.value = null
+  detailsFilled.value = false
+  detailsError.value = ''
+}
+
+type BggDetails = {
+  description: string | null
+  playerMin: number | null
+  playerMax: number | null
+  timeMin: number | null
+  timeMax: number | null
+  yearPublished: number | null
+}
+
+// Pull description / players / time from the game's public BGG page and fill the
+// form (editable). Only fields BGG actually returns overwrite the current ones.
+async function fetchDetails() {
+  if (bggId.value === null) return
+  fetchingDetails.value = true
+  detailsError.value = ''
+  detailsFilled.value = false
+  try {
+    const d = await $fetch<BggDetails>(`/api/bgg/details/${bggId.value}`)
+    if (d.description !== null) form.description = d.description
+    if (d.playerMin !== null) form.playerMin = d.playerMin
+    if (d.playerMax !== null) form.playerMax = d.playerMax
+    if (d.timeMin !== null) form.timeMin = d.timeMin
+    if (d.timeMax !== null) form.timeMax = d.timeMax
+    detailsFilled.value = true
+  } catch (err: unknown) {
+    const msg = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
+    detailsError.value = msg ?? 'Could not fetch details from BGG.'
+  } finally {
+    fetchingDetails.value = false
+  }
 }
 
 // Fetch the cover from the game's BGG page (scraped server-side) and store it as

@@ -7,7 +7,7 @@ const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
 // Import after stubbing global fetch
-const { searchBgg, fetchBggThing } = await import('./bgg')
+const { searchBgg, fetchBggThing, fetchBggGameDetails } = await import('./bgg')
 
 const SEARCH_XML = `<?xml version="1.0" encoding="utf-8"?>
 <items total="2" termsofuse="https://boardgamegeek.com/xmlapi/termsofuse" page="1">
@@ -103,5 +103,43 @@ describe('fetchBggThing', () => {
   it('throws when fetch fails', async () => {
     mockFetch.mockResolvedValueOnce({ ok: false, status: 404 })
     await expect(fetchBggThing(13)).rejects.toThrow('BGG thing fetch failed')
+  })
+})
+
+describe('fetchBggGameDetails (public page scrape)', () => {
+  const PAGE = `<!doctype html><html><head></head><body>
+    <script>GEEK.geekitemPreload = {"item":{"href":"/x","description":"<p>Trade &amp; build on the <em>island</em>.</p><p>Second line.</p>","minplayers":"2","maxplayers":"4","minplaytime":"30","maxplaytime":"60","yearpublished":"2017"}};</script>
+    </body></html>`
+
+  it('extracts and cleans details from the embedded preload', async () => {
+    mockFetch.mockResolvedValueOnce(mockOkResponse(PAGE))
+    const d = await fetchBggGameDetails(13)
+    expect(d).not.toBeNull()
+    expect(d!.description).toBe('Trade & build on the island.\n\nSecond line.')
+    expect(d!.playerMin).toBe(2)
+    expect(d!.playerMax).toBe(4)
+    expect(d!.timeMin).toBe(30)
+    expect(d!.timeMax).toBe(60)
+    expect(d!.yearPublished).toBe(2017)
+  })
+
+  it('returns null when the preload is missing', async () => {
+    mockFetch.mockResolvedValueOnce(mockOkResponse('<html><body>no preload here</body></html>'))
+    expect(await fetchBggGameDetails(13)).toBeNull()
+  })
+
+  it('returns null when the page fetch fails', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 503 })
+    expect(await fetchBggGameDetails(13)).toBeNull()
+  })
+
+  it('treats zero/absent players and time as null (not filled)', async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockOkResponse(`<script>GEEK.geekitemPreload = {"item":{"description":"x","minplayers":"0"}};</script>`),
+    )
+    const d = await fetchBggGameDetails(13)
+    expect(d!.playerMin).toBeNull()
+    expect(d!.playerMax).toBeNull()
+    expect(d!.timeMin).toBeNull()
   })
 })

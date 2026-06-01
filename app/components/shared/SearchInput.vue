@@ -42,6 +42,7 @@ const emit = defineEmits<{
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .search-icon {
@@ -54,7 +55,8 @@ const emit = defineEmits<{
 }
 
 .search-input {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 9px 36px;
   font-size: var(--font-size-ui);
   font-family: inherit;

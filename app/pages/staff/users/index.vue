@@ -38,8 +38,8 @@
       <SharedButton :pending="addPending" pending-label="Creating…" @click="submitAdd">Create account</SharedButton>
     </div>
 
-    <div class="max-w-sm mb-lg">
-      <SharedSearchInput v-model="search" placeholder="Search users by name…" />
+    <div class="w-full max-w-sm mb-lg">
+      <SharedSearchInput v-model="search" placeholder="Search users…" />
     </div>
 
     <div v-if="pending" class="text-sm" style="color: var(--color-text-muted)">Loading…</div>

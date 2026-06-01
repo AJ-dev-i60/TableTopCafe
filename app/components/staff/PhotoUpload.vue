@@ -1,34 +1,6 @@
 <template>
   <div>
-    <!-- Existing photos -->
-    <div v-if="existingPhotos && existingPhotos.length > 0" class="flex flex-wrap gap-3 mb-4">
-      <div
-        v-for="hash in existingPhotos"
-        :key="hash"
-        class="photo-thumb relative w-20 h-20 overflow-hidden border"
-        style="border-color: var(--color-border)"
-      >
-        <img
-          v-if="!failedPhotos[hash]"
-          :data-photo-hash="hash"
-          :src="`/api/photos/${hash}/thumb.webp`"
-          :alt="hash"
-          class="w-full h-full object-cover"
-          @error="failedPhotos[hash] = true"
-        />
-        <div
-          v-else
-          class="photo-missing w-full h-full flex items-center justify-center"
-          :title="`Photo file missing: ${hash}`"
-        >
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3l18 18M4 4h16v16H4z M4 16l5-5 3 3 M14 14l1-1 5 5" />
-          </svg>
-        </div>
-      </div>
-    </div>
-
-    <!-- File input -->
+    <!-- File input (above existing photos) -->
     <label
       class="dropzone flex flex-col items-center justify-center w-full h-28 border-2 border-dashed transition-colors"
       @dragover.prevent
@@ -58,6 +30,35 @@
         <img :src="src" class="w-full h-full object-cover" />
       </div>
     </div>
+
+    <!-- Existing photos -->
+    <div v-if="existingPhotos && existingPhotos.length > 0" class="flex flex-wrap gap-3 mt-4">
+      <div
+        v-for="hash in existingPhotos"
+        :key="hash"
+        class="photo-thumb relative w-20 h-20 overflow-hidden border"
+        style="border-color: var(--color-border)"
+      >
+        <img
+          v-if="!failedPhotos[hash]"
+          :data-photo-hash="hash"
+          :src="`/api/photos/${hash}/thumb.webp`"
+          :alt="hash"
+          class="w-full h-full object-cover"
+          @error="failedPhotos[hash] = true"
+        />
+        <div
+          v-else
+          class="photo-missing w-full h-full flex items-center justify-center"
+          :title="`Photo file missing: ${hash}`"
+        >
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3l18 18M4 4h16v16H4z M4 16l5-5 3 3 M14 14l1-1 5 5" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 

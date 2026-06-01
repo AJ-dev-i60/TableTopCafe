@@ -164,11 +164,6 @@ function onKey(which: 'low' | 'high', e: KeyboardEvent) {
         @keydown="(e) => onKey('high', e)"
       />
     </div>
-
-    <div class="rs-ends" aria-hidden="true">
-      <span>{{ fmt(min) }}</span>
-      <span>{{ fmt(max) }}</span>
-    </div>
   </div>
 </template>
 
@@ -232,13 +227,5 @@ function onKey(which: 'low' | 'high', e: KeyboardEvent) {
 .rs-thumb:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgb(21 128 61 / 0.25);
-}
-
-.rs-ends {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 6px;
-  font-size: var(--font-size-meta);
-  color: var(--color-text-muted);
 }
 </style>

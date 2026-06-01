@@ -37,6 +37,19 @@
           <SharedInput id="game-name" v-model="form.name" type="text" required maxlength="255" />
         </div>
 
+        <!-- Description -->
+        <div>
+          <label for="game-description" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Description</label>
+          <textarea
+            id="game-description"
+            v-model="form.description"
+            rows="4"
+            maxlength="2000"
+            class="textarea w-full px-3 py-2 text-ui resize-y"
+            style="color: var(--color-text-primary)"
+          />
+        </div>
+
         <!-- Players: double-ended slider -->
         <div>
           <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Players *</label>
@@ -64,19 +77,6 @@
             :format="formatTime"
             low-label="Minimum play time"
             high-label="Maximum play time"
-          />
-        </div>
-
-        <!-- Description -->
-        <div>
-          <label for="game-description" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Description</label>
-          <textarea
-            id="game-description"
-            v-model="form.description"
-            rows="4"
-            maxlength="2000"
-            class="textarea w-full px-3 py-2 text-ui resize-y"
-            style="color: var(--color-text-primary)"
           />
         </div>
 

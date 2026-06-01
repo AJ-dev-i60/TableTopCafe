@@ -26,8 +26,51 @@ function syncFailed() {
 
 let observer: IntersectionObserver | null = null
 
+// ── Mouse drag-to-scroll (desktop). Touch keeps native scroll-snap. ──────────
+let isDragging = false
+let dragStartX = 0
+let dragStartScroll = 0
+let dragMoved = false
+
+function onPointerDown(e: PointerEvent) {
+  if (e.pointerType !== 'mouse') return
+  const root = railEl.value
+  if (!root) return
+  isDragging = true
+  dragMoved = false
+  dragStartX = e.clientX
+  dragStartScroll = root.scrollLeft
+  root.classList.add('rail-dragging')
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (!isDragging) return
+  const root = railEl.value
+  if (!root) return
+  const dx = e.clientX - dragStartX
+  if (Math.abs(dx) > 4) dragMoved = true
+  root.scrollLeft = dragStartScroll - dx
+}
+
+function onPointerUp() {
+  if (!isDragging) return
+  isDragging = false
+  railEl.value?.classList.remove('rail-dragging')
+}
+
+// A drag ends in a click; swallow it so the card under the cursor doesn't open.
+function onClickCapture(e: MouseEvent) {
+  if (dragMoved) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragMoved = false
+  }
+}
+
 onMounted(() => {
   syncFailed()
+  window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('pointerup', onPointerUp)
   const root = railEl.value
   if (root && 'IntersectionObserver' in window) {
     // The most-visible card (≥60%) drives the active pagination dot.
@@ -48,7 +91,11 @@ onMounted(() => {
 
 watch(() => props.games, () => nextTick(syncFailed))
 
-onBeforeUnmount(() => observer?.disconnect())
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerup', onPointerUp)
+})
 
 function goTo(index: number) {
   const card = railEl.value?.children[index] as HTMLElement | undefined
@@ -60,7 +107,14 @@ function goTo(index: number) {
 
 <template>
   <div class="featured-strip">
-    <ul ref="railEl" class="rail" role="list">
+    <ul
+      ref="railEl"
+      class="rail"
+      role="list"
+      @pointerdown="onPointerDown"
+      @click.capture="onClickCapture"
+      @dragstart.prevent
+    >
       <li
         v-for="(game, index) in games"
         :key="game.id"
@@ -139,6 +193,22 @@ function goTo(index: number) {
 }
 .rail::-webkit-scrollbar {
   display: none;
+}
+
+/* Desktop (mouse): show a grab cursor and free up snapping while dragging. */
+@media (hover: hover) and (pointer: fine) {
+  .rail {
+    cursor: grab;
+  }
+  .rail.rail-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+    user-select: none;
+  }
+}
+
+.rail img {
+  -webkit-user-drag: none;
 }
 
 .rail-item {

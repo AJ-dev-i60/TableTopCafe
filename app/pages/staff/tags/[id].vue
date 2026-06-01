@@ -21,7 +21,7 @@
       <!-- Add games -->
       <section class="mb-lg">
         <h2 class="text-section-label font-semibold uppercase tracking-wider mb-2" style="color: var(--color-text-secondary)">Add games</h2>
-        <div class="max-w-md">
+        <div class="w-full max-w-md">
           <SharedSearchInput v-model="addSearch" placeholder="Search games to add…" />
         </div>
 

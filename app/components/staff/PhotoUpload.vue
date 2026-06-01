@@ -184,6 +184,12 @@ async function upload(): Promise<void> {
   }
 }
 
+// ── Drag-to-reorder state (declared before the watch below uses dragActive) ──
+const gridEl = ref<HTMLElement | null>(null)
+const dragActive = ref(false)
+const dragIndex = ref<number | null>(null)
+const savingOrder = ref(false)
+
 // ── Local display order (kept in sync with the prop except mid-drag) ─────────
 const localPhotos = ref<string[]>([])
 watch(
@@ -246,11 +252,6 @@ async function onDelete(index: number) {
 }
 
 // ── Click-and-hold drag-to-reorder ──────────────────────────────────────────
-const gridEl = ref<HTMLElement | null>(null)
-const dragActive = ref(false)
-const dragIndex = ref<number | null>(null)
-const savingOrder = ref(false)
-
 let pressTimer: number | null = null
 let pressStartX = 0
 let pressStartY = 0

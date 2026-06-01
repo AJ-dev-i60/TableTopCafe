@@ -9,7 +9,7 @@
         <div class="bgg-block border-2 border-dashed p-md">
           <p class="text-ui font-medium mb-2" style="color: var(--color-brand)">
             BGG lookup
-            <span class="font-normal" style="color: var(--color-text-muted)"> — find the game to link it and pull its details</span>
+            <span class="font-normal" style="color: var(--color-text-muted)"> — find the game to fill its name and link its BoardGameGeek page</span>
           </p>
           <StaffBggSearch @select="onBggSelect" />
 
@@ -29,18 +29,6 @@
               ✕
             </button>
           </div>
-
-          <!-- Pull description / players / time from the game's public BGG page -->
-          <div v-if="bggId !== null" class="mt-3">
-            <div class="flex items-center gap-3 flex-wrap">
-              <SharedButton type="button" variant="secondary" :pending="fetchingDetails" pending-label="Fetching…" @click="fetchDetails">
-                Fetch details from BGG
-              </SharedButton>
-              <span class="text-meta" style="color: var(--color-text-muted)">Fills description, players &amp; play time</span>
-            </div>
-            <p v-if="detailsFilled" class="mt-1 text-meta" style="color: var(--color-brand)">Filled from BGG — review and edit as needed. Fetch the cover under Photos.</p>
-            <p v-if="detailsError" class="mt-1 text-meta" style="color: var(--color-error)">{{ detailsError }}</p>
-          </div>
         </div>
 
         <!-- Name -->
@@ -51,7 +39,20 @@
 
         <!-- Description -->
         <div>
-          <label for="game-description" class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">Description</label>
+          <div class="flex items-center justify-between gap-3 mb-1">
+            <label for="game-description" class="block text-ui font-medium" style="color: var(--color-text-secondary)">Description</label>
+            <button
+              type="button"
+              class="wiki-btn inline-flex items-center gap-1 text-meta font-medium"
+              :disabled="!form.name.trim() || fetchingWiki"
+              @click="fetchWikiDescription"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.5c1.5-1.5 4-2 6-1.5v12c-2-0.5-4.5 0-6 1.5m0-12C10.5 5 8 4.5 6 5v12c2-.5 4.5 0 6 1.5m0-12v12" />
+              </svg>
+              {{ fetchingWiki ? 'Fetching…' : 'Fetch from Wikipedia' }}
+            </button>
+          </div>
           <textarea
             id="game-description"
             v-model="form.description"
@@ -60,6 +61,7 @@
             class="textarea w-full px-3 py-2 text-ui resize-y"
             style="color: var(--color-text-primary)"
           />
+          <p v-if="wikiMessage" class="mt-1 text-meta" :style="`color: ${wikiError ? 'var(--color-error)' : 'var(--color-brand)'}`">{{ wikiMessage }}</p>
         </div>
 
         <!-- Players: double-ended slider -->
@@ -111,13 +113,6 @@
         <!-- Photos card -->
         <div class="form-card">
           <h2 class="text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">Photos</h2>
-
-          <div v-if="savedGameId && bggId !== null" class="mb-3">
-            <SharedButton type="button" :pending="fetchingCover" pending-label="Fetching cover…" @click="fetchCover">
-              Fetch cover from BGG
-            </SharedButton>
-            <p v-if="coverError" class="mt-1 text-meta" style="color: var(--color-error)">{{ coverError }}</p>
-          </div>
 
           <StaffPhotoUpload
             v-if="savedGameId"
@@ -214,11 +209,9 @@ const form = reactive({
 
 const bggId = ref<number | null>(props.initial?.bggId ?? null)
 const selectedBgg = ref<BggResult | null>(null)
-const fetchingCover = ref(false)
-const coverError = ref('')
-const fetchingDetails = ref(false)
-const detailsError = ref('')
-const detailsFilled = ref(false)
+const fetchingWiki = ref(false)
+const wikiMessage = ref('')
+const wikiError = ref(false)
 
 const selectedTags = ref<TagOption[]>(
   (props.initial?.tagIds ?? []).map((id) => {
@@ -235,8 +228,8 @@ const pending = ref(false)
 
 function onBggSelect(result: BggResult) {
   selectedBgg.value = result
-  // Link the game to its BGG entry (enables the cover fetch + the detail-page
-  // "View on BoardGameGeek" link) and pre-fill the name if empty.
+  // Link the game to its BGG entry (powers the detail-page "View on
+  // BoardGameGeek" link) and pre-fill the name if empty.
   bggId.value = result.bggId
   if (!form.name.trim()) form.name = result.name
 }
@@ -244,59 +237,31 @@ function onBggSelect(result: BggResult) {
 function clearBgg() {
   selectedBgg.value = null
   bggId.value = null
-  detailsFilled.value = false
-  detailsError.value = ''
 }
 
-type BggDetails = {
-  description: string | null
-  playerMin: number | null
-  playerMax: number | null
-  timeMin: number | null
-  timeMax: number | null
-  yearPublished: number | null
-}
-
-// Pull description / players / time from the game's public BGG page and fill the
-// form (editable). Only fields BGG actually returns overwrite the current ones.
-async function fetchDetails() {
-  if (bggId.value === null) return
-  fetchingDetails.value = true
-  detailsError.value = ''
-  detailsFilled.value = false
+// Pull a description from Wikipedia for the current game name (editable).
+async function fetchWikiDescription() {
+  const name = form.name.trim()
+  if (!name) return
+  fetchingWiki.value = true
+  wikiMessage.value = ''
+  wikiError.value = false
   try {
-    const d = await $fetch<BggDetails>(`/api/bgg/details/${bggId.value}`)
-    if (d.description !== null) form.description = d.description
-    if (d.playerMin !== null) form.playerMin = d.playerMin
-    if (d.playerMax !== null) form.playerMax = d.playerMax
-    if (d.timeMin !== null) form.timeMin = d.timeMin
-    if (d.timeMax !== null) form.timeMax = d.timeMax
-    detailsFilled.value = true
-  } catch (err: unknown) {
-    const msg = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
-    detailsError.value = msg ?? 'Could not fetch details from BGG.'
+    const { description } = await $fetch<{ description: string | null }>('/api/wikipedia/description', {
+      query: { name },
+    })
+    if (description) {
+      form.description = description
+      wikiMessage.value = 'Filled from Wikipedia — review and edit.'
+    } else {
+      wikiMessage.value = 'No confident Wikipedia match — write a description.'
+      wikiError.value = true
+    }
+  } catch {
+    wikiMessage.value = 'Could not reach Wikipedia.'
+    wikiError.value = true
   } finally {
-    fetchingDetails.value = false
-  }
-}
-
-// Fetch the cover from the game's BGG page (scraped server-side) and store it as
-// a photo. Requires the game to be saved and linked to a BGG id.
-async function fetchCover() {
-  if (!savedGameId.value) return
-  fetchingCover.value = true
-  coverError.value = ''
-  try {
-    const res = await $fetch<{ hash: string }>(
-      `/api/staff/games/${savedGameId.value}/photos/bgg-cover`,
-      { method: 'POST' },
-    )
-    existingPhotoHashes.value = [...existingPhotoHashes.value, res.hash]
-  } catch (err: unknown) {
-    const msg = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
-    coverError.value = msg ?? 'Could not fetch the cover from BGG.'
-  } finally {
-    fetchingCover.value = false
+    fetchingWiki.value = false
   }
 }
 
@@ -383,6 +348,18 @@ function onPhotosReordered(order: string[]) {
 .textarea:focus {
   border-color: var(--color-brand);
   box-shadow: 0 0 0 3px rgb(21 128 61 / 0.15);
+}
+
+.wiki-btn {
+  color: var(--color-brand);
+  cursor: pointer;
+}
+.wiki-btn:hover:not(:disabled) {
+  text-decoration: underline;
+}
+.wiki-btn:disabled {
+  color: var(--color-text-muted);
+  cursor: default;
 }
 
 .checkbox {

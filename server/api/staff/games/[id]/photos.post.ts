@@ -1,10 +1,9 @@
 import { requireAuth } from '../../../../services/auth'
-import { processPhoto } from '../../../../services/photos'
+import { processPhoto, getPlaceholderHashes } from '../../../../services/photos'
 import { getGameById } from '../../../../db/queries/games'
 import { db } from '../../../../db/client'
 import { photos } from '../../../../db/schema'
-import { eq } from 'drizzle-orm'
-import { sql } from 'drizzle-orm'
+import { and, eq, inArray, sql } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   requireAuth(event)
@@ -50,6 +49,15 @@ export default defineEventHandler(async (event) => {
   if (hashes.length === 0) {
     throw createError({ statusCode: 400, statusMessage: 'No valid image files found' })
   }
+
+  // A real photo now exists, so drop any seeded placeholder rows for this game —
+  // a "placeholder" should never sit alongside a real upload. Only the DB rows
+  // are removed: placeholder image files are shared across games by hash, so the
+  // files on disk must stay.
+  const placeholderHashes = await getPlaceholderHashes()
+  await db
+    .delete(photos)
+    .where(and(eq(photos.gameId, id), inArray(photos.contentHash, [...placeholderHashes])))
 
   return { hashes }
 })

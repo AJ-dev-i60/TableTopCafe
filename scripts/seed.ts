@@ -7,7 +7,7 @@ import postgres from 'postgres'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { eq } from 'drizzle-orm'
 import * as schema from '../server/db/schema/index.js'
-import { writePlaceholderPhoto } from '../server/services/photos.js'
+import { writePlaceholderPhoto, PLACEHOLDER_PALETTE } from '../server/services/photos.js'
 
 const { games, tags, gameTags, photos } = schema
 
@@ -273,17 +273,8 @@ const GAMES: GameSeed[] = [
   },
 ]
 
-// ─── Colour palette for placeholder photos ────────────────────────────────────
-
-const PALETTE: [number, number, number][] = [
-  [99, 140, 185],  // slate blue
-  [180, 120, 75],  // warm amber
-  [90, 160, 120],  // sage green
-  [200, 90, 85],   // terracotta
-  [130, 100, 180], // dusty purple
-  [70, 150, 160],  // teal
-  [210, 160, 60],  // golden yellow
-]
+// Placeholder colours come from PLACEHOLDER_PALETTE in the photos service, so
+// the upload route can recognise these same placeholders by hash.
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
@@ -313,7 +304,7 @@ async function seed() {
     // rows persist. The hash is deterministic — same (r,g,b) → same sha256 →
     // same files on disk — so this is a no-op when files already exist and a
     // recovery step when they don't.
-    const paletteEntry = PALETTE[i % PALETTE.length] ?? ([99, 140, 185] as [number, number, number])
+    const paletteEntry = PLACEHOLDER_PALETTE[i % PLACEHOLDER_PALETTE.length] ?? ([99, 140, 185] as [number, number, number])
     const [r, g2, b] = paletteEntry
     const hash = await writePlaceholderPhoto(r, g2, b)
 

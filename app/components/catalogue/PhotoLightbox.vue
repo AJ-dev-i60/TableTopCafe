@@ -388,15 +388,15 @@ onBeforeUnmount(() => {
       <!-- Staff edit toolbar -->
       <div v-if="editable" class="lb-toolbar" @click.stop>
         <button type="button" class="lb-tool" :disabled="busy" aria-label="Rotate left" title="Rotate left" @click="emit('rotate', modelValue ?? 0, 'ccw')">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14L4 9l5-5" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 9h11a5 5 0 015 5v2" />
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
           </svg>
         </button>
         <button type="button" class="lb-tool" :disabled="busy" aria-label="Rotate right" title="Rotate right" @click="emit('rotate', modelValue ?? 0, 'cw')">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 14l5-5-5-5" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 9H9a5 5 0 00-5 5v2" />
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
           </svg>
         </button>
         <button type="button" class="lb-tool lb-tool-danger" :disabled="busy" aria-label="Delete photo" title="Delete photo" @click="emit('delete', modelValue ?? 0)">

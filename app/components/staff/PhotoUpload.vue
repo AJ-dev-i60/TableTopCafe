@@ -53,13 +53,16 @@
 
     <!-- Existing photos: tap to view/rotate/delete, click-and-hold to reorder -->
     <template v-if="localPhotos.length > 0">
-      <div ref="gridEl" class="flex flex-wrap gap-3 mt-4">
-        <button
-          v-for="(hash, index) in localPhotos"
-          :key="hash"
-          type="button"
-          class="photo-thumb group relative w-20 h-20 overflow-hidden border"
-          :class="{ dragging: dragActive && dragIndex === index, cover: index === 0 }"
+      <div class="cover-slot-wrap relative mt-4">
+        <!-- Static cover slot — stays put while tiles are dragged in and out -->
+        <div class="cover-slot w-20 h-20" aria-hidden="true" />
+        <div ref="gridEl" class="flex flex-wrap gap-3">
+          <button
+            v-for="(hash, index) in localPhotos"
+            :key="hash"
+            type="button"
+            class="photo-thumb group relative w-20 h-20 overflow-hidden border"
+            :class="{ dragging: dragActive && dragIndex === index }"
           :style="[
             { borderColor: 'var(--color-border)' },
             dragActive && dragIndex === index ? { transform: `translate(${dragDX}px, ${dragDY}px) scale(1.05)` } : null,
@@ -92,13 +95,14 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2" />
             </svg>
           </span>
-        </button>
+          </button>
+        </div>
       </div>
 
       <p v-if="localPhotos.length > 0" class="text-meta mt-2" style="color: var(--color-text-muted)">
         <template v-if="savingOrder">Saving order…</template>
         <template v-else>
-          The first (outlined) image is the cover.<template v-if="localPhotos.length > 1"> Click and hold an image to drag and rearrange.</template>
+          The image in the outlined slot is the cover.<template v-if="localPhotos.length > 1"> Click and hold an image to drag and rearrange.</template>
         </template>
       </p>
     </template>
@@ -427,11 +431,19 @@ defineExpose({ upload })
   cursor: grabbing;
 }
 
-/* The first photo is the cover — outline the slot it sits in (offset outward so
-   the dashed frame surrounds the tile rather than hugging the image). */
-.photo-thumb.cover {
+/* Static cover slot: a dashed frame fixed at the first position, sitting behind
+   the tiles. The first tile covers it (the dashed frame peeks ~3px around the
+   tile); dragging a tile away reveals the empty slot. */
+.cover-slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* No z-index: it sits before the tiles in the DOM, so (both being positioned)
+     it paints behind them — the grabbed tile (z-index 10) lifts clear of it. */
   outline: 2px dashed var(--color-brand);
   outline-offset: 3px;
+  border-radius: var(--radius-md);
+  pointer-events: none;
 }
 
 .thumb-overlay {

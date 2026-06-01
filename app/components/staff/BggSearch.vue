@@ -52,8 +52,15 @@ const error = ref('')
 const showDropdown = ref(false)
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+// Selecting writes the name back into the box; skip the search that would
+// otherwise retrigger and reopen the dropdown.
+let suppressNextSearch = false
 
 watch(query, (val) => {
+  if (suppressNextSearch) {
+    suppressNextSearch = false
+    return
+  }
   error.value = ''
   if (debounceTimer) clearTimeout(debounceTimer)
   if (val.trim().length < 1) {
@@ -81,7 +88,10 @@ async function search(q: string) {
 }
 
 function select(result: BggResult) {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  if (result.name !== query.value) suppressNextSearch = true
   query.value = result.name
+  results.value = []
   showDropdown.value = false
   emit('select', result)
 }

@@ -25,6 +25,7 @@
         type="text"
         placeholder="Search or create tags…"
         @focus="open = true"
+        @input="open = true"
         @blur="onBlur"
         @keydown.enter.prevent="selectFirst"
         @keydown.escape="open = false"

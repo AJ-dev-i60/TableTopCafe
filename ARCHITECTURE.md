@@ -40,7 +40,7 @@ The schema centres on five core tables: `games`, `tags`, `game_tags` (join), `ph
 
 Audit fields (`created_by`, `created_at`, `last_edited_by`, `last_edited_at`, `deleted_by`, `deleted_at`) live on `games` directly. Full change-history is explicitly out of scope per the requirements.
 
-A separate `bgg_games_cache` table holds the local name index — `(bgg_id, name, normalized_name)` with a trigram index on `normalized_name` for fast fuzzy type-ahead. It's refreshed weekly by a cron task running inside the app container.
+A separate `bgg_games_cache` table exists in the schema (`server/db/schema/bgg.ts`, migration `0003_bgg_cache.sql`), but it is no longer used. The original design called for it to hold the local name index refreshed weekly by a cron task; that approach was retired on 2026-06-01 when the live BGG integration was removed (see the External integrations section below). The name-search data now lives in a static committed JSON file at `server/data/board-games.json`; the `bgg_games_cache` table is left in place to avoid a production migration.
 
 ## Photos
 
@@ -89,7 +89,7 @@ The following are deliberate architectural exclusions, distinct from feature-lev
 
 - **No multi-tenant deployment.** The application assumes a single café. Supporting multiple cafés from one deployment would require tenant scoping on every table, query, and route, and is not built in.
 - **No horizontal scaling.** The application is a single-process, single-container deployment with local filesystem state for photos. It cannot be run as multiple replicas behind a load balancer without first moving photos to object storage and sessions to a shared store.
-- **No background job queue.** The only scheduled work (weekly BGG cache refresh) runs as an in-process cron inside the app container. Long-running or retry-heavy background work is not supported by this architecture.
+- **No background job queue.** There is no scheduled background work in the current implementation — the weekly BGG cache refresh that originally motivated an in-process cron was removed on 2026-06-01 along with the live BGG integration. Long-running or retry-heavy background work is not supported by this architecture.
 - **No event sourcing or change-data-capture.** The database is the system of record and the only source of truth. The requirements explicitly exclude full change history; the architecture does not provide hooks for adding it later without rework.
 - **No client-side offline mode.** The service worker exists for PWA installability only. The application requires a network connection to function.
 - **No public API.** The server routes under `/api` are implementation details of the staff interface, not a stable contract for third-party consumers.

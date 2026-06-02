@@ -1,5 +1,7 @@
 # TableTopCafe — Design Brief Context Report
 
+> **Stale (as of 2026-06-02).** This file was generated before the M5 design pass and reflects the pre-M5 token values and structure. The canonical token values are now in `app/assets/css/tokens.css` (Felt & Slate palette, glass tokens, mesh background, semantic typography). Refer to `ARCHITECTURE.md` and `design/HANDOFF.md` for current design system documentation. This file is retained for historical reference only.
+
 ## 1. Token System
 
 All tokens are defined in `app/assets/css/tokens.css` inside a Tailwind v4 `@theme` block. They are consumed in templates using Tailwind's arbitrary-value syntax: `bg-[--color-surface]`, `shadow-[--shadow-sm]`, etc.

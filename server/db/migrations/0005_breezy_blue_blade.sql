@@ -1,0 +1,1 @@
+DROP TABLE "bgg_games_cache" CASCADE;

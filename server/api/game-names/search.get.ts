@@ -6,9 +6,6 @@ const QuerySchema = z.object({
   q: z.string().min(1).max(100),
 })
 
-// Instant search-as-you-type over the committed board-game name list
-// (server/utils/gameNames.ts). No external calls, no database — auto-fill from
-// BGG is a separate, explicit step in the add-game form.
 export default defineEventHandler((event) => {
   requireAuth(event)
 

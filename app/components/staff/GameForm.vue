@@ -5,13 +5,13 @@
       <!-- ── Left: Details card ────────────────────────────── -->
       <div class="form-card mb-6 lg:mb-0 flex flex-col gap-md">
 
-        <!-- Find game (BGG-backed name search): dashed border with brand accent -->
+        <!-- Find game (static name search): dashed border with brand accent -->
         <div class="bgg-block border-2 border-dashed p-md">
           <p class="text-ui font-medium mb-2" style="color: var(--color-brand)">
             Find game
             <span class="font-normal" style="color: var(--color-text-muted)"> — fills the name and links its BoardGameGeek page</span>
           </p>
-          <StaffBggSearch @select="onBggSelect" />
+          <StaffGameSearch @select="onBggSelect" />
 
           <div v-if="selectedBgg" class="mt-3 flex items-center gap-3">
             <div class="flex-1 text-ui" style="color: var(--color-text-primary)">
@@ -155,7 +155,7 @@
 
 <script setup lang="ts">
 import type { TagOption } from './TagTypeahead.vue'
-import type { BggResult } from './BggSearch.vue'
+import type { GameSearchResult } from './GameSearch.vue'
 
 type GameFormData = {
   name: string
@@ -208,7 +208,7 @@ const form = reactive({
 })
 
 const bggId = ref<number | null>(props.initial?.bggId ?? null)
-const selectedBgg = ref<BggResult | null>(null)
+const selectedBgg = ref<GameSearchResult | null>(null)
 const fetchingWiki = ref(false)
 const wikiMessage = ref('')
 const wikiError = ref(false)
@@ -226,7 +226,7 @@ const photoUpload = ref<{ upload: () => Promise<void> } | null>(null)
 const error = ref('')
 const pending = ref(false)
 
-function onBggSelect(result: BggResult) {
+function onBggSelect(result: GameSearchResult) {
   // Always apply the picked result: set the name and link the BGG page (powers
   // the detail-page "View on BoardGameGeek" link), so re-picking another result
   // replaces the previous one.

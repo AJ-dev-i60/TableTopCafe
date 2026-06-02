@@ -6,6 +6,24 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 **Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). All on `dev`, owner testing in progress; NOT yet merged to `main` — awaiting owner sign-off, then `dev`→`main`. Remaining for launch: 400-game data entry, low-end Android perf pass, QR codes, auth-bypass removal, backups confirmation, shared-component token migration (design sign-off).**
 
+### Session — 2026-06-02
+
+**Auth bypass removed (commit `f73b730`).** The hardcoded dev-convenience bypass in `server/api/auth/login.post.ts` that allowed login with an empty password has been removed. `password: z.string().min(1)` validation is restored. Login now always requires real credentials; the admin account is bootstrapped via `seed-admin.ts` from the `ADMIN_USERNAME`/`ADMIN_PASSWORD` Coolify env vars on container start. Pre-launch checklist item closed.
+
+**Dead BGG cache code removed; search renamed (commit `3e37311`).** Cleaned up the remaining dead code from the BGG retirement:
+- Deleted `server/db/schema/bgg.ts` (the `bgg_games_cache` table schema).
+- Dropped the `bgg_games_cache` table via migration `0005_breezy_blue_blade.sql` (the table was never populated in production; dropping it now is safe).
+- Deleted `scripts/refresh-game-names.ts` (superseded by `scripts/convert-bgg-ranks.ts`).
+- Removed the `gen:game-names` npm script.
+- Renamed `app/components/staff/BggSearch.vue` → `GameSearch.vue` and its exported type `BggResult` → `GameSearchResult` to accurately reflect that the search is against the local static JSON, not live BGG.
+- Moved `server/api/bgg/search.get.ts` → `server/api/game-names/search.get.ts`; the `/api/bgg/` directory is now empty and removed. `GameForm.vue` updated to import from the new location.
+
+**Staff stats endpoint added (commit `f0dffb1`).** New `GET /api/staff/stats` returns `{ games, tags, users }` counts for the staff dashboard. Auth-gated via `requireAuth`.
+
+**TagTypeahead dropdown fix (commit `a21f938`).** The tag input dropdown now reopens correctly after a selection is made. Mobile page zoom suppressed on the staff interface.
+
+---
+
 ### Session — 2026-06-01
 
 Large UX + features pass, all pushed to `origin/dev` across the day and being owner-tested. Grouped by area:
@@ -52,7 +70,7 @@ Large UX + features pass, all pushed to `origin/dev` across the day and being ow
 
 **Maintenance / tech-debt backlog (investigate, not scheduled):**
 - **Dependency upgrade pass** — investigate moving Nuxt, Vue, Drizzle, Tailwind, sharp, Vitest/Playwright, and the rest of `package.json` to their latest stable versions. Scope the breaking changes (esp. Nuxt/Tailwind majors), do it on a branch with build+test+e2e as the gate. Not started; flagged here so it isn't forgotten.
-- Drop the now-unused `bgg_games_cache` table + `schema/bgg.ts` (left in place to avoid a prod migration this cycle).
+- ~~Drop the now-unused `bgg_games_cache` table + `schema/bgg.ts`~~ **Done 2026-06-02 (commit `3e37311`)** — migration 0005 drops the table; `schema/bgg.ts` deleted.
 
 ### Session — 2026-05-31
 
@@ -160,7 +178,7 @@ Lesson: verify e2e via CI (or a local DB) before declaring frontend changes done
   - Tags: pencil-rename + Merge button + `/staff/tags/[id]` games manager
   - BGG live integration removed (Cloudflare/401); Wikipedia description fetch added; local name search + "View on BoardGameGeek" link kept
 - [ ] **Pre-launch cleanup (do before data entry):**
-  - Remove auth bypass in `server/api/auth/login.post.ts` (TODO comment marks it) — explicitly deferred until last; resolve Coolify credentials mismatch first or prod admin is locked out
+  - ~~Remove auth bypass in `server/api/auth/login.post.ts`~~ **Done 2026-06-02 (commit `f73b730`)** — hardcoded bypass removed; `password: z.string().min(1)` validation restored. Login now requires a real credential on every request; bootstrapping is via `ADMIN_USERNAME`/`ADMIN_PASSWORD` env vars in Coolify.
   - Replace hardcoded `px`/`font-size` literals in `SharedInput`, `SharedButton`, and `login.vue` with `var(--*)` token references — currently breaks skinnable-via-tokens guarantee. **Blocked on design sign-off** for token mapping (see Session end note above)
   - Resolve actual admin credentials issue (unknown why Coolify ADMIN_PASSWORD wasn't matching)
 - [ ] Performance pass on representative low-end Android (catalogue scroll, image loading, TTI)
@@ -187,14 +205,17 @@ Lesson: verify e2e via CI (or a local DB) before declaring frontend changes done
 **Status: Complete on `dev` (build #3).**
 
 ### M3 checklist ✅
-- [x] `bgg_games_cache` table (migration 0003) + `bgg_id` column on `games`
-- [x] `server/services/bgg.ts` — BGG XML API v2 client with fast-xml-parser + Zod
-- [x] `GET /api/bgg/search` — live search with local-cache fallback
-- [x] `GET /api/bgg/thing/[id]` — full game detail for pre-fill
-- [x] `POST /api/staff/games/[id]/photos/bgg-fetch` — server-side image fetch through sharp pipeline
-- [x] Weekly Nitro scheduled task — refreshes cache for catalogued games
-- [x] `BggSearch.vue` — debounced type-ahead (350ms, min 2 chars)
-- [x] `GameForm.vue` — BGG panel at top; "Fetch game info" pre-fills all fields + surfaces BGG image
+
+> **Note (2026-06-02):** Several M3 deliverables were subsequently removed or renamed as dead code. Items are annotated below.
+
+- [x] `bgg_games_cache` table (migration 0003) + `bgg_id` column on `games` — *table dropped in migration 0005 (2026-06-02)*
+- [x] `server/services/bgg.ts` — BGG XML API v2 client with fast-xml-parser + Zod — *removed 2026-06-01*
+- [x] `GET /api/bgg/search` — live search with local-cache fallback — *replaced by static `GET /api/game-names/search` (renamed 2026-06-02)*
+- [x] `GET /api/bgg/thing/[id]` — full game detail for pre-fill — *removed 2026-06-01*
+- [x] `POST /api/staff/games/[id]/photos/bgg-fetch` — server-side image fetch through sharp pipeline — *removed 2026-06-01*
+- [x] Weekly Nitro scheduled task — refreshes cache for catalogued games — *removed 2026-06-01*
+- [x] `BggSearch.vue` — debounced type-ahead (350ms, min 2 chars) — *renamed to `GameSearch.vue` 2026-06-02*
+- [x] `GameForm.vue` — BGG panel at top; "Fetch game info" pre-fills all fields + surfaces BGG image — *reworked: Wikipedia enrichment replaces BGG XML*
 - [x] Unit tests: 7/7 passing
 
 ---

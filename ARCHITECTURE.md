@@ -4,7 +4,7 @@ This document describes the shape of the TableTopCafe system: how it's structure
 
 ## System shape
 
-TableTopCafe is a single Dockerized web application serving two interfaces from one Node.js process: a public catalogue at `/` and a staff/admin interface at `/staff`, separated by route-level authentication middleware. Both interfaces talk to the same PostgreSQL database in a sibling container; uploaded and fetched photos live on a named Docker volume mounted into the app container. A weekly cron task inside the app container refreshes a local cache of board game names from BoardGameGeek for the data-entry type-ahead.
+TableTopCafe is a single Dockerized web application serving two interfaces from one Node.js process: a public catalogue at `/` and a staff/admin interface at `/staff`, separated by route-level authentication middleware. Both interfaces talk to the same PostgreSQL database in a sibling container; uploaded and fetched photos live on a named Docker volume mounted into the app container. Board-game name search for data entry is served from a static committed JSON file bundled into the build; there is no background refresh task.
 
 There is no separate API tier, no message queue, no cache layer, no CDN, no microservices. The expected load (≤30 concurrent readers, ≤2 concurrent writers, ~400 catalogue rows) makes any of those a liability rather than an asset. The system is deliberately a monolith on a single host.
 
@@ -40,7 +40,7 @@ The schema centres on five core tables: `games`, `tags`, `game_tags` (join), `ph
 
 Audit fields (`created_by`, `created_at`, `last_edited_by`, `last_edited_at`, `deleted_by`, `deleted_at`) live on `games` directly. Full change-history is explicitly out of scope per the requirements.
 
-A separate `bgg_games_cache` table exists in the schema (`server/db/schema/bgg.ts`, migration `0003_bgg_cache.sql`), but it is no longer used. The original design called for it to hold the local name index refreshed weekly by a cron task; that approach was retired on 2026-06-01 when the live BGG integration was removed (see the External integrations section below). The name-search data now lives in a static committed JSON file at `server/data/board-games.json`; the `bgg_games_cache` table is left in place to avoid a production migration.
+The `bgg_games_cache` table that existed in earlier versions of the schema has been dropped (migration `0005_breezy_blue_blade.sql`, 2026-06-02). The original design called for it to hold the local name index refreshed weekly by a cron task; that approach was retired on 2026-06-01 when the live BGG integration was removed (see the External integrations section below). The name-search data now lives in a static committed JSON file at `server/data/board-games.json`.
 
 ## Photos
 
@@ -58,7 +58,7 @@ The photos volume is the single piece of mutable filesystem state the applicatio
 This separation means data entry continues to work cleanly even if BGG is down — only the optional enrichment step degrades. The image-rights situation around BGG-sourced images is acknowledged: photos are surfaced as one-click candidates that, on confirmation, are fetched and stored locally per the photos policy above.
 
 > **Update (2026-06-01): live BoardGameGeek integration retired.** BGG's XML API now returns `401 Unauthorized` (gated behind approved access), and its public game pages are behind Cloudflare, which blocks the server's `fetch` by client fingerprint (`403`) regardless of headers — so neither the XML enrichment nor a public-page scrape works from the deploy host. The live integration and its plumbing (XML/scrape services, the "fetch game info"/cover endpoints, the weekly `bgg:refresh` cron, and the `bgg_games_cache` table's use) were removed. What remains:
-> - *Name autocomplete* is served from a **static committed `server/data/board-games.json`** (~42k games from BGG's public ranks export; name + bggId only) via `server/utils/gameNames.ts` and `/api/bgg/search`. No DB cache, no weekly refresh, nothing seeded on deploy. The unused `bgg_games_cache` table is left in place for now (dropping it would mean a prod migration).
+> - *Name autocomplete* is served from a **static committed `server/data/board-games.json`** (~42k games from BGG's public ranks export; name + bggId only) via `server/utils/gameNames.ts` and `/api/game-names/search`. No DB cache, no weekly refresh, nothing seeded on deploy. The `bgg_games_cache` table was dropped in migration `0005` (2026-06-02).
 > - *Detail enrichment* now comes from **Wikipedia's open API** (`server/services/wikipedia.ts`, `GET /api/wikipedia/info`) — not Cloudflare-gated. It finds the article, confirms it's a tabletop game via the `{{Infobox game}}` template (so a no-article/video-game/disambiguation result returns nothing rather than a wrong match), and pre-fills the **description** (intro summary) plus **players and play time** parsed from the infobox (ranges, `{{ubl}}` lists, hours→minutes handled). All fields editable.
 > - The public detail page keeps a **"View on BoardGameGeek"** link built from the captured `bggId`.
 

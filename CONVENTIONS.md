@@ -34,7 +34,7 @@ Consistent with [ARCHITECTURE.md](./ARCHITECTURE.md) and [requirements.md](./req
       tags/               Public tag read endpoint
       photos/             Photo-serving endpoint
       auth/               Login, logout, session
-      bgg/                Local name-search endpoint (board-games.json, no live BGG calls)
+      game-names/         Local name-search endpoint (board-games.json, no live BGG calls)
       wikipedia/          Wikipedia-based game-info enrichment endpoint
       staff/
         games/            Staff game CRUD + photo management + feature/unfeature

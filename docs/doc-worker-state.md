@@ -1,7 +1,7 @@
 # Doc Worker State
 
 onboarding: complete
-last-scan-commit: 516c38297a0bdbe47acb1ac9dadb1ba96be22b48
+last-scan-commit: f0dffb12e04a55bff0a06cb2487edcfcc3b933fa
 last-scan-date: 2026-06-02
 
 ## In progress
@@ -10,10 +10,8 @@ _(clear)_
 
 ## Queue
 
-- [ ] Verify CONVENTIONS.md `server/db/client.ts` reference still matches the actual file path
-- [ ] Check whether `docs/progress.md` M3 checklist items (BGG XML service, `bgg-fetch` endpoints, weekly task) should receive a strikethrough or dated note indicating they were removed — currently they appear as completed (`[x]`) which is accurate historically but could mislead a reader scanning what is currently in the codebase
-- [ ] Once the auth bypass is removed from `server/api/auth/login.post.ts` (pre-launch item, tracked in `progress.md`), update the codebase-map entry for that file to remove the **bold warning**
 - [ ] Once `SharedButton`/`SharedInput`/`login.vue` px literals are replaced with tokens (blocked on design sign-off), update the M5 checklist item in `docs/progress.md` and remove the note from `project-shared-component-token-debt` memory
+- [ ] Verify `CONVENTIONS.md` `server/db/client.ts` reference still matches the actual file path (carried from previous session — not yet verified)
 
 ## Deferred updates
 
@@ -34,3 +32,8 @@ _(clear)_
 - 2026-06-02: fixed docs/roadmap.md M3 superseded note (corrected "players/time dropped" → Wikipedia fills players + play time)
 - 2026-06-02: added stale-data notice to docs/design-brief-context.md (pre-M5 token values, superseded by tokens.css + design/HANDOFF.md)
 - 2026-06-02: created docs/codebase-map.md (76 files across 15 layers)
+- 2026-06-02: drift audit for commits a21f938, f73b730, 3e37311, f0dffb1
+  - ARCHITECTURE.md: updated system-shape paragraph (removed weekly cron claim); updated data-model section (bgg_games_cache dropped, not "left in place"); updated External integrations note (/api/bgg/search → /api/game-names/search, table-dropped wording)
+  - CONVENTIONS.md: directory layout bgg/ → game-names/ under server/api/
+  - docs/progress.md: checked off auth-bypass pre-launch item (done f73b730); added 2026-06-02 session entry (auth bypass, BGG dead-code removal, stats endpoint, TagTypeahead fix); annotated M3 checklist items with removal/rename dates; marked bgg_games_cache tech-debt item as done
+  - docs/codebase-map.md: BggSearch.vue → GameSearch.vue; /api/bgg/search → /api/game-names/search; removed schema/bgg.ts row; removed scripts/refresh-game-names.ts row; added migration 0005 row; added server/api/staff/stats.get.ts row; removed bold auth-bypass warning from login.post.ts entry

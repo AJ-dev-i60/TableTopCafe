@@ -30,7 +30,7 @@ function onInput(e: Event) {
   display: block;
   width: 100%;
   padding: 9px 11px;
-  font-size: 14px;
+  font-size: var(--font-size-ui);
   font-family: inherit;
   border-radius: var(--radius-md);
   border-width: 1px;
@@ -45,7 +45,7 @@ function onInput(e: Event) {
 }
 .input-normal:focus {
   border-color: var(--color-brand);
-  box-shadow: 0 0 0 3px rgb(21 128 61 / 0.15);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 .input-invalid {
@@ -53,6 +53,6 @@ function onInput(e: Event) {
 }
 .input-invalid:focus {
   border-color: var(--color-error);
-  box-shadow: 0 0 0 3px rgb(220 38 38 / 0.15);
+  box-shadow: 0 0 0 3px var(--color-error-ring);
 }
 </style>

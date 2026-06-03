@@ -24,6 +24,11 @@
   --color-error-soft:       #fef2f2;
   --color-success:          #15803d;
 
+  /* Focus rings — brand/error at 15% alpha (input + button :focus box-shadow).
+     Kept as resolved values to match the rest of the palette (no channel vars). */
+  --color-focus-ring:       rgb(21 128 61 / 0.15);
+  --color-error-ring:       rgb(220 38 38 / 0.15);
+
   /* Neutral scale — cool slate-green */
   --color-neutral-50:  #f6f9f7;
   --color-neutral-100: #eef3f0;

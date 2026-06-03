@@ -92,7 +92,7 @@ async function submit() {
 
 .login-brand {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-text-primary);
@@ -100,7 +100,7 @@ async function submit() {
 
 .login-sub {
   margin: 4px 0 0;
-  font-size: 13px;
+  font-size: var(--font-size-meta);
   color: var(--color-text-muted);
 }
 
@@ -110,7 +110,7 @@ async function submit() {
 
 .login-label {
   display: block;
-  font-size: 13px;
+  font-size: var(--font-size-meta);
   font-weight: 500;
   color: var(--color-text-primary);
   margin-bottom: 6px;
@@ -119,7 +119,7 @@ async function submit() {
 .login-error {
   min-height: 20px;
   margin-bottom: 6px;
-  font-size: 13px;
+  font-size: var(--font-size-meta);
   color: var(--color-error);
 }
 

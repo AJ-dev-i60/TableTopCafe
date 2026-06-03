@@ -38,13 +38,13 @@ withDefaults(defineProps<{
   align-items: center;
   justify-content: center;
   gap: 7px;
-  font-size: 14px;
+  font-size: var(--font-size-ui);
   font-weight: 500;
   font-family: inherit;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: background-color 150ms, color 150ms, opacity 150ms;
+  transition: background-color var(--duration-base), color var(--duration-base), opacity var(--duration-base);
   white-space: nowrap;
   text-decoration: none;
 }

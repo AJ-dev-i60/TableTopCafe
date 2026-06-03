@@ -22,7 +22,7 @@ Verified: `npm run build` clean, `npm run test` 10/10. Image handling was alread
 - **Eager LCP image.** First visible image (mobile `FeaturedStrip` item, else first card) is currently `loading="lazy"`; mark it `loading="eager" fetchpriority="high"` for faster LCP on slow links. Needs a `priority` prop plumbed through `CatalogueBrowser` → card/strip. Deferred (modest win, small images).
 - **Virtualization** only if 400 cards still jank after the above — `content-visibility` usually makes a virtual list unnecessary here.
 - **Measurement methodology:** Chrome DevTools on the dev URL — Performance panel with 4×/6× CPU throttle + "Slow 4G", record a catalogue scroll (watch for long tasks / dropped frames); Lighthouse mobile for TTI/LCP/TBT. Ideally also a real low-end Android via remote debugging. Target: smooth scroll + reasonable TTI on the full ~400-game catalogue.
-- **Adjacent a11y note (not perf, not changed):** `nuxt.config.ts` viewport sets `maximum-scale=1, user-scalable=no`, which disables pinch-zoom for the whole public catalogue — an a11y regression for café patrons. Flagging for a decision; the deliberate zoom-suppression in progress notes was about the detail lightbox/staff UI, not the public site globally.
+- **Viewport zoom is intentionally disabled (owner-confirmed 2026-06-03 — do NOT re-enable):** `nuxt.config.ts` sets `maximum-scale=1, user-scalable=no` on purpose. On some devices the page rendered wider than the viewport and users had to zoom out to see the whole page; disabling zoom was the deliberate fix. If that "too wide / forced zoom-out" symptom ever recurs, the real fix is the underlying horizontal-overflow bug, not the zoom setting.
 
 ### Session — 2026-06-03
 

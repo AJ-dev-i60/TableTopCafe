@@ -1,8 +1,8 @@
 # Doc Worker State
 
 onboarding: complete
-last-scan-commit: f0dffb12e04a55bff0a06cb2487edcfcc3b933fa
-last-scan-date: 2026-06-02
+last-scan-commit: ae512c5b905cce5f114f282205c8112c88d781d3
+last-scan-date: 2026-06-03
 
 ## In progress
 
@@ -10,8 +10,8 @@ _(clear)_
 
 ## Queue
 
-- [ ] Once `SharedButton`/`SharedInput`/`login.vue` px literals are replaced with tokens (blocked on design sign-off), update the M5 checklist item in `docs/progress.md` and remove the note from `project-shared-component-token-debt` memory
-- [ ] Verify `CONVENTIONS.md` `server/db/client.ts` reference still matches the actual file path (carried from previous session — not yet verified)
+- [x] Shared-component token migration done 2026-06-03 — `progress.md` updated (session note + M5/backlog items marked done). (`project-shared-component-token-debt` memory does not exist — nothing to remove.)
+- [x] Verified `CONVENTIONS.md` `server/db/client.ts` reference (line 47) matches the actual file — `server/db/client.ts` exists. No drift; item closed 2026-06-03.
 
 ## Deferred updates
 
@@ -32,6 +32,8 @@ _(clear)_
 - 2026-06-02: fixed docs/roadmap.md M3 superseded note (corrected "players/time dropped" → Wikipedia fills players + play time)
 - 2026-06-02: added stale-data notice to docs/design-brief-context.md (pre-M5 token values, superseded by tokens.css + design/HANDOFF.md)
 - 2026-06-02: created docs/codebase-map.md (76 files across 15 layers)
+- 2026-06-03: shared-component token migration completed (working-tree change, not yet committed) — updated progress.md (new session note, status line, M5 checklist, design-asks, tech-debt backlog) and closed the queue item
+- 2026-06-03: drift audit for commit `ae512c5` (token migration). Verified value-preserving migration in code (Button/Input/SearchInput/login.vue + 2 new tokens); reviewed the pre-made progress.md edits for accuracy (accurate — kept). Updated codebase-map.md: tokens.css row now notes `--color-focus-ring`/`--color-error-ring`; header → `ae512c5`/2026-06-03. No files added/removed. Re-verified recent renames vs code: `/api/game-names/search` present, `server/api/bgg/` + `schema/bgg.ts` + `scripts/refresh-game-names.ts` absent, `GET /api/staff/stats` present, `GameSearch.vue` present, `BggSearch.vue` absent — all match docs, no drift. Verified carried-over `CONVENTIONS.md` `server/db/client.ts` reference. No code drift found → no issue opened. Brought last-scan to `ae512c5`.
 - 2026-06-02: drift audit for commits a21f938, f73b730, 3e37311, f0dffb1
   - ARCHITECTURE.md: updated system-shape paragraph (removed weekly cron claim); updated data-model section (bgg_games_cache dropped, not "left in place"); updated External integrations note (/api/bgg/search → /api/game-names/search, table-dropped wording)
   - CONVENTIONS.md: directory layout bgg/ → game-names/ under server/api/

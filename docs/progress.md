@@ -4,7 +4,18 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Current milestone: M5 — Polish 🚧
 
-**Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). All on `dev`, owner testing in progress; NOT yet merged to `main` — awaiting owner sign-off, then `dev`→`main`. Remaining for launch: 400-game data entry, low-end Android perf pass, QR codes, auth-bypass removal, backups confirmation, shared-component token migration (design sign-off).**
+**Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). All on `dev`, owner testing in progress; NOT yet merged to `main` — awaiting owner sign-off, then `dev`→`main`. Remaining for launch: 400-game data entry, low-end Android perf pass, QR codes, backups confirmation. (Auth-bypass removal ✅ 2026-06-02; shared-component token migration ✅ 2026-06-03.)**
+
+### Session — 2026-06-03
+
+**Shared-component token migration done.** The "blocked on design sign-off" flag was stale — `design/HANDOFF.md` §7 states there are no remaining design decisions, and §4e gives the exact Button/Input spec. Paid down the token debt in the shared-component scoped CSS (value-preserving — rendering unchanged):
+- `Button.vue`: `font-size: 14px` → `var(--font-size-ui)`; transition `150ms` ×3 → `var(--duration-base)`.
+- `Input.vue`: `font-size: 14px` → `var(--font-size-ui)`; focus/invalid ring `rgb(...)` literals → new `var(--color-focus-ring)` / `var(--color-error-ring)` tokens.
+- `SearchInput.vue`: focus ring (identical 0.15 brand value) → `var(--color-focus-ring)` (folded in — same debt).
+- `login.vue`: brand `20px` → `var(--font-size-xl)`; sub/label/error `13px` ×3 → `var(--font-size-meta)`.
+- `tokens.css`: added `--color-focus-ring` (brand @15%) and `--color-error-ring` (error @15%).
+- Per `CONVENTIONS.md` selective-explicit rule, micro-layout literals (button/input paddings, 7px gap, 16px icon, login margins, the `max-w` 360px footgun workaround) stay numeric.
+- **Not tokenized (distinct deliberate values, flagged for later):** `FeaturedBadge.vue` glass fill `rgb(21 128 61 / 0.6)`, `RangeSlider.vue` thumb focus ring `rgb(21 128 61 / 0.25)`. `npm run build` clean.
 
 ### Session — 2026-06-02
 
@@ -64,7 +75,7 @@ Large UX + features pass, all pushed to `origin/dev` across the day and being ow
 **Next actions (in priority order):**
 1. **Owner finishes testing the 2026-06-01 set on `dev`** → then `dev`→`main` merge (prod deploy). Not before owner confirms.
 2. **Pre-launch cleanup** (carried over): remove the auth bypass in `server/api/auth/login.post.ts`; resolve the Coolify `ADMIN_PASSWORD` mismatch first or prod admin is locked out.
-3. **Shared-component token migration** — `SharedButton`/`SharedInput`/`login.vue` px/font literals → tokens. Blocked on design sign-off.
+3. ~~**Shared-component token migration**~~ ✅ done 2026-06-03 (see session note above).
 4. **400-game data entry sprint**, **low-end Android perf pass**, **QR codes on tables**, **owner visual sign-off** — the remaining M5 launch items.
 5. **Confirm backups** — daily Postgres + `/app/photos` volume backup (requirements call for it; verify it's actually configured in Coolify/VPS).
 
@@ -127,12 +138,11 @@ Lesson: verify e2e via CI (or a local DB) before declaring frontend changes done
 **Next action when resuming (in priority order):**
 1. ✅ **Merge `dev` → `main`** (done 2026-05-31, commit `6c7a108`) — prod now carries every fix shipped since the M5 visual pass. **Follow-up: confirm the prod deploy went green** (GitHub Actions run on `main`, then check `https://tabletopcafe.edgestudios.co.za` renders the M5 catalogue and the header version reads the commit-timestamp scheme, not `v5`).
 2. **Investigate build-version drift** — `nuxt.config.ts` derives version from `git log -1 --format=%cI HEAD` but deployed dev build shows times ~5 min later than the actual commit timestamp (e.g. commit at 22:50 → deploy reports `v26.05.30.2255`). Theory: Coolify creates a transient internal commit during the build (merge of remote ref, etc.) and the build container reads that commit's time. Worth confirming with `docker exec` once during a fresh deploy to see what `git log -1` inside the builder actually returns.
-3. **Shared-component token migration** — awaiting design sign-off on mapping (see queue below). Files: [app/components/shared/Button.vue](app/components/shared/Button.vue), [app/components/shared/Input.vue](app/components/shared/Input.vue), [app/pages/staff/login.vue](app/pages/staff/login.vue).
-4. **Auth bypass removal** — explicitly deferred until last per owner instruction. Pre-req: resolve Coolify `ADMIN_PASSWORD` mismatch root cause first, otherwise prod admin is locked out.
+3. ~~**Shared-component token migration**~~ ✅ done 2026-06-03 (see the 2026-06-03 session note above).
+4. ~~**Auth bypass removal**~~ ✅ done 2026-06-02 (commit `f73b730`).
 
 **Design-team asks queued (blocking the items below):**
-- `Button.vue` paddings (`9px 16px`, `6px 12px`, `6px 8px`, `gap: 7px`) and `Input.vue` padding (`9px 11px`) — none map cleanly to existing spacing tokens (`--spacing-sm: 8px`, `--spacing-md: 16px`). Decide: add button/input-specific tokens, or accept ±1-2px nudges to fit existing scale?
-- `login.vue` literals (`max-width: 360px`, `padding: 30px 28px`, `margin-bottom: 22px`, `font-size: 20px/13px`, `letter-spacing: -0.02em`) — need new login-specific tokens or sign-off on a mapping using existing tokens.
+- ~~`Button.vue`/`Input.vue` paddings + `login.vue` literals token mapping~~ — **Resolved 2026-06-03.** No new spacing tokens needed: per the `CONVENTIONS.md` selective-explicit rule, sub-grid micro-layout (paddings, `7px` gap, `max-w` 360px) stays numeric; only the reskin-relevant values (font-sizes, motion, focus-ring colors) were tokenized. See the 2026-06-03 session note.
 - **QR codes for tables** — physical artwork: laminated card design, brand/wordmark, "Scan to browse our games" copy, target dimensions, print-ready PDF. Code side is trivial once design exists.
 - **Audit fields display** — requirements capture `created-by/at`, `last-edited-by/at`, `deleted-by/at` in the DB but they're not surfaced anywhere. Decide: surface on edit page? Which of the 6 fields? Placement/typography?
 
@@ -179,7 +189,7 @@ Lesson: verify e2e via CI (or a local DB) before declaring frontend changes done
   - BGG live integration removed (Cloudflare/401); Wikipedia description fetch added; local name search + "View on BoardGameGeek" link kept
 - [ ] **Pre-launch cleanup (do before data entry):**
   - ~~Remove auth bypass in `server/api/auth/login.post.ts`~~ **Done 2026-06-02 (commit `f73b730`)** — hardcoded bypass removed; `password: z.string().min(1)` validation restored. Login now requires a real credential on every request; bootstrapping is via `ADMIN_USERNAME`/`ADMIN_PASSWORD` env vars in Coolify.
-  - Replace hardcoded `px`/`font-size` literals in `SharedInput`, `SharedButton`, and `login.vue` with `var(--*)` token references — currently breaks skinnable-via-tokens guarantee. **Blocked on design sign-off** for token mapping (see Session end note above)
+  - ~~Replace hardcoded `px`/`font-size` literals in `SharedInput`, `SharedButton`, and `login.vue` with `var(--*)` token references~~ **Done 2026-06-03** — font-sizes/motion/focus-ring colors tokenized (incl. new `--color-focus-ring`/`--color-error-ring`); micro-layout literals intentionally kept numeric per the selective-explicit convention. Was never actually blocked (HANDOFF §7).
   - Resolve actual admin credentials issue (unknown why Coolify ADMIN_PASSWORD wasn't matching)
 - [ ] Performance pass on representative low-end Android (catalogue scroll, image loading, TTI)
 - [ ] 400-game data entry sprint

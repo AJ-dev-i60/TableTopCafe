@@ -4,7 +4,7 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Current milestone: M5 — Polish 🚧
 
-**Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). All on `dev`, owner testing in progress; NOT yet merged to `main` — awaiting owner sign-off, then `dev`→`main`. Remaining for launch: 400-game data entry, low-end Android perf pass (code changes ✅ 2026-06-03 — on-device verification still pending), QR codes, backups confirmation. (Auth-bypass removal ✅ 2026-06-02; shared-component token migration ✅ 2026-06-03.)**
+**Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). All on `dev`, owner testing in progress; NOT yet merged to `main` — awaiting owner sign-off, then `dev`→`main`. Remaining for launch: 400-game data entry, low-end Android perf pass (code changes ✅ 2026-06-03 — on-device verification still pending), backups confirmation. (Auth-bypass removal ✅ 2026-06-02; shared-component token migration ✅ 2026-06-03. QR codes: not a dev task — owner generates them via a 3rd-party site pointing at the catalogue URL.)**
 
 ### Session — 2026-06-03 (low-end Android perf pass — code changes; on-device verification still pending)
 
@@ -22,7 +22,7 @@ Verified: `npm run build` clean, `npm run test` 10/10. Image handling was alread
 - **Eager LCP image.** First visible image (mobile `FeaturedStrip` item, else first card) is currently `loading="lazy"`; mark it `loading="eager" fetchpriority="high"` for faster LCP on slow links. Needs a `priority` prop plumbed through `CatalogueBrowser` → card/strip. Deferred (modest win, small images).
 - **Virtualization** only if 400 cards still jank after the above — `content-visibility` usually makes a virtual list unnecessary here.
 - **Measurement methodology:** Chrome DevTools on the dev URL — Performance panel with 4×/6× CPU throttle + "Slow 4G", record a catalogue scroll (watch for long tasks / dropped frames); Lighthouse mobile for TTI/LCP/TBT. Ideally also a real low-end Android via remote debugging. Target: smooth scroll + reasonable TTI on the full ~400-game catalogue.
-- **Viewport zoom is intentionally disabled (owner-confirmed 2026-06-03 — do NOT re-enable):** `nuxt.config.ts` sets `maximum-scale=1, user-scalable=no` on purpose. On some devices the page rendered wider than the viewport and users had to zoom out to see the whole page; disabling zoom was the deliberate fix. If that "too wide / forced zoom-out" symptom ever recurs, the real fix is the underlying horizontal-overflow bug, not the zoom setting.
+- **Viewport zoom is intentionally disabled (owner-confirmed 2026-06-03 — do NOT re-enable):** `nuxt.config.ts` sets `maximum-scale=1, user-scalable=no` on purpose. On some devices the page loaded zoomed in (~105%) by default, cutting off one side of the UI (users had to pinch-zoom out to fit it). `maximum-scale=1` clamps the default scale back to 1.0, which is exactly what fixes that — the cause was a default render scale >1, not horizontal overflow.
 
 ### Session — 2026-06-03
 
@@ -94,7 +94,7 @@ Large UX + features pass, all pushed to `origin/dev` across the day and being ow
 1. **Owner finishes testing the 2026-06-01 set on `dev`** → then `dev`→`main` merge (prod deploy). Not before owner confirms.
 2. **Pre-launch cleanup** (carried over): remove the auth bypass in `server/api/auth/login.post.ts`; resolve the Coolify `ADMIN_PASSWORD` mismatch first or prod admin is locked out.
 3. ~~**Shared-component token migration**~~ ✅ done 2026-06-03 (see session note above).
-4. **400-game data entry sprint**, **low-end Android perf pass**, **QR codes on tables**, **owner visual sign-off** — the remaining M5 launch items.
+4. **400-game data entry sprint**, **low-end Android perf pass**, **owner visual sign-off** — the remaining M5 launch items. (QR codes are owner-generated externally — not a dev task.)
 5. **Confirm backups** — daily Postgres + `/app/photos` volume backup (requirements call for it; verify it's actually configured in Coolify/VPS).
 
 **Maintenance / tech-debt backlog (investigate, not scheduled):**
@@ -161,7 +161,7 @@ Lesson: verify e2e via CI (or a local DB) before declaring frontend changes done
 
 **Design-team asks queued (blocking the items below):**
 - ~~`Button.vue`/`Input.vue` paddings + `login.vue` literals token mapping~~ — **Resolved 2026-06-03.** No new spacing tokens needed: per the `CONVENTIONS.md` selective-explicit rule, sub-grid micro-layout (paddings, `7px` gap, `max-w` 360px) stays numeric; only the reskin-relevant values (font-sizes, motion, focus-ring colors) were tokenized. See the 2026-06-03 session note.
-- **QR codes for tables** — physical artwork: laminated card design, brand/wordmark, "Scan to browse our games" copy, target dimensions, print-ready PDF. Code side is trivial once design exists.
+- ~~**QR codes for tables**~~ — **Not a dev task (owner-confirmed 2026-06-03).** The owner generates the QR via a 3rd-party site pointing at the catalogue URL (`tabletopcafedev.edgestudios.co.za` for dev / the prod URL for launch); no application code involved. Any physical card/print design is the owner's call.
 - **Audit fields display** — requirements capture `created-by/at`, `last-edited-by/at`, `deleted-by/at` in the DB but they're not surfaced anywhere. Decide: surface on edit page? Which of the 6 fields? Placement/typography?
 
 **Open audit findings still in scope (no design needed):**
@@ -211,7 +211,7 @@ Lesson: verify e2e via CI (or a local DB) before declaring frontend changes done
   - Resolve actual admin credentials issue (unknown why Coolify ADMIN_PASSWORD wasn't matching)
 - [ ] Performance pass on representative low-end Android (catalogue scroll, image loading, TTI)
 - [ ] 400-game data entry sprint
-- [ ] QR codes on tables
+- [n/a] QR codes on tables — owner-generated externally (3rd-party generator → catalogue URL), not a dev task
 - [ ] Owner sign-off → go live
 
 ---

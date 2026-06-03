@@ -105,6 +105,13 @@ function timeLabel(min: number, max: number): string {
 .card {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
+  /* Skip layout/paint/compositing (incl. the scrim + backdrop-filter panel) for
+     off-screen cards — the big scroll-perf win on low-end Android for the
+     ~400-game catalogue. The card's explicit aspect-ratio still resolves the box
+     height while contents are skipped, so the grid never reflows on scroll;
+     contain-intrinsic-size is only the pre-first-render fallback. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
 }
 
 .card-featured {

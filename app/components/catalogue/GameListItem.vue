@@ -26,7 +26,7 @@ function timeLabel(min: number, max: number): string {
 
 <template>
   <article
-    class="flex items-center gap-3 px-md py-3 border-b last:border-b-0 motion-safe:transition-colors motion-safe:duration-fast"
+    class="list-row flex items-center gap-3 px-md py-3 border-b last:border-b-0 motion-safe:transition-colors motion-safe:duration-fast"
     style="background: var(--color-surface); border-color: var(--color-border)"
     @mouseenter="$el.style.background = 'var(--color-surface-elevated)'"
     @mouseleave="$el.style.background = 'var(--color-surface)'"
@@ -83,6 +83,14 @@ function timeLabel(min: number, max: number): string {
 </template>
 
 <style scoped>
+/* Off-screen rows skip layout/paint — scroll-perf win for the ~400-game list.
+   Rows are a near-fixed height (48px thumb + py-3), so the intrinsic-size hint
+   keeps the scrollbar stable before a row first renders. */
+.list-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 73px;
+}
+
 .thumb-fallback {
   background: linear-gradient(150deg, var(--color-brand), var(--color-brand-hover));
 }

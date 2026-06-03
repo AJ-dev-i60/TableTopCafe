@@ -4,7 +4,25 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Current milestone: M5 — Polish 🚧
 
-**Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). All on `dev`, owner testing in progress; NOT yet merged to `main` — awaiting owner sign-off, then `dev`→`main`. Remaining for launch: 400-game data entry, low-end Android perf pass, QR codes, backups confirmation. (Auth-bypass removal ✅ 2026-06-02; shared-component token migration ✅ 2026-06-03.)**
+**Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). All on `dev`, owner testing in progress; NOT yet merged to `main` — awaiting owner sign-off, then `dev`→`main`. Remaining for launch: 400-game data entry, low-end Android perf pass (code changes ✅ 2026-06-03 — on-device verification still pending), QR codes, backups confirmation. (Auth-bypass removal ✅ 2026-06-02; shared-component token migration ✅ 2026-06-03.)**
+
+### Session — 2026-06-03 (low-end Android perf pass — code changes; on-device verification still pending)
+
+Structural catalogue-perf changes that are known-good for low-end Android regardless of measurement. **Important:** a true device pass (scroll FPS, TTI/LCP) was NOT run — there's no local Postgres on this machine, so the app can't boot locally; these must be verified on the **dev deploy** against a real low-end Android or throttled emulation (see methodology below).
+
+**Done (committed on `dev`):**
+1. **Catalogue payload trimmed (biggest TTI lever).** `listVisibleGames()` / the `GameListItem` type no longer select `description` (≤2000-char Wikipedia text) or `featuredNote`. The catalogue list path never rendered them — search is name-only (`useFilters`), and only the detail page shows them (via the separate `GameDetail`/`getGameById`). For ~400 games this removes a large chunk of the SSR HTML + hydration payload (serialized + JSON-parsed on a slow CPU). `server/db/queries/games.ts`.
+2. **`content-visibility: auto` on cards + list rows.** Off-screen `GameCard`s and `GameListItem`s skip layout/paint/compositing (including the per-card scrim + `backdrop-filter` panel) — the main scroll cost driver at 400 items. Cards' explicit `aspect-ratio` still resolves box height while contents are skipped, so the grid does not reflow on scroll; `contain-intrinsic-size` is the pre-first-render fallback only (cards `auto 300px`, rows `auto 73px`). Progressive enhancement — unsupported browsers ignore it.
+3. **`theme-color` fixed** `#2563eb` (stray blue) → brand green `#15803d` in `nuxt.config.ts` (PWA status-bar tint; cosmetic).
+
+Verified: `npm run build` clean, `npm run test` 10/10. Image handling was already good (correct `srcset`/`sizes`, `loading="lazy"`, WebP+JPEG, 1-yr immutable cache on `/api/photos`) — left as-is.
+
+**Remaining / device-gated levers (verify on dev, apply only if measurement shows need):**
+- **Per-card `backdrop-filter` → semi-opaque fill.** Pre-authorized by `design/HANDOFF.md` §5 ("if jank on a mid-range Android in catalogue scroll, drop the per-card panel blur to a semi-opaque fill first"). With `content-visibility` only on-screen cards composite the blur, so this may no longer be needed — confirm on device before sacrificing the frosted look.
+- **Eager LCP image.** First visible image (mobile `FeaturedStrip` item, else first card) is currently `loading="lazy"`; mark it `loading="eager" fetchpriority="high"` for faster LCP on slow links. Needs a `priority` prop plumbed through `CatalogueBrowser` → card/strip. Deferred (modest win, small images).
+- **Virtualization** only if 400 cards still jank after the above — `content-visibility` usually makes a virtual list unnecessary here.
+- **Measurement methodology:** Chrome DevTools on the dev URL — Performance panel with 4×/6× CPU throttle + "Slow 4G", record a catalogue scroll (watch for long tasks / dropped frames); Lighthouse mobile for TTI/LCP/TBT. Ideally also a real low-end Android via remote debugging. Target: smooth scroll + reasonable TTI on the full ~400-game catalogue.
+- **Adjacent a11y note (not perf, not changed):** `nuxt.config.ts` viewport sets `maximum-scale=1, user-scalable=no`, which disables pinch-zoom for the whole public catalogue — an a11y regression for café patrons. Flagging for a decision; the deliberate zoom-suppression in progress notes was about the detail lightbox/staff UI, not the public site globally.
 
 ### Session — 2026-06-03
 

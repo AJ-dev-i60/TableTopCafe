@@ -6,9 +6,14 @@ import { gameTags, games, photos, tags, users } from '../schema'
 type GameRow = InferSelectModel<typeof games>
 type TagRow = Pick<InferSelectModel<typeof tags>, 'id' | 'name'>
 
+// The public catalogue list renders name, meta, tags, featured flag, and the
+// first photo only. `description`/`featuredNote` are intentionally NOT selected
+// here — they're large (≤2000-char Wikipedia text) and only the detail page
+// uses them (via GameDetail), so shipping them for ~400 games would bloat the
+// SSR HTML and hydration payload for no render benefit.
 export type GameListItem = Pick<
   GameRow,
-  'id' | 'name' | 'description' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'featuredNote'
+  'id' | 'name' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured'
 > & {
   tags: TagRow[]
   photoHash: string | null
@@ -19,13 +24,11 @@ export async function listVisibleGames(): Promise<GameListItem[]> {
     .select({
       id: games.id,
       name: games.name,
-      description: games.description,
       playerMin: games.playerMin,
       playerMax: games.playerMax,
       timeMin: games.timeMin,
       timeMax: games.timeMax,
       featured: games.featured,
-      featuredNote: games.featuredNote,
     })
     .from(games)
     .where(isNull(games.deletedAt))

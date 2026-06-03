@@ -52,7 +52,7 @@ export default defineNuxtConfig({
       title: 'TableTopCafe',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
-        { name: 'theme-color', content: '#2563eb' },
+        { name: 'theme-color', content: '#15803d' },
         { name: 'description', content: 'Browse the board game library at TableTopCafe' },
       ],
       link: [

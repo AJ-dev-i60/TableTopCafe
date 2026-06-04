@@ -107,7 +107,7 @@
       </p>
     </template>
 
-    <CataloguePhotoLightbox
+    <LazyCataloguePhotoLightbox
       v-model="lightboxIndex"
       :photos="existingPhotoObjects"
       :game-name="gameName ?? 'Photo'"

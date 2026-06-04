@@ -169,12 +169,12 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
                 <!-- sm+ : full glass cards in the responsive grid -->
                 <div class="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <NuxtLink
-                    v-for="game in featured"
+                    v-for="(game, i) in featured"
                     :key="game.id"
                     :to="`/games/${game.id}`"
                     class="block focus:outline-none focus-visible:ring-2 card-link"
                   >
-                    <CatalogueGameCard :game="game" />
+                    <CatalogueGameCard :game="game" :eager="i < 3" />
                   </NuxtLink>
                 </div>
               </template>
@@ -204,12 +204,12 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
               >
                 <NuxtLink
-                  v-for="game in nonFeatured"
+                  v-for="(game, i) in nonFeatured"
                   :key="game.id"
                   :to="`/games/${game.id}`"
                   class="block focus:outline-none focus-visible:ring-2 card-link"
                 >
-                  <CatalogueGameCard :game="game" />
+                  <CatalogueGameCard :game="game" :eager="featured.length === 0 && i < 3" />
                 </NuxtLink>
               </div>
               <div v-else class="list-container overflow-hidden">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { GameListItem } from '../../../server/db/queries/games'
 
-defineProps<{ game: GameListItem }>()
+defineProps<{ game: GameListItem; eager?: boolean }>()
 
 const imageFailed = ref(false)
 const imgEl = ref<HTMLImageElement | null>(null)
@@ -25,7 +25,12 @@ function playerLabel(min: number, max: number): string {
 }
 
 function timeLabel(min: number, max: number): string {
-  const fmt = (m: number) => (m >= 60 ? `${m / 60}h` : `${m}m`)
+  const fmt = (m: number) => {
+    if (m < 60) return `${m}m`
+    const h = Math.floor(m / 60)
+    const rem = m % 60
+    return rem === 0 ? `${h}h` : `${h}h ${rem}m`
+  }
   return min === max ? fmt(min) : `${fmt(min)}–${fmt(max)}`
 }
 </script>
@@ -46,7 +51,8 @@ function timeLabel(min: number, max: number): string {
         :srcset="`${photoUrl(game.photoHash, 'thumb', 'jpg')} 200w, ${photoUrl(game.photoHash, 'card', 'jpg')} 600w`"
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         :alt="game.name"
-        loading="lazy"
+        :loading="eager ? 'eager' : 'lazy'"
+        :fetchpriority="eager ? 'high' : 'auto'"
         class="w-full h-full object-cover"
         @error="imageFailed = true"
       />

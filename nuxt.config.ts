@@ -69,6 +69,10 @@ export default defineNuxtConfig({
     },
   },
 
+  experimental: {
+    inlineStyles: true,
+  },
+
   vite: {
     plugins: [tailwindcss()],
   },

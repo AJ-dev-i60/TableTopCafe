@@ -115,10 +115,9 @@ const TIME_OPTIONS: Array<{ label: string; value: TimeFilter }> = [
 }
 
 .chip-idle {
-  background: rgb(255 255 255 / 0.45);
+  background: rgb(255 255 255 / 0.55);
   border-color: var(--glass-stroke);
   color: var(--color-text-secondary);
-  backdrop-filter: blur(var(--glass-blur-card));
 }
 
 .chip-idle:hover {

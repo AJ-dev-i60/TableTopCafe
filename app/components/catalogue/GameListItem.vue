@@ -19,7 +19,12 @@ function playerLabel(min: number, max: number): string {
 }
 
 function timeLabel(min: number, max: number): string {
-  const fmt = (m: number) => (m >= 60 ? `${m / 60}h` : `${m}m`)
+  const fmt = (m: number) => {
+    if (m < 60) return `${m}m`
+    const h = Math.floor(m / 60)
+    const rem = m % 60
+    return rem === 0 ? `${h}h` : `${h}h ${rem}m`
+  }
   return min === max ? fmt(min) : `${fmt(min)}–${fmt(max)}`
 }
 </script>

@@ -218,7 +218,7 @@ useSeoMeta({
       </div>
     </div>
 
-    <CataloguePhotoLightbox
+    <LazyCataloguePhotoLightbox
       v-model="lightboxIndex"
       :photos="game.photos"
       :game-name="game.name"

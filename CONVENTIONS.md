@@ -127,6 +127,8 @@ Colors that are white or near-black appear to work with the broken syntax becaus
 
 **Shared presentational components own their appearance, not their placement.** A component in `components/shared/` renders its visual identity only — colors, typography, borders, shadow, shape. The parent decides where it is positioned. `FeaturedBadge` is the canonical example: it is a styled pill with no `absolute`, `relative`, or `z-index` inside it; `GameCard` passes `class="absolute top-2 left-2"` to position it over the photo while `GameListItem` passes `class="shrink-0"` to place it inline. The same component renders correctly in both contexts because it does not assume either one.
 
+**`backdrop-filter` — use sparingly.** Each element with an active `backdrop-filter` forces a GPU compositing layer. Limit it to structural chrome (header, sticky toolbar, modal overlays) — never apply it per-item in a list or per-chip in a filter row. Confirmed to cause visible lag on mid-range Android when 60+ elements are blurring simultaneously. The `.chip-idle` rule in `CatalogueFilters.vue` was the main offender (32 chips = 89 total layers with the drawer open); it was fixed in commit `a988c08` (2026-06-04) by replacing the blur with a plain semi-transparent background.
+
 ## Naming
 
 - Files: `kebab-case` for non-component files, `PascalCase.vue` for components.

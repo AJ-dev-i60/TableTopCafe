@@ -4,7 +4,7 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Current milestone: M5 — Polish 🚧
 
-**Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). All on `dev`, owner testing in progress; NOT yet merged to `main` — awaiting owner sign-off, then `dev`→`main`. Remaining for launch: 400-game data entry, low-end Android perf pass (code changes ✅ 2026-06-03 — on-device verification still pending), backups confirmation. (Auth-bypass removal ✅ 2026-06-02; shared-component token migration ✅ 2026-06-03. QR codes: not a dev task — owner generates them via a 3rd-party site pointing at the catalogue URL.)**
+**Status: Large staff/catalogue UX pass landed on `dev` 2026-06-01 (photo management, detail-page redesign, sliders, list search/filters, tag-games manager, BGG→Wikipedia). Merged to `main` and shipped to prod — as of 2026-06-04 `dev` and `main` are byte-identical (both at `183856e`), so prod already carries the full M5 UX pass plus all subsequent fixes (auth-bypass removal, token migration, low-end Android perf changes). Remaining for launch: 400-game data entry, on-device low-end Android perf verification (code changes ✅ 2026-06-03 — device pass still pending), backups confirmation, owner visual sign-off. (Auth-bypass removal ✅ 2026-06-02; shared-component token migration ✅ 2026-06-03. QR codes: not a dev task — owner generates them via a 3rd-party site pointing at the catalogue URL.)**
 
 ### Session — 2026-06-03 (low-end Android perf pass — code changes; on-device verification still pending)
 
@@ -91,7 +91,7 @@ Large UX + features pass, all pushed to `origin/dev` across the day and being ow
 **Verification:** `npm run build` clean and `npm run test` green throughout (now 9 unit tests incl. Wikipedia match-guard tests). e2e selectors preserved (the "add game" smoke test only fills the name). Interactive bits (lightbox gestures, drag-reorder, camera, Wikipedia fetch) verified on the dev deploy by the owner.
 
 **Next actions (in priority order):**
-1. **Owner finishes testing the 2026-06-01 set on `dev`** → then `dev`→`main` merge (prod deploy). Not before owner confirms.
+1. ~~**Owner finishes testing the 2026-06-01 set on `dev`** → then `dev`→`main` merge (prod deploy).~~ ✅ Done — as of 2026-06-04 `dev` and `main` are byte-identical (both `183856e`); the 2026-06-01 set (and all later fixes) are on prod.
 2. **Pre-launch cleanup** (carried over): remove the auth bypass in `server/api/auth/login.post.ts`; resolve the Coolify `ADMIN_PASSWORD` mismatch first or prod admin is locked out.
 3. ~~**Shared-component token migration**~~ ✅ done 2026-06-03 (see session note above).
 4. **400-game data entry sprint**, **low-end Android perf pass**, **owner visual sign-off** — the remaining M5 launch items. (QR codes are owner-generated externally — not a dev task.)

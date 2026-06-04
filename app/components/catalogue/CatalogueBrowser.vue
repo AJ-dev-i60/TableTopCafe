@@ -92,10 +92,10 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
       </div>
     </div>
 
-    <!-- Mobile filter drawer: glass continuation of toolbar -->
+    <!-- Mobile filter drawer: fixed below sticky toolbar so it's in view regardless of scroll position -->
     <div
       v-if="showFilters"
-      class="lg:hidden glass-chrome border-b px-md py-md"
+      class="lg:hidden glass-chrome border-b px-md py-md filter-drawer"
     >
       <CatalogueFilters
         :tags="tags"
@@ -296,5 +296,15 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
 .sidebar-sticky-top {
   position: sticky;
   top: calc(var(--header-height) + var(--toolbar-height));
+}
+
+.filter-drawer {
+  position: fixed;
+  top: calc(var(--header-height) + var(--toolbar-height));
+  left: 0;
+  right: 0;
+  z-index: var(--z-toolbar);
+  max-height: calc(100dvh - var(--header-height) - var(--toolbar-height));
+  overflow-y: auto;
 }
 </style>

@@ -38,8 +38,12 @@ function timeLabel(min: number, max: number): string {
 <template>
   <article :class="['card relative overflow-hidden border border-white/40 motion-safe:transition-shadow motion-safe:duration-base aspect-[16/10] sm:aspect-[4/3] lg:aspect-[3/4]', game.featured ? 'card-featured' : '']">
 
-    <!-- Photo fills the card -->
-    <picture v-if="game.photoHash && !imageFailed" class="block absolute inset-0">
+    <!-- Photo fills the card.
+         <picture> uses display:contents so it doesn't form a layout box — the
+         <img> positions itself directly against .card via absolute inset-0.
+         This sidesteps an iOS Safari BFCache bug where picture's block/inset-0
+         box collapses after page restore, leaving the img at intrinsic size. -->
+    <picture v-if="game.photoHash && !imageFailed" class="contents">
       <source
         type="image/webp"
         :srcset="`${photoUrl(game.photoHash, 'thumb', 'webp')} 200w, ${photoUrl(game.photoHash, 'card', 'webp')} 600w`"
@@ -53,7 +57,7 @@ function timeLabel(min: number, max: number): string {
         :alt="game.name"
         :loading="eager ? 'eager' : 'lazy'"
         :fetchpriority="eager ? 'high' : 'auto'"
-        class="w-full h-full object-cover"
+        class="absolute inset-0 w-full h-full object-cover"
         @error="imageFailed = true"
       />
     </picture>

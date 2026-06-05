@@ -224,7 +224,10 @@ useSeoMeta({
           class="ext-link glass-panel flex items-center justify-between gap-3 p-4 text-ui motion-safe:transition-colors"
           style="color: var(--color-text-primary)"
         >
-          <span class="font-medium">{{ game.linkTitle || game.linkUrl }}</span>
+          <template v-if="game.linkTitle?.startsWith('View on ')">
+              View on <span class="font-semibold">{{ game.linkTitle.slice(8) }}</span>
+            </template>
+            <span v-else class="font-medium">{{ game.linkTitle || game.linkUrl }}</span>
           <svg class="w-[18px] h-[18px] shrink-0" style="color: var(--color-text-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>

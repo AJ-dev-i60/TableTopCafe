@@ -114,12 +114,22 @@
             @input="onLinkUrlInput"
             @blur="onLinkUrlBlur"
           />
+          <button
+            v-if="bggId !== null && linkUrl.trim()"
+            type="button"
+            class="resolve-btn text-meta mt-1.5"
+            @click="clearCustomLink"
+          >
+            ↩ Use BoardGameGeek link instead
+          </button>
 
           <!-- Title row: appears once URL has content -->
           <div v-if="linkUrl.trim()" class="mt-2">
             <div class="flex items-center gap-2 mb-1">
               <label class="text-meta font-medium" style="color: var(--color-text-secondary)">Link label</label>
+              <span v-if="resolvingLink" class="text-meta" style="color: var(--color-text-muted)">Fetching…</span>
               <button
+                v-else
                 type="button"
                 class="resolve-btn text-meta"
                 @click="resolveLink(true)"
@@ -140,7 +150,9 @@
             v-if="linkUrl.trim() && linkTitle.trim()"
             class="link-preview mt-2 flex items-center justify-between gap-3 px-3 py-2 text-meta"
           >
-            <span class="truncate font-medium" style="color: var(--color-text-primary)">{{ linkTitle }}</span>
+            <span class="truncate" style="color: var(--color-text-primary)">
+              {{ linkPreviewParts.prefix }}<span class="font-semibold">{{ linkPreviewParts.name }}</span>
+            </span>
             <svg class="w-4 h-4 shrink-0" style="color: var(--color-text-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
@@ -257,6 +269,8 @@ const bggId = ref<number | null>(props.initial?.bggId ?? null)
 const selectedBgg = ref<GameSearchResult | null>(null)
 const linkUrl = ref<string>(props.initial?.linkUrl ?? '')
 const linkTitle = ref<string>(props.initial?.linkTitle ?? '')
+const resolvingLink = ref(false)
+let resolveTimer: ReturnType<typeof setTimeout> | null = null
 const fetchingWiki = ref(false)
 const wikiMessage = ref('')
 const wikiError = ref(false)
@@ -335,34 +349,75 @@ function isValidUrl(str: string): boolean {
   }
 }
 
+// Derive "View on SiteName" from hostname as a fallback. Handles compound
+// TLDs like .co.za by checking whether the second-to-last label is a known SLD.
 function hostLabel(url: string): string {
   try {
     const host = new URL(url).hostname.replace(/^www\./, '')
     const parts = host.split('.')
-    // Take the registrable domain part (e.g. "boardgamegeek" from "boardgamegeek.com")
-    const name = parts.length >= 2 ? parts[parts.length - 2] : parts[0]
+    const sld = new Set(['co', 'com', 'net', 'org', 'gov', 'edu', 'ac', 'or'])
+    let nameIdx = parts.length - 2
+    if (parts.length >= 3 && sld.has(parts[parts.length - 2])) nameIdx = parts.length - 3
+    const name = parts[Math.max(0, nameIdx)] ?? parts[0]
     return `View on ${name.charAt(0).toUpperCase()}${name.slice(1)}`
   } catch {
     return 'View link'
   }
 }
 
-function resolveLink(override: boolean) {
+// Extract the site/brand name from a page <title>.
+// Most sites use "Page Title | Brand Name" or "Page Title – Brand Name".
+function extractSiteName(title: string): string | null {
+  for (const sep of ['|', '–', ' - ']) {
+    const parts = title.split(sep)
+    if (parts.length >= 2) {
+      const last = parts[parts.length - 1].trim()
+      if (last.length >= 2 && last.length <= 80) return last
+    }
+  }
+  return null
+}
+
+const linkPreviewParts = computed(() => {
+  const t = linkTitle.value.trim()
+  if (t.startsWith('View on ')) return { prefix: 'View on ', name: t.slice(8) }
+  return { prefix: '', name: t }
+})
+
+async function resolveLink(override: boolean) {
   const url = linkUrl.value.trim()
   if (!url || !isValidUrl(url)) return
-  if (override || !linkTitle.value.trim()) {
-    linkTitle.value = hostLabel(url)
+  resolvingLink.value = true
+  try {
+    const result = await $fetch<{ title: string | null }>('/api/staff/resolve-link', {
+      method: 'POST',
+      body: { url },
+    })
+    const siteName = result.title ? extractSiteName(result.title) : null
+    const label = siteName ? `View on ${siteName}` : hostLabel(url)
+    if (override || !linkTitle.value.trim()) linkTitle.value = label
+  } catch {
+    if (override || !linkTitle.value.trim()) linkTitle.value = hostLabel(url)
+  } finally {
+    resolvingLink.value = false
   }
 }
 
+function clearCustomLink() {
+  linkUrl.value = ''
+  linkTitle.value = ''
+}
+
 function onLinkUrlInput() {
+  if (resolveTimer) clearTimeout(resolveTimer)
   const url = linkUrl.value.trim()
   if (!url) { linkTitle.value = ''; return }
   if (!isValidUrl(url)) return
-  resolveLink(true)
+  resolveTimer = setTimeout(() => resolveLink(true), 700)
 }
 
 function onLinkUrlBlur() {
+  if (resolveTimer) { clearTimeout(resolveTimer); resolveTimer = null }
   const url = linkUrl.value.trim()
   if (url && isValidUrl(url) && !linkTitle.value.trim()) resolveLink(false)
 }

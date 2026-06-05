@@ -58,11 +58,11 @@ useSeoMeta({
     <div class="lg:grid lg:gap-8 lg:items-start detail-grid">
 
       <!-- ── Hero column ─────────────────────────────────────── -->
-      <div class="hero-col mb-6 lg:mb-0">
+      <div class="hero-col mb-6 lg:mb-0 flex flex-col gap-4">
         <div class="hero-card relative overflow-hidden">
 
-          <!-- Photo -->
-          <picture v-if="primaryPhotoHash && !heroImageFailed" class="block absolute inset-0">
+          <!-- Photo (display:contents on picture avoids the iOS BFCache sizing bug) -->
+          <picture v-if="primaryPhotoHash && !heroImageFailed" class="contents">
             <source
               type="image/webp"
               :srcset="`${photoUrl(primaryPhotoHash, 'card', 'webp')} 600w, ${photoUrl(primaryPhotoHash, 'detail', 'webp')} 1200w`"
@@ -72,7 +72,7 @@ useSeoMeta({
               ref="heroImgEl"
               :src="photoUrl(primaryPhotoHash, 'detail', 'jpg')"
               :alt="game.name"
-              class="w-full h-full object-cover"
+              class="absolute inset-0 w-full h-full object-cover"
               @error="heroImageFailed = true"
             />
           </picture>
@@ -132,6 +132,32 @@ useSeoMeta({
             </div>
           </div>
         </div>
+
+        <!-- More photos: under the hero card so it aligns left on desktop -->
+        <div v-if="game.photos.length > 1" class="glass-panel p-4">
+          <h2 class="text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">More photos</h2>
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              v-for="(photo, i) in game.photos.slice(1)"
+              :key="photo.id"
+              type="button"
+              class="photo-thumb overflow-hidden aspect-square cursor-pointer focus:outline-none focus-visible:ring-2"
+              style="background: var(--color-surface-elevated); --tw-ring-color: var(--color-brand)"
+              :aria-label="`View photo ${i + 2}`"
+              @click="openLightbox(i + 1)"
+            >
+              <picture>
+                <source type="image/webp" :srcset="photoUrl(photo.contentHash, 'thumb', 'webp')" />
+                <img
+                  :src="photoUrl(photo.contentHash, 'thumb', 'jpg')"
+                  :alt="game.name"
+                  loading="lazy"
+                  class="w-full h-full object-cover motion-safe:transition-transform"
+                />
+              </picture>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- ── Content panels column ───────────────────────────── -->
@@ -174,42 +200,31 @@ useSeoMeta({
           </div>
         </div>
 
-        <!-- More photos -->
-        <div v-if="game.photos.length > 1" class="glass-panel p-4">
-          <h2 class="text-section-label font-semibold uppercase tracking-wider mb-3" style="color: var(--color-text-secondary)">More photos</h2>
-          <div class="grid grid-cols-3 gap-2">
-            <button
-              v-for="(photo, i) in game.photos.slice(1)"
-              :key="photo.id"
-              type="button"
-              class="photo-thumb overflow-hidden aspect-square cursor-pointer focus:outline-none focus-visible:ring-2"
-              style="background: var(--color-surface-elevated); --tw-ring-color: var(--color-brand)"
-              :aria-label="`View photo ${i + 2}`"
-              @click="openLightbox(i + 1)"
-            >
-              <picture>
-                <source type="image/webp" :srcset="photoUrl(photo.contentHash, 'thumb', 'webp')" />
-                <img
-                  :src="photoUrl(photo.contentHash, 'thumb', 'jpg')"
-                  :alt="game.name"
-                  loading="lazy"
-                  class="w-full h-full object-cover motion-safe:transition-transform"
-                />
-              </picture>
-            </button>
-          </div>
-        </div>
-
         <!-- BoardGameGeek link -->
         <a
           v-if="game.bggId"
           :href="`https://boardgamegeek.com/boardgame/${game.bggId}`"
           target="_blank"
           rel="noopener noreferrer"
-          class="bgg-link glass-panel flex items-center justify-between gap-3 p-4 text-ui motion-safe:transition-colors"
+          class="ext-link glass-panel flex items-center justify-between gap-3 p-4 text-ui motion-safe:transition-colors"
           style="color: var(--color-text-primary)"
         >
           <span class="font-medium">View on BoardGameGeek</span>
+          <svg class="w-[18px] h-[18px] shrink-0" style="color: var(--color-text-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+
+        <!-- Custom external link -->
+        <a
+          v-if="game.linkUrl"
+          :href="game.linkUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="ext-link glass-panel flex items-center justify-between gap-3 p-4 text-ui motion-safe:transition-colors"
+          style="color: var(--color-text-primary)"
+        >
+          <span class="font-medium">{{ game.linkTitle || game.linkUrl }}</span>
           <svg class="w-[18px] h-[18px] shrink-0" style="color: var(--color-text-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
@@ -231,7 +246,7 @@ useSeoMeta({
   grid-template-columns: 1.15fr 1fr;
 }
 
-.bgg-link:hover {
+.ext-link:hover {
   background: rgb(255 255 255 / 0.70);
 }
 

@@ -102,6 +102,53 @@
             :available-tags="availableTags"
           />
         </div>
+
+        <!-- External link -->
+        <div>
+          <label class="block text-ui font-medium mb-1" style="color: var(--color-text-secondary)">External link</label>
+          <SharedInput
+            v-model="linkUrl"
+            type="url"
+            placeholder="https://boardgamegeek.com/boardgame/…"
+            maxlength="2000"
+            @input="onLinkUrlInput"
+            @blur="onLinkUrlBlur"
+          />
+
+          <!-- Title row: appears once URL has content -->
+          <div v-if="linkUrl.trim()" class="mt-2">
+            <div class="flex items-center gap-2 mb-1">
+              <label class="text-meta font-medium" style="color: var(--color-text-secondary)">Link label</label>
+              <span v-if="resolvingLink" class="text-meta" style="color: var(--color-text-muted)">Fetching…</span>
+              <span v-else-if="resolveLinkError && !linkTitle.trim()" class="text-meta" style="color: var(--color-text-muted)">Couldn't auto-fetch — type one below</span>
+              <button
+                v-else-if="!resolvingLink"
+                type="button"
+                class="resolve-btn text-meta"
+                @click="resolveLink(true)"
+              >
+                ↻ Re-fetch
+              </button>
+            </div>
+            <SharedInput
+              v-model="linkTitle"
+              type="text"
+              placeholder="e.g. View on BoardGameGeek"
+              maxlength="500"
+            />
+          </div>
+
+          <!-- Live preview -->
+          <div
+            v-if="linkUrl.trim() && linkTitle.trim()"
+            class="link-preview mt-2 flex items-center justify-between gap-3 px-3 py-2 text-meta"
+          >
+            <span class="truncate font-medium" style="color: var(--color-text-primary)">{{ linkTitle }}</span>
+            <svg class="w-4 h-4 shrink-0" style="color: var(--color-text-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       <!-- ── Right column ───────────────────────────────────── -->
@@ -169,6 +216,8 @@ type GameFormData = {
   tagIds: number[]
   newTagNames: string[]
   bggId?: number | null
+  linkUrl?: string | null
+  linkTitle?: string | null
 }
 
 const props = defineProps<{
@@ -209,6 +258,11 @@ const form = reactive({
 
 const bggId = ref<number | null>(props.initial?.bggId ?? null)
 const selectedBgg = ref<GameSearchResult | null>(null)
+const linkUrl = ref<string>(props.initial?.linkUrl ?? '')
+const linkTitle = ref<string>(props.initial?.linkTitle ?? '')
+const resolvingLink = ref(false)
+const resolveLinkError = ref(false)
+let resolveTimer: ReturnType<typeof setTimeout> | null = null
 const fetchingWiki = ref(false)
 const wikiMessage = ref('')
 const wikiError = ref(false)
@@ -278,6 +332,52 @@ async function fetchWikiInfo() {
   }
 }
 
+function isValidUrl(str: string): boolean {
+  try {
+    const u = new URL(str)
+    return u.protocol === 'http:' || u.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+function onLinkUrlInput() {
+  resolveLinkError.value = false
+  if (resolveTimer) clearTimeout(resolveTimer)
+  const url = linkUrl.value.trim()
+  if (!url) { linkTitle.value = ''; return }
+  if (!isValidUrl(url)) return
+  // Auto-populate title only when title field is empty
+  resolveTimer = setTimeout(() => resolveLink(false), 700)
+}
+
+function onLinkUrlBlur() {
+  if (resolveTimer) { clearTimeout(resolveTimer); resolveTimer = null }
+  const url = linkUrl.value.trim()
+  if (url && isValidUrl(url) && !linkTitle.value.trim()) resolveLink(false)
+}
+
+async function resolveLink(override: boolean) {
+  const url = linkUrl.value.trim()
+  if (!url || !isValidUrl(url)) return
+  resolvingLink.value = true
+  resolveLinkError.value = false
+  try {
+    const result = await $fetch<{ title: string | null }>('/api/staff/resolve-link', {
+      method: 'POST',
+      body: { url },
+    })
+    if (result.title && (override || !linkTitle.value.trim())) {
+      linkTitle.value = result.title
+    }
+    if (!result.title) resolveLinkError.value = true
+  } catch {
+    resolveLinkError.value = true
+  } finally {
+    resolvingLink.value = false
+  }
+}
+
 async function submit() {
   error.value = ''
   pending.value = true
@@ -291,6 +391,8 @@ async function submit() {
       tagIds: existingTagIds,
       newTagNames,
       bggId: bggId.value,
+      linkUrl: linkUrl.value.trim() || null,
+      linkTitle: linkTitle.value.trim() || null,
     }
 
     if (savedGameId.value) {
@@ -391,5 +493,19 @@ function onPhotosReordered(order: string[]) {
 }
 .cancel-btn:hover {
   background: var(--color-surface-elevated);
+}
+
+.link-preview {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.resolve-btn {
+  color: var(--color-brand);
+  cursor: pointer;
+}
+.resolve-btn:hover {
+  text-decoration: underline;
 }
 </style>

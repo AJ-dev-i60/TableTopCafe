@@ -78,7 +78,7 @@ type PhotoRow = Pick<InferSelectModel<typeof photos>, 'id' | 'contentHash' | 'po
 
 export type GameDetail = Pick<
   GameRow,
-  'id' | 'name' | 'description' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'featuredNote' | 'bggId'
+  'id' | 'name' | 'description' | 'playerMin' | 'playerMax' | 'timeMin' | 'timeMax' | 'featured' | 'featuredNote' | 'bggId' | 'linkUrl' | 'linkTitle'
 > & {
   tags: TagRow[]
   photos: PhotoRow[]
@@ -97,6 +97,8 @@ export async function getGameById(id: number): Promise<GameDetail | null> {
       featured: games.featured,
       featuredNote: games.featuredNote,
       bggId: games.bggId,
+      linkUrl: games.linkUrl,
+      linkTitle: games.linkTitle,
     })
     .from(games)
     .where(and(eq(games.id, id), isNull(games.deletedAt)))
@@ -132,6 +134,8 @@ type GameInput = {
   featured?: boolean
   featuredNote?: string | null
   bggId?: number | null
+  linkUrl?: string | null
+  linkTitle?: string | null
 }
 
 export async function createGame(
@@ -149,6 +153,8 @@ export async function createGame(
       timeMin: input.timeMin,
       timeMax: input.timeMax,
       bggId: input.bggId ?? null,
+      linkUrl: input.linkUrl ?? null,
+      linkTitle: input.linkTitle ?? null,
       featured: input.featured ?? false,
       featuredNote: input.featuredNote ?? null,
       featuredAt: input.featured ? new Date() : null,
@@ -186,6 +192,8 @@ export async function updateGame(
       timeMin: input.timeMin,
       timeMax: input.timeMax,
       bggId: input.bggId ?? null,
+      linkUrl: input.linkUrl ?? null,
+      linkTitle: input.linkTitle ?? null,
       featured: input.featured ?? false,
       featuredNote: input.featuredNote ?? null,
       // Stamp featured audit on transition: keep the existing values while it

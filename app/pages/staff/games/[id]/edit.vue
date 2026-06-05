@@ -23,6 +23,8 @@
           featured: game.featured,
           featuredNote: game.featuredNote ?? null,
           bggId: game.bggId ?? null,
+          linkUrl: game.linkUrl ?? null,
+          linkTitle: game.linkTitle ?? null,
           tagIds: game.tags.map(t => t.id),
           photoHashes: game.photos.map(p => p.contentHash),
         }"

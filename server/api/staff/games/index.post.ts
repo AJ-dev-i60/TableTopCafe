@@ -15,6 +15,8 @@ const bodySchema = z.object({
   tagIds: z.array(z.number().int().positive()).default([]),
   newTagNames: z.array(z.string().min(1).max(100)).default([]),
   bggId: z.number().int().positive().nullable().optional(),
+  linkUrl: z.preprocess((v) => (v === '' ? null : v), z.string().url().max(2000).nullable()).optional(),
+  linkTitle: z.preprocess((v) => (v === '' ? null : v), z.string().max(500).nullable()).optional(),
 })
 
 export default defineEventHandler(async (event) => {

@@ -19,4 +19,6 @@ export const games = pgTable('games', {
   lastEditedAt: timestamp('last_edited_at', { withTimezone: true }),
   deletedById: integer('deleted_by_id'),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  linkUrl: text('link_url'),
+  linkTitle: text('link_title'),
 })

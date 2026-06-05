@@ -114,22 +114,14 @@
             @input="onLinkUrlInput"
             @blur="onLinkUrlBlur"
           />
-          <div v-if="bggId !== null" class="mt-1.5">
-            <div v-if="!linkUrl.trim()" class="bgg-active text-meta flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-              </svg>
-              BoardGameGeek link active
-            </div>
-            <button
-              v-else
-              type="button"
-              class="resolve-btn text-meta"
-              @click="clearCustomLink"
-            >
-              ↩ Use BoardGameGeek link instead
-            </button>
-          </div>
+          <button
+            v-if="bggId !== null && !isLinkBggUrl"
+            type="button"
+            class="resolve-btn text-meta mt-1.5"
+            @click="useBggLink"
+          >
+            ↩ Use BoardGameGeek link instead
+          </button>
 
           <!-- Title row: appears once URL has content -->
           <div v-if="linkUrl.trim()" class="mt-2">
@@ -275,10 +267,24 @@ const form = reactive({
 
 const bggId = ref<number | null>(props.initial?.bggId ?? null)
 const selectedBgg = ref<GameSearchResult | null>(null)
-const linkUrl = ref<string>(props.initial?.linkUrl ?? '')
+
+const bggUrl = computed(() =>
+  bggId.value !== null ? `https://boardgamegeek.com/boardgame/${bggId.value}` : null
+)
+
+// Pre-fill with the BGG URL when a game is BGG-linked but has no custom URL saved,
+// so the external link section always shows something uniform to edit.
+const linkUrl = ref<string>(
+  props.initial?.linkUrl
+  ?? (props.initial?.bggId != null ? `https://boardgamegeek.com/boardgame/${props.initial.bggId}` : '')
+)
 const linkTitle = ref<string>(props.initial?.linkTitle ?? '')
 const resolvingLink = ref(false)
 let resolveTimer: ReturnType<typeof setTimeout> | null = null
+
+const isLinkBggUrl = computed(() =>
+  bggUrl.value !== null && linkUrl.value.trim() === bggUrl.value
+)
 const fetchingWiki = ref(false)
 const wikiMessage = ref('')
 const wikiError = ref(false)
@@ -296,16 +302,30 @@ const photoUpload = ref<{ upload: () => Promise<void> } | null>(null)
 const error = ref('')
 const pending = ref(false)
 
+// On edit load, if the URL is pre-filled (e.g. BGG URL) but no label was saved, fetch it.
+onMounted(() => {
+  if (linkUrl.value.trim() && !linkTitle.value.trim()) resolveLink(false)
+})
+
 function onBggSelect(result: GameSearchResult) {
-  // Always apply the picked result: set the name and link the BGG page (powers
-  // the detail-page "View on BoardGameGeek" link), so re-picking another result
-  // replaces the previous one.
   selectedBgg.value = result
   bggId.value = result.bggId
   form.name = result.name
+  // Pre-fill the link field when it's empty or already pointing at another BGG game.
+  const newBggUrl = `https://boardgamegeek.com/boardgame/${result.bggId}`
+  if (!linkUrl.value.trim() || /boardgamegeek\.com\/boardgame\//.test(linkUrl.value)) {
+    linkUrl.value = newBggUrl
+    linkTitle.value = ''
+    resolveLink(true)
+  }
 }
 
 function clearBgg() {
+  // If the URL field is currently the BGG link, clear it along with the BGG selection.
+  if (isLinkBggUrl.value) {
+    linkUrl.value = ''
+    linkTitle.value = ''
+  }
   selectedBgg.value = null
   bggId.value = null
 }
@@ -411,9 +431,11 @@ async function resolveLink(override: boolean) {
   }
 }
 
-function clearCustomLink() {
-  linkUrl.value = ''
+function useBggLink() {
+  if (!bggUrl.value) return
+  linkUrl.value = bggUrl.value
   linkTitle.value = ''
+  resolveLink(true)
 }
 
 function onLinkUrlInput() {
@@ -438,13 +460,19 @@ async function submit() {
     const existingTagIds = selectedTags.value.filter((t) => t.id !== undefined).map((t) => t.id!)
     const newTagNames = selectedTags.value.filter((t) => t.id === undefined).map((t) => t.name)
 
+    // When the URL field holds the BGG URL, save null — bggId already drives the
+    // "View on BoardGameGeek" link on the detail page, so storing it in linkUrl
+    // would cause it to appear twice.
+    const trimmedLinkUrl = linkUrl.value.trim()
+    const effectiveLinkUrl = (trimmedLinkUrl && trimmedLinkUrl !== bggUrl.value) ? trimmedLinkUrl : null
+
     const body = {
       ...form,
       tagIds: existingTagIds,
       newTagNames,
       bggId: bggId.value,
-      linkUrl: linkUrl.value.trim() || null,
-      linkTitle: linkTitle.value.trim() || null,
+      linkUrl: effectiveLinkUrl,
+      linkTitle: effectiveLinkUrl ? (linkTitle.value.trim() || null) : null,
     }
 
     if (savedGameId.value) {
@@ -559,9 +587,5 @@ function onPhotosReordered(order: string[]) {
 }
 .resolve-btn:hover {
   text-decoration: underline;
-}
-
-.bgg-active {
-  color: var(--color-brand);
 }
 </style>

@@ -1,10 +1,16 @@
 <script setup lang="ts">
 const { public: { buildNumber } } = useRuntimeConfig()
+
+const atTop = ref(true)
+function onScroll() { atTop.value = window.scrollY === 0 }
+
+onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
+onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <template>
   <div class="min-h-screen [background:var(--mesh-bg)]">
-    <header class="sticky top-0 z-header glass-chrome border-b">
+    <header :class="['fixed top-0 left-0 right-0 z-header glass-chrome border-b header-bar', atTop ? '' : 'header-hidden']">
       <div class="max-w-7xl mx-auto px-md py-3 flex items-center justify-between">
         <span class="flex items-baseline gap-2">
           <span class="text-base font-bold tracking-tight" style="color: var(--color-text-primary)">Table-Top-Cafe</span>
@@ -14,7 +20,7 @@ const { public: { buildNumber } } = useRuntimeConfig()
       </div>
     </header>
 
-    <main>
+    <main class="content-offset">
       <slot />
     </main>
 
@@ -45,5 +51,24 @@ const { public: { buildNumber } } = useRuntimeConfig()
 /* PWA safe-area: notch compensation for installed app on iPhone */
 header {
   padding-top: max(12px, env(safe-area-inset-top));
+}
+
+.header-bar {
+  transition: transform 220ms ease;
+}
+.header-hidden {
+  transform: translateY(-100%);
+}
+
+/* Offset page content below the fixed header.
+   On iPhone with notch, safe-area-inset-top can be ~44px so the header grows;
+   the formula keeps content clear in both cases. */
+.content-offset {
+  padding-top: 52px;
+}
+@supports (padding-top: env(safe-area-inset-top)) {
+  .content-offset {
+    padding-top: max(52px, calc(env(safe-area-inset-top) + 36px));
+  }
 }
 </style>

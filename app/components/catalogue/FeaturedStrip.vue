@@ -265,6 +265,11 @@ function goTo(index: number) {
   font-weight: 600;
   line-height: 1.2;
 }
+@media (min-width: 768px) {
+  .ftitle {
+    font-size: 20px;
+  }
+}
 .title-shadow {
   text-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
 }

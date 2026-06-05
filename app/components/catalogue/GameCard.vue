@@ -153,4 +153,9 @@ function timeLabel(min: number, max: number): string {
 .title-shadow {
   text-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
 }
+@media (min-width: 768px) {
+  .info-panel h2 {
+    font-size: 18px;
+  }
+}
 </style>

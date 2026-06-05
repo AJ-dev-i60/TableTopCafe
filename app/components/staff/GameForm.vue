@@ -119,10 +119,7 @@
           <div v-if="linkUrl.trim()" class="mt-2">
             <div class="flex items-center gap-2 mb-1">
               <label class="text-meta font-medium" style="color: var(--color-text-secondary)">Link label</label>
-              <span v-if="resolvingLink" class="text-meta" style="color: var(--color-text-muted)">Fetching…</span>
-              <span v-else-if="resolveLinkError && !linkTitle.trim()" class="text-meta" style="color: var(--color-text-muted)">Couldn't auto-fetch — type one below</span>
               <button
-                v-else-if="!resolvingLink"
                 type="button"
                 class="resolve-btn text-meta"
                 @click="resolveLink(true)"
@@ -260,9 +257,6 @@ const bggId = ref<number | null>(props.initial?.bggId ?? null)
 const selectedBgg = ref<GameSearchResult | null>(null)
 const linkUrl = ref<string>(props.initial?.linkUrl ?? '')
 const linkTitle = ref<string>(props.initial?.linkTitle ?? '')
-const resolvingLink = ref(false)
-const resolveLinkError = ref(false)
-let resolveTimer: ReturnType<typeof setTimeout> | null = null
 const fetchingWiki = ref(false)
 const wikiMessage = ref('')
 const wikiError = ref(false)
@@ -341,41 +335,36 @@ function isValidUrl(str: string): boolean {
   }
 }
 
+function hostLabel(url: string): string {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '')
+    const parts = host.split('.')
+    // Take the registrable domain part (e.g. "boardgamegeek" from "boardgamegeek.com")
+    const name = parts.length >= 2 ? parts[parts.length - 2] : parts[0]
+    return `View on ${name.charAt(0).toUpperCase()}${name.slice(1)}`
+  } catch {
+    return 'View link'
+  }
+}
+
+function resolveLink(override: boolean) {
+  const url = linkUrl.value.trim()
+  if (!url || !isValidUrl(url)) return
+  if (override || !linkTitle.value.trim()) {
+    linkTitle.value = hostLabel(url)
+  }
+}
+
 function onLinkUrlInput() {
-  resolveLinkError.value = false
-  if (resolveTimer) clearTimeout(resolveTimer)
   const url = linkUrl.value.trim()
   if (!url) { linkTitle.value = ''; return }
   if (!isValidUrl(url)) return
-  // Auto-populate title only when title field is empty
-  resolveTimer = setTimeout(() => resolveLink(false), 700)
+  resolveLink(true)
 }
 
 function onLinkUrlBlur() {
-  if (resolveTimer) { clearTimeout(resolveTimer); resolveTimer = null }
   const url = linkUrl.value.trim()
   if (url && isValidUrl(url) && !linkTitle.value.trim()) resolveLink(false)
-}
-
-async function resolveLink(override: boolean) {
-  const url = linkUrl.value.trim()
-  if (!url || !isValidUrl(url)) return
-  resolvingLink.value = true
-  resolveLinkError.value = false
-  try {
-    const result = await $fetch<{ title: string | null }>('/api/staff/resolve-link', {
-      method: 'POST',
-      body: { url },
-    })
-    if (result.title && (override || !linkTitle.value.trim())) {
-      linkTitle.value = result.title
-    }
-    if (!result.title) resolveLinkError.value = true
-  } catch {
-    resolveLinkError.value = true
-  } finally {
-    resolvingLink.value = false
-  }
 }
 
 async function submit() {

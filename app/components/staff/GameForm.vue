@@ -114,14 +114,22 @@
             @input="onLinkUrlInput"
             @blur="onLinkUrlBlur"
           />
-          <button
-            v-if="bggId !== null && linkUrl.trim()"
-            type="button"
-            class="resolve-btn text-meta mt-1.5"
-            @click="clearCustomLink"
-          >
-            ↩ Use BoardGameGeek link instead
-          </button>
+          <div v-if="bggId !== null" class="mt-1.5">
+            <div v-if="!linkUrl.trim()" class="bgg-active text-meta flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+              BoardGameGeek link active
+            </div>
+            <button
+              v-else
+              type="button"
+              class="resolve-btn text-meta"
+              @click="clearCustomLink"
+            >
+              ↩ Use BoardGameGeek link instead
+            </button>
+          </div>
 
           <!-- Title row: appears once URL has content -->
           <div v-if="linkUrl.trim()" class="mt-2">
@@ -551,5 +559,9 @@ function onPhotosReordered(order: string[]) {
 }
 .resolve-btn:hover {
   text-decoration: underline;
+}
+
+.bgg-active {
+  color: var(--color-brand);
 }
 </style>

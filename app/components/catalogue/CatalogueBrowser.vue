@@ -164,10 +164,10 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
                 Featured
               </h2>
               <template v-if="view === 'grid'">
-                <!-- Mobile: compact carousel strip (curated "staff picks" glance) -->
-                <CatalogueFeaturedStrip :games="featured" class="sm:hidden" />
-                <!-- sm+ : full glass cards in the responsive grid -->
-                <div class="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Mobile + tablet: compact carousel strip -->
+                <CatalogueFeaturedStrip :games="featured" class="lg:hidden" />
+                <!-- lg+ : full glass cards in the responsive grid -->
+                <div class="hidden lg:grid lg:grid-cols-3 gap-3">
                   <NuxtLink
                     v-for="(game, i) in featured"
                     :key="game.id"

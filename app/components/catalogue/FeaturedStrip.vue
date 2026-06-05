@@ -122,8 +122,8 @@ function goTo(index: number) {
         class="rail-item"
       >
         <NuxtLink :to="`/games/${game.id}`" class="fcard block">
-          <!-- Photo fills the card (same pipeline as GameCard) -->
-          <picture v-if="game.photoHash && !failed[game.id]" class="block absolute inset-0">
+          <!-- Photo fills the card (display:contents avoids iOS BFCache sizing bug) -->
+          <picture v-if="game.photoHash && !failed[game.id]" class="contents">
             <source
               type="image/webp"
               :srcset="`${photoUrl(game.photoHash, 'thumb', 'webp')} 200w, ${photoUrl(game.photoHash, 'card', 'webp')} 600w`"
@@ -136,7 +136,7 @@ function goTo(index: number) {
               sizes="72vw"
               :alt="game.name"
               loading="lazy"
-              class="w-full h-full object-cover"
+              class="absolute inset-0 w-full h-full object-cover"
               @error="failed[game.id] = true"
             />
           </picture>

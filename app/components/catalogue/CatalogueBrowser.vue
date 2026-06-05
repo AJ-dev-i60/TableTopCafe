@@ -237,11 +237,10 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
   backdrop-filter: blur(var(--glass-blur)) saturate(160%);
 }
 
-/* Sticks below the header. Was `top-[--header-height]`, but Tailwind v4.3
-   strips the var() from arbitrary-value utilities, so the offset never applied. */
+/* Header scrolls with the page; toolbar is the first sticky element. */
 .toolbar-sticky {
   position: sticky;
-  top: var(--header-height);
+  top: 0;
 }
 
 .glass-chip {
@@ -295,16 +294,16 @@ const totalVisible = computed(() => featured.value.length + nonFeatured.value.le
 
 .sidebar-sticky-top {
   position: sticky;
-  top: calc(var(--header-height) + var(--toolbar-height));
+  top: var(--toolbar-height);
 }
 
 .filter-drawer {
   position: fixed;
-  top: calc(var(--header-height) + var(--toolbar-height));
+  top: var(--toolbar-height);
   left: 0;
   right: 0;
   z-index: var(--z-toolbar);
-  max-height: calc(100dvh - var(--header-height) - var(--toolbar-height));
+  max-height: calc(100dvh - var(--toolbar-height));
   overflow-y: auto;
 }
 </style>

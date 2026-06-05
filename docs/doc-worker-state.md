@@ -1,12 +1,12 @@
 # Doc Worker State
 
 onboarding: complete
-last-scan-commit: 1f67f98
-last-scan-date: 2026-06-04
+last-scan-commit: 0e08752
+last-scan-date: 2026-06-05
 
 ## In progress
 
-_(clear)_
+_(clear — 2026-06-05 incremental scan complete)_
 
 ## Queue
 
@@ -30,6 +30,7 @@ _(clear)_
 
 ## Session log
 
+- 2026-06-05: incremental scan `1f67f98..0e08752` — 5 commits, 6 changes. Updated progress.md (new session entry + status line), codebase-map.md (FeaturedStrip, GameCard, CatalogueBrowser, games/[id].vue, staff/index.vue, new.vue, GameForm, useCatalogueView, schema/games, migration 0006, new resolve-link.post.ts), ARCHITECTURE.md (localStorage → useCookie in view-persistence paragraph; "virtualized rendering" → `content-visibility: auto` in perf paragraph). No issues opened.
 - 2026-06-02: initial onboarding — full codebase scan (76 files across 15 layers)
 - 2026-06-02: fixed README.md (stale "pre-implementation" status, wrong doc paths)
 - 2026-06-02: fixed ARCHITECTURE.md — bgg_games_cache data model description (now reflects retired status), No background job queue non-goal (removed stale BGG cron claim)

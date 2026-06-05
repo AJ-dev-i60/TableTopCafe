@@ -8,7 +8,33 @@ Granular session-level state: what's done, what's next, and anything needed to r
 
 ## Current milestone: M5 — Polish 🚧
 
-**Status: Large staff/catalogue UX pass landed and merged to `main` (prod). As of 2026-06-04 `dev` and `main` are byte-identical (both at `183856e`). Auth-bypass removal ✅ 2026-06-02, shared-component token migration ✅ 2026-06-03, Playwright perf audit + four fixes ✅ 2026-06-04. Remaining for launch: 400-game data entry, on-device low-end Android perf verification (four audit findings resolved — device pass still pending), backups confirmation, owner visual sign-off.**
+**Status: Large staff/catalogue UX pass landed and merged to `main` (prod). Auth-bypass removal ✅ 2026-06-02, shared-component token migration ✅ 2026-06-03, Playwright perf audit + four fixes ✅ 2026-06-04. Six further improvements landed 2026-06-05: iOS BFCache image fix, newly-added game hoisted to top of staff list, catalogue view hydration fix (localStorage → useCookie), external link field on games (migration 0006), "More photos" moved under hero, featured strip carousel extended to tablet. Remaining for launch: 400-game data entry, on-device low-end Android perf verification (four audit findings resolved — device pass still pending), backups confirmation, owner visual sign-off.**
+
+---
+
+### Session — 2026-06-05 (six improvements across 5 commits)
+
+Six changes landed on `dev` in commits `11ffccf`–`0e08752`.
+
+**`11ffccf` — Bug fix: iOS BFCache image sizing (`<picture>` elements)**
+`GameCard.vue`, `FeaturedStrip.vue`, and `games/[id].vue` all changed their `<picture>` elements from `class="block absolute inset-0"` (with `<img class="w-full h-full object-cover">`) to `class="contents"` (with `<img class="absolute inset-0 w-full h-full object-cover">`). On iOS Safari, a back-forward cache restore could collapse the `<picture>` layout box to zero size, rendering the image at its intrinsic dimensions in the top-left corner. `display: contents` makes the `<picture>` element invisible to layout so the `<img>` positions directly against the nearest positioned ancestor (the card `div`).
+
+**`e4cb54d` — Feature: newly-added game hoisted to top of staff list**
+`staff/games/new.vue` now redirects to `/staff?newGame=<id>` on save instead of `/staff`. `staff/index.vue` captures `newGame` at mount, immediately cleans the URL via `router.replace({ query: {} })`, hoists the matching game to the top of `filteredGames` (computed), and shows a green "New" pill badge beside its name in both the desktop table and mobile card views. The state lives only for the page visit.
+
+**`d979cff` — Bug fix: catalogue view state hydration mismatch**
+`useCatalogueView.ts` replaced the `ref` + `localStorage` pattern with Nuxt's `useCookie` (`key: 'ttc-catalogue-view'`, `maxAge` 1 year, `sameSite: lax`). The old pattern read from `localStorage` synchronously during client setup after the server had already rendered with `view = 'grid'`; the discrepancy caused a Vue hydration mismatch leaving stale button classes in the DOM. `useCookie` is read server-side too so server and client HTML always agree before hydration.
+
+**`54edd20` — Feature: external link field on games**
+- **DB:** migration `0006_link_fields.sql` adds two nullable text columns to `games`: `link_url` and `link_title`. Drizzle schema (`schema/games.ts`) updated. `GameDetail` type and `getGameById`/`createGame`/`updateGame` in `queries/games.ts` now include `linkUrl`/`linkTitle`.
+- **API:** new auth-protected endpoint `POST /api/staff/resolve-link` accepts `{ url: string }`, fetches the target server-side (streaming first 32 KB, stopping at `</title>`, 6 s timeout), returns `{ title: string | null }`. `games/index.post.ts` and `games/[id]/index.patch.ts` updated to persist `linkUrl`/`linkTitle`.
+- **Staff UI (`GameForm.vue`):** "External link" section below Tags: URL input with 700 ms debounced auto-fetch, editable title field pre-populated from fetch, "Re-fetch" button for manual refresh, live preview chip.
+- **Public UI (`games/[id].vue`):** external link rendered as a glass-panel button below the BoardGameGeek button (same `.ext-link` CSS class — the old `.bgg-link` class was replaced/renamed to `.ext-link` which is now used for both links).
+
+**`0e08752` — Feature: featured strip carousel extended to tablet**
+`CatalogueBrowser.vue` changed the featured-section breakpoint: `CatalogueFeaturedStrip` is now `lg:hidden` (visible on mobile + tablet, hidden ≥1024px) and the full `GameCard` grid is `hidden lg:grid` (visible ≥1024px only). Tablet viewports (640–1023 px) previously showed the full 3-column GameCard grid; they now show the compact scroll-snap carousel. The ALL GAMES 2-column grid at `sm` is unchanged.
+
+*(Change 5 — "More photos" moved under hero — was part of commit `54edd20` along with the external link work. In `games/[id].vue` the hero column now uses `flex flex-col gap-4` so the hero card and extra-photo thumbnails stack vertically in the left column on desktop, while About / Tags / links remain in the right column. Mobile column order: hero → more photos → about → tags → links.)*
 
 ---
 

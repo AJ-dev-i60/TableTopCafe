@@ -87,7 +87,10 @@
                   </div>
                 </div>
                 <div class="min-w-0">
-                  <p class="text-card-title font-medium truncate" style="color: var(--color-text-primary)">{{ game.name }}</p>
+                  <div class="flex items-center gap-1.5">
+                    <span v-if="newGameId === game.id" class="pill-new shrink-0 inline-block px-2 py-0.5 text-tag">New</span>
+                    <p class="text-card-title font-medium truncate" style="color: var(--color-text-primary)">{{ game.name }}</p>
+                  </div>
                   <p
                     v-if="game.featured && !game.deletedAt && game.featuredAt"
                     class="text-meta mt-0.5 truncate"
@@ -167,7 +170,10 @@
             </div>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-card-title font-medium truncate" style="color: var(--color-text-primary)">{{ game.name }}</p>
+            <div class="flex items-center gap-1.5">
+              <span v-if="newGameId === game.id" class="pill-new shrink-0 inline-block px-2 py-0.5 text-tag">New</span>
+              <p class="text-card-title font-medium truncate" style="color: var(--color-text-primary)">{{ game.name }}</p>
+            </div>
             <p
               v-if="game.featured && !game.deletedAt && game.featuredAt"
               class="text-meta mt-0.5 truncate"
@@ -225,6 +231,18 @@ const { data: games, pending, refresh } = await useFetch('/api/staff/games')
 const { data: me } = await useFetch('/api/auth/me')
 const currentUsername = computed(() => (me.value as { username?: string } | null)?.username ?? null)
 
+const route = useRoute()
+const router = useRouter()
+// Capture the newly-created game ID before we clean the URL — this keeps the
+// "New" badge visible for the duration of this page visit without polluting
+// the address bar or breaking back-navigation.
+const newGameId = ref<number | null>(route.query.newGame ? Number(route.query.newGame) : null)
+onMounted(() => {
+  if (route.query.newGame) {
+    void router.replace({ query: {} })
+  }
+})
+
 function byLabel(username: string): string {
   return username === currentUsername.value ? 'you' : username
 }
@@ -254,6 +272,12 @@ const filteredGames = computed(() => {
   else if (filter.value === 'deleted') list = list.filter((g) => !!g.deletedAt)
   const q = search.value.trim().toLowerCase()
   if (q) list = list.filter((g) => g.name.toLowerCase().includes(q))
+  // Hoist the newly-added game to the top for this page visit only.
+  const nid = newGameId.value
+  if (nid) {
+    const idx = list.findIndex((g) => g.id === nid)
+    if (idx > 0) list = [list[idx]!, ...list.slice(0, idx), ...list.slice(idx + 1)]
+  }
   return list
 })
 
@@ -415,6 +439,13 @@ async function onReplaceConfirm(outgoingId: number) {
   background: var(--color-error-soft);
   color: var(--color-error);
   border-radius: var(--radius-full);
+}
+
+.pill-new {
+  background: rgb(21 128 61 / 0.12);
+  color: var(--color-brand);
+  border-radius: var(--radius-full);
+  font-weight: 500;
 }
 
 /* Mobile game card (< sm) */

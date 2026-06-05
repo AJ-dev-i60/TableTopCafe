@@ -27,8 +27,8 @@ const [{ data: tags }, { data: featuredCount }] = await Promise.all([
   useFetch('/api/staff/games/featured-count'),
 ])
 
-async function onSaved(_gameId: number) {
-  await navigateTo('/staff')
+async function onSaved(gameId: number) {
+  await navigateTo(`/staff?newGame=${gameId}`)
 }
 </script>
 
